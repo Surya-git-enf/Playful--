@@ -1,8 +1,9 @@
+
 'use client'
 
-import { TOTAL_SNAP, useSnapScroll } from '@/hooks/useSnapScroll'
-import SceneStage from '@/components/SceneStage'
-import SnapCards from '@/components/SnapCards'
+import { TOTAL_SNAP, useSnapScroll } from '../hooks/useSnapScroll'
+import SceneStage from '../components/SceneStage'
+import SnapCards from '../components/SnapCards'
 
 const SECTION_LABELS = ['Palace', 'Retro', 'Racing', 'Open World', 'Space']
 
@@ -66,4 +67,3 @@ export default function Home() {
     </>
   )
 }
-
