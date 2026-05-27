@@ -1,5 +1,5 @@
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import {
   Orbitron,
   Space_Mono,
@@ -54,14 +54,22 @@ const cinzelDecorative = Cinzel_Decorative({
 })
 
 export const metadata: Metadata = {
-  title: 'Playful — Turn Words Into Worlds',
+  title: 'Playful - Turn Words Into Worlds',
   description: 'Type a prompt, get a playable game in seconds. No code required.',
-  themeColor: '#020510',
   openGraph: {
-    title: 'Playful — Turn Words Into Worlds',
+    title: 'Playful - Turn Words Into Worlds',
     description: 'Type a prompt, get a playable game in seconds.',
     type: 'website',
   },
+}
+
+// themeColor must live in viewport export (Next.js 15+)
+export const viewport: Viewport = {
+  themeColor: '#020510',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -74,9 +82,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       bebasNeue.variable,
       cinzelDecorative.variable,
     ].join(' ')}>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-      </head>
       <body>{children}</body>
     </html>
   )
