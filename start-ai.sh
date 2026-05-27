@@ -38,3 +38,4 @@ sleep 2
 # 6. Launch Engine
 echo "⚡ Launching Claude..."
 claude --continue --dangerously-skip-permissions
+claude
