@@ -7,7 +7,7 @@ import RetroSequence from './RetroSequence'
 import RacingSequence from './RacingSequence'
 import OpenWorldSequence from './OpenWorldSequence'
 import SpaceSequence from './SpaceSequence'
-import { TOTAL_SNAP } from '@/hooks/useSnapScroll'
+import { TOTAL_SNAP } from '../hooks/useSnapScroll'
 
 interface Props {
   section: number
@@ -111,4 +111,3 @@ export default function SceneStage({ section, palaceFrame }: Props) {
     </div>
   )
 }
-
