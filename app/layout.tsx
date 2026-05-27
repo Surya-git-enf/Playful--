@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next'
 import {
   Orbitron,
@@ -7,7 +8,7 @@ import {
   Bebas_Neue,
   Cinzel_Decorative,
 } from 'next/font/google'
-import '@/styles/globals.css'
+import '../styles/globals.css'
 
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -80,4 +81,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
-
