@@ -1,9 +1,13 @@
 
 'use client'
 
+import dynamic from 'next/dynamic'
 import { TOTAL_SNAP, useSnapScroll } from '../hooks/useSnapScroll'
-import SceneStage from '../components/SceneStage'
-import SnapCards from '../components/SnapCards'
+
+// ssr:false — GSAP and scene components touch window/document at import time.
+// Static generation would SIGKILL the worker without this.
+const SceneStage = dynamic(() => import('../components/SceneStage'), { ssr: false })
+const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: false })
 
 const SECTION_LABELS = ['Palace', 'Retro', 'Racing', 'Open World', 'Space']
 
@@ -13,7 +17,7 @@ export default function Home() {
 
   return (
     <>
-      {/* ── Navbar (always visible) ── */}
+      {/* Navbar */}
       <nav className="playful-nav">
         <a href="/" className="nav-brand">
           <div className="nav-logo" aria-hidden="true">🎮</div>
@@ -25,12 +29,12 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ── Cinematic scene stack ── */}
+      {/* Cinematic scene stack — client-only */}
       {inCinematic && (
         <SceneStage section={section} palaceFrame={palaceFrame} />
       )}
 
-      {/* ── Section progress dots (hidden after release) ── */}
+      {/* Section progress dots */}
       {inCinematic && (
         <div className="section-dots" role="navigation" aria-label="Scene navigation">
           {SECTION_LABELS.map((label, i) => (
@@ -44,7 +48,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── Scroll hint arrows ── */}
+      {/* Scroll hint arrows */}
       {inCinematic && (
         <div className="scroll-hint" aria-hidden="true">
           <div className="scroll-arrow-item" />
@@ -53,7 +57,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── Free-scroll cards section ── */}
+      {/* Free-scroll cards — client-only */}
       <div
         style={{
           position: 'relative',
