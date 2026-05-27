@@ -11,7 +11,7 @@ npm install -g @anthropic-ai/claude-code
 uv python install 3.14
 
 # 2. Install Custom Proxy
-uv tool install --force git+https://github.com/Surya-git-enf/free-claude-code.git
+uv tool install --force git+https://github.com/Alishahryar1/free-claude-code.git
 
 # 3. Inject Custom Skills
 rm -rf ~/.claude/skills
