@@ -13,7 +13,7 @@ const SNAP_LOCK_MS = 950   // ms between snap transitions
 
 // ── helpers ──────────────────────────────────────────────────────
 const padded    = (n: number) => String(n).padStart(4, '0')
-const framePath = (n: number) => `/palace/${padded(n + 1)}.jpg`  // 0001..0145
+const framePath = (n: number) => `/palace/${padded(n + 1)}.webp`  // 0001..0145
 
 export default function HeroCanvas() {
   // scene: 0=palace 1=retro 2=racing 3=openworld 4=space  5=done(hidden)
