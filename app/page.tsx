@@ -3,14 +3,13 @@
 
 import dynamic from 'next/dynamic'
 
-// ssr:false — canvas + GSAP touch window/document at import time
 const HeroCanvas = dynamic(() => import('../components/HeroCanvas'), { ssr: false })
 const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: false })
 
 export default function Home() {
   return (
     <>
-      {/* Navbar — always on top */}
+      {/* Navbar */}
       <nav className="playful-nav">
         <a href="/" className="nav-brand">
           <div className="nav-logo" aria-hidden="true">🎮</div>
@@ -22,11 +21,16 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Pinned cinematic hero — manages its own scroll */}
+      {/* Pinned hero — manages its own scroll interception */}
       <HeroCanvas />
 
-      {/* Cards section — revealed after hero exits */}
-      <div style={{ position: 'relative', zIndex: 10 }}>
+      {/* Cards — CSS snap scroll, sits below hero */}
+      <div style={{
+        position: 'relative', zIndex: 10,
+        scrollSnapType: 'y mandatory',
+        overflowY: 'scroll',     /* own scroll context */
+        height: '100vh',
+      }}>
         <SnapCards />
       </div>
     </>
