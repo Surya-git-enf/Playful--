@@ -1,160 +1,99 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import gsap from 'gsap'
+import React, { useEffect, useState } from 'react'
 
-interface Props { isActive: boolean }
+interface Props {
+  isActive: boolean
+}
 
 export default function RacingSequence({ isActive }: Props) {
-  const bgRef     = useRef<HTMLDivElement>(null)
-  const roadRef   = useRef<HTMLDivElement>(null)
-  const carRef    = useRef<HTMLDivElement>(null)
-  const layersRef = useRef<HTMLDivElement>(null)
-  const videoRef  = useRef<HTMLVideoElement>(null)
-  const titleRef  = useRef<HTMLDivElement>(null)
-  const played    = useRef(false)
-  const [showVideo, setShowVideo] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    if (!isActive || played.current) return
-    played.current = true
-
-    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } })
-
-    // 1 bg — fd + slow pan via CSS
-    tl.fromTo(bgRef.current, { opacity: 0 }, { opacity: 1, duration: 0.6 })
-
-    // 2 road — su + ultra-fast pan
-    tl.fromTo(roadRef.current,
-      { y: 180, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' },
-      '-=0.2')
-
-    // 3 car — x:-300→0 power4.out
-    tl.fromTo(carRef.current,
-      { x: -340, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.7, ease: 'power4.out' },
-      '-=0.2')
-
-    // engine vibration
-    tl.to(carRef.current, {
-      keyframes: [
-        { rotation: 0.6 }, { rotation: -0.6 },
-        { rotation: 0.4 }, { rotation: -0.4 }, { rotation: 0 }
-      ],
-      duration: 0.35, ease: 'none', repeat: 6,
-    }, '-=0.1')
-
-    // title — metallic 3D spin
-    tl.fromTo(titleRef.current,
-      { opacity: 0, rotateY: -110, filter: 'blur(14px)' },
-      { opacity: 1, rotateY: 0, filter: 'blur(0)', duration: 0.7, ease: 'power3.out' },
-      '-=0.2')
-
-    // fade layers → show video
-    tl.to(layersRef.current, {
-      opacity: 0, duration: 0.6, ease: 'power2.inOut',
-      onComplete: () => setShowVideo(true),
-    }, '+=0.5')
+    if (isActive) {
+      // 50ms delay ensures the GSAP crossfade from HeroCanvas 
+      // is fully initialized before we fire the internal hardware accelerations.
+      const timer = setTimeout(() => setMounted(true), 50)
+      return () => clearTimeout(timer)
+    } else {
+      setMounted(false)
+    }
   }, [isActive])
 
-  useEffect(() => {
-    if (!isActive) { played.current = false; setShowVideo(false) }
-  }, [isActive])
-
-  useEffect(() => {
-    if (showVideo && videoRef.current) videoRef.current.play().catch(() => {})
-  }, [showVideo])
+  // Apple-tier smooth fade for the background
+  const premiumEase = 'cubic-bezier(0.16, 1, 0.3, 1)'
+  // Aggressive, fast-snap curve for the racing typography (Expo.easeOut equivalent)
+  const aggressiveEase = 'cubic-bezier(0.19, 1, 0.22, 1)'
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#050210' }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#020202' }}>
+      
+      {/* 1. CINEMATIC BACKGROUND (High-Speed Tracking Shot) 
+        Notice the inset is -20px. This gives us bleed room to slowly translate
+        the image horizontally over 12 seconds, simulating a tracking camera.
+      */}
+      <div style={{
+        position: 'absolute', 
+        inset: '-20px', 
+        backgroundImage: 'url("/1000942499.png")', // Your F1 Sunset image
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: mounted ? 1 : 0,
+        // Translates from 20px right to 0px, scaling down slightly
+        transform: mounted ? 'scale(1) translateX(0px)' : 'scale(1.03) translateX(20px)',
+        transition: `opacity 0.8s ${premiumEase}, transform 12s cubic-bezier(0.25, 1, 0.5, 1)`,
+        willChange: 'transform, opacity'
+      }} />
 
-      {/* Animated layers */}
-      <div ref={layersRef} style={{ position: 'absolute', inset: 0 }}>
+      {/* 2. OBSIDIAN GRADIENT MASK
+        Maintains the grid-locked UI legibility perfectly.
+      */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'linear-gradient(to bottom, rgba(2,2,2,0.85) 0%, rgba(2,2,2,0.2) 20%, transparent 40%)',
+        opacity: mounted ? 1 : 0,
+        transition: `opacity 1s ${premiumEase}`,
+      }} />
 
-        {/* 1 — BG */}
-        <div ref={bgRef} style={{
-          position: 'absolute', inset: 0, opacity: 0,
-        }}>
-          {/* doubled for seamless pan */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            width: '200%',
-            animation: 'panLeft 60s linear infinite',
-            display: 'flex',
-          }}>
-            <img src="/racing/bg.png" alt=""
-              style={{ width: '50%', height: '100%', objectFit: 'cover', flexShrink: 0 }} />
-            <img src="/racing/bg.png" alt=""
-              style={{ width: '50%', height: '100%', objectFit: 'cover', flexShrink: 0 }} />
-          </div>
-        </div>
-
-        {/* 2 — Road */}
-        <div ref={roadRef} style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: '32%', opacity: 0,
-        }}>
-          <div style={{
-            width: '200%', height: '100%',
-            animation: 'panLeftFast 2s linear infinite',
-            display: 'flex',
-          }}>
-            <img src="/racing/road.png" alt=""
-              style={{ width: '50%', height: '100%', objectFit: 'cover', flexShrink: 0 }} />
-            <img src="/racing/road.png" alt=""
-              style={{ width: '50%', height: '100%', objectFit: 'cover', flexShrink: 0 }} />
-          </div>
-        </div>
-
-        {/* 3 — Car */}
-        <div ref={carRef} style={{
-          position: 'absolute', bottom: '30%', left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'clamp(160px, 32vw, 420px)',
-          opacity: 0,
-          filter: 'drop-shadow(0 0 24px rgba(0,234,255,0.5)) drop-shadow(0 0 48px rgba(139,92,246,0.3))',
-          animation: isActive && !showVideo ? 'engineVibrate 0.12s ease-in-out infinite' : 'none',
-        }}>
-          <img src="/racing/car.png" alt="Racing car"
-            style={{ width: '100%', height: 'auto', display: 'block' }} />
-        </div>
-      </div>
-
-      {/* Video */}
-      {showVideo && (
-        <video
-          ref={videoRef}
-          src="/racing/racing.mp4"
-          loop muted playsInline autoPlay
-          style={{
-            position: 'absolute', inset: 0,
-            width: '100%', height: '100%',
-            objectFit: 'cover',
-            animation: 'blurFadeIn 0.8s ease both',
-          }}
-        />
-      )}
-
-      {/* Title */}
-      <div ref={titleRef} style={{
-        position: 'absolute', bottom: '8%',
-        left: 0, right: 0, textAlign: 'center',
-        opacity: 0, zIndex: 30, perspective: '800px',
+      {/* 3. TOP-MIDDLE TYPOGRAPHY (Aggressive 'Thunder' Style) */}
+      <div style={{
+        position: 'absolute', top: '12vh', left: 0, right: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        opacity: mounted ? 1 : 0,
+        // Punches in with a slight skew to simulate motion/velocity
+        transform: mounted ? 'translateY(0) skewX(0deg)' : 'translateY(-40px) skewX(-6deg)',
+        filter: mounted ? 'blur(0px)' : 'blur(16px)',
+        transition: `all 1s ${aggressiveEase} 0.15s`,
+        willChange: 'opacity, transform, filter'
       }}>
-        <div className="scene-eyebrow">Stage 3 · Racing</div>
-        <h2 style={{
-          fontFamily: 'var(--font-bebas)',
-          fontSize: 'clamp(3.5rem, 9vw, 8rem)',
-          letterSpacing: '0.12em', lineHeight: 1,
-          background: 'linear-gradient(180deg, #fff 0%, #c4b5fd 40%, #8b5cf6 80%, #00eaff 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          filter: 'drop-shadow(0 2px 20px rgba(0,234,255,0.4))',
+        <span style={{ 
+          fontFamily: "'Inter', 'SF Pro Display', sans-serif", 
+          fontSize: '0.75rem', 
+          letterSpacing: '0.3em', 
+          color: 'rgba(255,255,255,0.6)', 
+          textTransform: 'uppercase', 
+          marginBottom: '8px' 
+        }}>
+          Stage 3 · Racing
+        </span>
+        
+        {/* The 'Thunder' aesthetic: Tall, condensed, zero tracking, maximum impact.
+            We use Bebas Neue/Teko/Oswald as safe fallbacks if Thunder isn't loaded locally yet. */}
+        <h2 style={{ 
+          fontFamily: "'Thunder', 'Bebas Neue', 'Oswald', sans-serif", 
+          fontSize: 'clamp(4.5rem, 11vw, 9rem)', 
+          margin: 0, 
+          color: '#FFFFFF', 
+          fontWeight: 800, 
+          lineHeight: 0.85, 
+          textTransform: 'uppercase',
+          letterSpacing: '0.01em',
+          textShadow: '0 12px 40px rgba(0,0,0,0.9)' // Deep, heavy grounding shadow
         }}>
           Heads Up, Gear
         </h2>
       </div>
+
     </div>
   )
-       }
+}
