@@ -9,7 +9,7 @@ interface Props {
 
 const TOTAL_FRAMES = 145
 const padded = (n: number) => String(n).padStart(4, '0')
-const FRAME_PATH = (n: number) => `/palace/${padded(n)}.jpg`
+const FRAME_PATH = (n: number) => `/palace/${padded(n)}.webp`
 
 export default function PalaceSequence({ isActive, palaceFrame }: Props) {
   const canvasRef   = useRef<HTMLCanvasElement>(null)
