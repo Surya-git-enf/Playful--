@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
@@ -9,7 +10,8 @@ interface Props {
 
 const TOTAL_FRAMES = 145
 const padded = (n: number) => String(n).padStart(4, '0')
-const FRAME_PATH = (n: number) => `/palace/${padded(n)}.webp`
+// Updated to match your specific file names:
+const FRAME_PATH = (n: number) => `/palace/palace-frame_${padded(n)}.webp`
 
 export default function PalaceSequence({ isActive, palaceFrame }: Props) {
   const canvasRef   = useRef<HTMLCanvasElement>(null)
@@ -62,7 +64,6 @@ export default function PalaceSequence({ isActive, palaceFrame }: Props) {
     // Load rest
     for (let i = 1; i < TOTAL_FRAMES; i++) {
       const img = new Image()
-      const idx = i
       img.onload = () => {
         loadedCount.current++
         setLoadProgress(loadedCount.current)
@@ -208,5 +209,4 @@ export default function PalaceSequence({ isActive, palaceFrame }: Props) {
       )}
     </div>
   )
-}
-
+      }
