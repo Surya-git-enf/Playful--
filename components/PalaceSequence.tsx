@@ -1,5 +1,3 @@
-
-```react
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -13,7 +11,7 @@ const injectStyles = () => {
   style.id = 'playful-styles'
   style.innerHTML = `
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@200;300;400;500;700&display=swap');
-    
+
     :root {
       --bg-obsidian: #020202;
       --bg-slate: #0A0B0E;
@@ -22,13 +20,13 @@ const injectStyles = () => {
       --glass-border: 1px solid rgba(255, 255, 255, 0.08);
       --glass-bg: rgba(10, 11, 14, 0.4);
     }
-    
+
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg-obsidian); color: var(--text-main); font-family: 'Inter', sans-serif; overflow: hidden; }
-    
+
     .font-display { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
     .font-ui { font-family: 'Inter', sans-serif; }
-    
+
     .glass-panel {
       background: var(--glass-bg);
       backdrop-filter: blur(24px);
