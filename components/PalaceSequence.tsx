@@ -56,7 +56,7 @@ interface PalaceSequenceProps {
   frameRef: React.RefObject<number>
 }
 
-function PalaceSequence({ isActive, frameRef }: PalaceSequenceProps) {
+export function PalaceSequence({ isActive, frameRef }: PalaceSequenceProps) {
   const canvasRef = useRef(null)
   const titleRef = useRef(null)
   const framesRef = useRef([])
@@ -363,4 +363,5 @@ export default function App() {
       </div>
     </div>
   )
-            }
+      }
+        
