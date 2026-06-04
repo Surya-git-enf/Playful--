@@ -2,22 +2,21 @@
 
 import { useSceneManager } from '../hooks/useSceneManager'
 import PalaceScene from './PalaceScene'
-import RetroScene from './RetroScene'
-import RacingScene from './RacingScene'
-import OpenWorldScene from './OpenWorldScene'
-import SpaceScene from './SpaceScene'
+import RetroSequence from './RetroSequence'
+import RacingSequence from './RacingSequence'
+import OpenWorldSequence from './OpenWorldSequence'
+import SpaceSequence from './SpaceSequence'
 import SnapCards from './SnapCards'
 
 export default function SceneManager() {
   const { sceneIndex, isMounted, palaceFrame, shouldEnableBodyScroll } = useSceneManager()
 
-  // Scene components array matching the flow: Palace → Retro → Racing → Open World → Space → SnapCards
   const scenes = [
     <PalaceScene key="palace" frame={palaceFrame} isActive={sceneIndex === 0} />,
-    <RetroScene key="retro" isActive={sceneIndex === 1} />,
-    <RacingScene key="racing" isActive={sceneIndex === 2} />,
-    <OpenWorldScene key="openworld" isActive={sceneIndex === 3} />,
-    <SpaceScene key="space" isActive={sceneIndex === 4} />,
+    <RetroSequence key="retro" isActive={sceneIndex === 1} />,
+    <RacingSequence key="racing" isActive={sceneIndex === 2} />,
+    <OpenWorldSequence key="openworld" isActive={sceneIndex === 3} />,
+    <SpaceSequence key="space" isActive={sceneIndex === 4} />,
     <SnapCards key="snapcards" isActive={sceneIndex === 5} />
   ]
 
@@ -46,8 +45,6 @@ export default function SceneManager() {
 
       {/* Current scene */}
       {scenes[sceneIndex]}
-
-      {/* Crossfade overlay - handled within each scene component */}
     </div>
   )
 }
