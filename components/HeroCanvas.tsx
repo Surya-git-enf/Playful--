@@ -1,7 +1,6 @@
-
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import PalaceSequence from './PalaceSequence'
 import RetroSequence from './RetroSequence'
 import RacingSequence from './RacingSequence'
@@ -153,7 +152,7 @@ export default function HeroCanvas() {
     position: 'absolute' as const,
     inset: 0,
     opacity: scene === index ? 1 : 0,
-    pointerEvents: scene === index ? 'auto' : 'none' as const,
+    pointerEvents: (scene === index ? 'auto' : 'none') as React.CSSProperties['pointerEvents'],
     transition: 'opacity 0.85s cubic-bezier(0.65, 0, 0.35, 1)', // power3.inOut equivalent
     zIndex: scene === index ? 10 : 0,
   })
@@ -166,7 +165,7 @@ export default function HeroCanvas() {
         zIndex: isReleased ? -1 : 100, // Drops behind the document when released
         overflow: 'hidden',
         background: '#020202', // Deep OLED Obsidian
-        pointerEvents: isReleased ? 'none' : 'auto',
+        pointerEvents: (isReleased ? 'none' : 'auto') as React.CSSProperties['pointerEvents'],
       }}
     >
       {/* 0. Palace Canvas Layer */}
