@@ -1,7 +1,8 @@
+
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import PalaceSequence from './PalaceSequence'
+import { PalaceSequence } from './PalaceSequence'
 import RetroSequence from './RetroSequence'
 import RacingSequence from './RacingSequence'
 import OpenWorldSequence from './OpenWorldSequence'
