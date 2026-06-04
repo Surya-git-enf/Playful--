@@ -45,13 +45,18 @@ const injectStyles = () => {
 // 2. PALACE SEQUENCE (The Canvas Engine)
 // ============================================================================
 const PALACE_TOTAL_FRAMES = 144
-const padded = (n) => String(n).padStart(4, '0')
+const padded = (n: number) => String(n).padStart(4, '0')
 
 // Note: Using a placeholder image generator for the preview since local images aren't available here.
 // In your project, change this back to: `/palace/palace-frame_${padded(n)}.webp`
-const FRAME_PATH = (n) => `https://picsum.photos/id/${(n % 50) + 10}/1920/1080` 
+const FRAME_PATH = (n: number) => `https://picsum.photos/id/${(n % 50) + 10}/1920/1080`
 
-function PalaceSequence({ isActive, frameRef }) {
+interface PalaceSequenceProps {
+  isActive: boolean
+  frameRef: React.RefObject<number>
+}
+
+function PalaceSequence({ isActive, frameRef }: PalaceSequenceProps) {
   const canvasRef = useRef(null)
   const titleRef = useRef(null)
   const framesRef = useRef([])
@@ -358,4 +363,4 @@ export default function App() {
       </div>
     </div>
   )
-    }
+            }
