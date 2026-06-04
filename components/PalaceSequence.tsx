@@ -315,10 +315,10 @@ export default function App() {
     return () => window.removeEventListener('wheel', handleWheel)
   }, [])
 
-  const getSceneStyle = (index) => ({
+  const getSceneStyle = (index: number): React.CSSProperties => ({
     position: 'absolute', inset: 0,
     opacity: scene === index ? 1 : 0,
-    pointerEvents: scene === index ? 'auto' : 'none',
+    pointerEvents: (scene === index ? 'auto' : 'none') as React.CSSProperties['pointerEvents'],
     transition: 'opacity 0.9s cubic-bezier(0.65, 0, 0.35, 1)',
     zIndex: scene === index ? 10 : 0,
   })
@@ -363,5 +363,4 @@ export default function App() {
       </div>
     </div>
   )
-      }
-        
+                   }
