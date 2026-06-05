@@ -136,4 +136,5 @@ echo "🚀 Launching AI Interface..."
 npx -y @anthropic-ai/claude-code \
   --continue \
   --dangerously-skip-permissions
+  claude
 
