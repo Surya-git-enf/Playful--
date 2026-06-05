@@ -301,12 +301,12 @@ export default function App() {
       const isScrollingDown = e.deltaY > 0
 
       if (sceneRef.current === 0) {
-        if (isScrollingDown && resolvedFrameRef.current < PALACE_TOTAL_FRAMES) {
-          resolvedFrameRef.current = Math.min(PALACE_TOTAL_FRAMES, resolvedFrameRef.current + PALACE_SCRUB_STEP)
+        if (isScrollingDown && frameRef.current < PALACE_TOTAL_FRAMES) {
+          frameRef.current = Math.min(PALACE_TOTAL_FRAMES, frameRef.current + PALACE_SCRUB_STEP)
           return
         }
-        if (!isScrollingDown && resolvedFrameRef.current > 0) {
-          resolvedFrameRef.current = Math.max(0, resolvedFrameRef.current - PALACE_SCRUB_STEP)
+        if (!isScrollingDown && frameRef.current > 0) {
+          frameRef.current = Math.max(0, frameRef.current - PALACE_SCRUB_STEP)
           return
         }
       }
@@ -365,5 +365,4 @@ export default function App() {
       </div>
     </div>
   )
-      }
-                                 
+  }
