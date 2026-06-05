@@ -53,10 +53,12 @@ const FRAME_PATH = (n: number) => `https://picsum.photos/id/${(n % 50) + 10}/192
 
 interface PalaceSequenceProps {
   isActive: boolean
-  frameRef: React.RefObject<number>
+  frameRef?: React.RefObject<number>
+  palaceFrame?: React.MutableRefObject<number>
 }
 
-export function PalaceSequence({ isActive, frameRef }: PalaceSequenceProps) {
+export function PalaceSequence({ isActive, frameRef, palaceFrame }: PalaceSequenceProps) {
+  const resolvedFrameRef = (frameRef ?? palaceFrame) as React.RefObject<number>
   const canvasRef = useRef(null)
   const titleRef = useRef(null)
   const framesRef = useRef([])
@@ -118,13 +120,13 @@ export function PalaceSequence({ isActive, frameRef }: PalaceSequenceProps) {
 
   // -- RAF Render Loop (Smooth Scrub Engine) --
   useEffect(() => {
-    let smoothFrame = frameRef.current
+    let smoothFrame = resolvedFrameRef.current
     let raf
 
     const tick = () => {
       if (isActive) {
         // Smooth interpolation for that buttery Apple feel (Lerp 0.08)
-        smoothFrame += (frameRef.current - smoothFrame) * 0.08
+        smoothFrame += (resolvedFrameRef.current - smoothFrame) * 0.08
         const currentIdx = Math.min(PALACE_TOTAL_FRAMES, Math.max(0, Math.round(smoothFrame)))
         
         if (currentIdx !== drawnRef.current) {
@@ -144,7 +146,7 @@ export function PalaceSequence({ isActive, frameRef }: PalaceSequenceProps) {
 
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [isActive, frameRef])
+  }, [isActive, resolvedFrameRef])
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
@@ -299,12 +301,12 @@ export default function App() {
       const isScrollingDown = e.deltaY > 0
 
       if (sceneRef.current === 0) {
-        if (isScrollingDown && frameRef.current < PALACE_TOTAL_FRAMES) {
-          frameRef.current = Math.min(PALACE_TOTAL_FRAMES, frameRef.current + PALACE_SCRUB_STEP)
+        if (isScrollingDown && resolvedFrameRef.current < PALACE_TOTAL_FRAMES) {
+          resolvedFrameRef.current = Math.min(PALACE_TOTAL_FRAMES, resolvedFrameRef.current + PALACE_SCRUB_STEP)
           return
         }
-        if (!isScrollingDown && frameRef.current > 0) {
-          frameRef.current = Math.max(0, frameRef.current - PALACE_SCRUB_STEP)
+        if (!isScrollingDown && resolvedFrameRef.current > 0) {
+          resolvedFrameRef.current = Math.max(0, resolvedFrameRef.current - PALACE_SCRUB_STEP)
           return
         }
       }
@@ -363,4 +365,5 @@ export default function App() {
       </div>
     </div>
   )
-                   }
+      }
+                                 
