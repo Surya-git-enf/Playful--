@@ -1,20 +1,23 @@
+'use client'
+
+// 1. ADD THESE IMPORTS:
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+
 // ============================================================================
-// 2. PALACE SCENE (Canvas Scrub)
+// PALACE SCENE (Canvas Scrub)
 // ============================================================================
-function PalaceScene({ isActive, frameRef }: { isActive: boolean; frameRef: React.MutableRefObject<number> }) {
+const PALACE_FRAMES = 145
+
+export default function PalaceScene({ isActive, frameRef }: { isActive: boolean; frameRef: React.MutableRefObject<number> }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const drawnRef = useRef(-1)
   const framesRef = useRef<HTMLImageElement[]>([])
   const [opacity, setOpacity] = useState(0)
   const [yPos, setYPos] = useState(20)
 
-  // ── 1. THE FILE PATH FIX ──────────────────────────────────────────────────
-  // If your files are in "public/palace-frame_0001.webp", use: 
-  // `/${String(n).padStart(4, '0')}.webp`
-  //
-  // If your files are in "public/palace/palace-frame_0001.webp", use:
-  const FRAME_PATH = (n: number) => `/palace/palace-frame_${String(n).padStart(4, '0')}.webp`
-  // ──────────────────────────────────────────────────────────────────────────
+  // File Path for the frames:
+  const FRAME_PATH = (n: number) => `/palace-frame_${String(n).padStart(4, '0')}.webp`
 
   const drawAt = (idx: number) => {
     const c = canvasRef.current; 
