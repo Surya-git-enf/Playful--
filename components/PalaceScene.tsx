@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 // ============================================================================
 const PALACE_FRAMES = 145
 
-export default function PalaceScene({ isActive, frameRef }: { isActive: boolean; frameRef: React.MutableRefObject<number> }) {
+export default function PalaceScene({ isActive, frame }: { isActive: boolean; frame: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const drawnRef = useRef(-1)
   const framesRef = useRef<HTMLImageElement[]>([])
@@ -67,10 +67,10 @@ export default function PalaceScene({ isActive, frameRef }: { isActive: boolean;
 
   // Scrub Physics Loop
   useEffect(() => {
-    let smooth = frameRef.current; let raf: number
+    let smooth = frame; let raf: number
     const tick = () => {
       if (isActive) {
-        smooth += (frameRef.current - smooth) * 0.1
+        smooth += (frame - smooth) * 0.1
         const idx = Math.min(PALACE_FRAMES, Math.max(1, Math.round(smooth)))
         if (idx !== drawnRef.current) drawAt(idx)
 
@@ -83,7 +83,7 @@ export default function PalaceScene({ isActive, frameRef }: { isActive: boolean;
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [isActive, frameRef])
+  }, [isActive, frame])
 
   return (
     <motion.div 

@@ -1,17 +1,11 @@
-
-
 'use client'
 
-
-
 import dynamic from 'next/dynamic'
-
 
 
 const HeroCanvas = dynamic(() => import('../components/HeroCanvas'), { ssr: false })
 
 const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: false })
-
 
 
 export default function Home() {
@@ -73,4 +67,3 @@ export default function Home() {
   )
 
 }
-
