@@ -2,7 +2,7 @@
 
 // 1. ADD THESE IMPORTS:
 import React, { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useSpring } from 'framer-motion'
 
 // ============================================================================
 // PALACE SCENE (Canvas Scrub)
@@ -13,22 +13,25 @@ export default function PalaceScene({ isActive, frame }: { isActive: boolean; fr
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const drawnRef = useRef(-1)
   const framesRef = useRef<HTMLImageElement[]>([])
+
+  // Framer Motion smooth values
+  const smoothFrame = useSpring(frame, { damping: 20, stiffness: 150 })
   const [opacity, setOpacity] = useState(0)
   const [yPos, setYPos] = useState(20)
 
   // File Path for the frames:
-  const FRAME_PATH = (n: number) => `/palace-frame_${String(n).padStart(4, '0')}.webp`
+  const FRAME_PATH = (n: number) => `/palace/palace-frame_${String(n).padStart(4, '0')}.webp`
 
   const drawAt = (idx: number) => {
-    const c = canvasRef.current; 
+    const c = canvasRef.current;
     const img = framesRef.current[idx]
     if (!c || !img?.complete || !img.naturalWidth) return
-    const ctx = c.getContext('2d'); 
+    const ctx = c.getContext('2d');
     if (!ctx) return
-    
+
     // Apple-style object-cover math for canvas
     const scale = Math.max(c.width / img.naturalWidth, c.height / img.naturalHeight)
-    const sw = img.naturalWidth * scale; 
+    const sw = img.naturalWidth * scale;
     const sh = img.naturalHeight * scale
     ctx.drawImage(img, (c.width - sw) / 2, (c.height - sh) / 2, sw, sh)
     drawnRef.current = idx
@@ -38,12 +41,12 @@ export default function PalaceScene({ isActive, frame }: { isActive: boolean; fr
   useEffect(() => {
     const images = new Array(PALACE_FRAMES + 1)
     framesRef.current = images
-    
+
     for (let i = 1; i <= PALACE_FRAMES; i++) {
       const img = new Image()
-      img.onload = () => { 
+      img.onload = () => {
         // Draw the very first frame immediately so the screen isn't black
-        if (i === 1 && drawnRef.current === -1) drawAt(1) 
+        if (i === 1 && drawnRef.current === -1) drawAt(1)
       }
       img.src = FRAME_PATH(i)
       images[i] = img
@@ -53,11 +56,11 @@ export default function PalaceScene({ isActive, frame }: { isActive: boolean; fr
   // Canvas Resize Handler
   useEffect(() => {
     const resize = () => {
-      const c = canvasRef.current; 
-      if (c) { 
-        c.width = window.innerWidth; 
-        c.height = window.innerHeight; 
-        drawAt(drawnRef.current > 0 ? drawnRef.current : 1) 
+      const c = canvasRef.current;
+      if (c) {
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+        drawAt(drawnRef.current > 0 ? drawnRef.current : 1)
       }
     }
     resize()
@@ -65,37 +68,44 @@ export default function PalaceScene({ isActive, frame }: { isActive: boolean; fr
     return () => window.removeEventListener('resize', resize)
   }, [])
 
-  // Scrub Physics Loop
+  // Update opacity and position based on smooth frame progress
   useEffect(() => {
-    let smooth = frame; let raf: number
-    const tick = () => {
+    const updateDisplay = () => {
       if (isActive) {
-        smooth += (frame - smooth) * 0.1
-        const idx = Math.min(PALACE_FRAMES, Math.max(1, Math.round(smooth)))
-        if (idx !== drawnRef.current) drawAt(idx)
-
+        const currentFrame = smoothFrame.get()
         // Text fades in during the last 45 frames (Apple scroll reveal)
-        const progress = Math.max(0, Math.min(1, (smooth - 100) / 45))
+        const progress = Math.max(0, Math.min(1, (currentFrame - 100) / 45))
         setOpacity(progress)
         setYPos(20 * (1 - progress))
+
+        // Draw the current frame
+        const frameIdx = Math.min(PALACE_FRAMES, Math.max(1, Math.round(currentFrame)))
+        if (frameIdx !== drawnRef.current) {
+          drawAt(frameIdx)
+        }
       }
-      raf = requestAnimationFrame(tick)
     }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [isActive, frame])
+
+    const id = requestAnimationFrame(function loop() {
+      updateDisplay()
+      return requestAnimationFrame(loop)
+    })
+
+    return () => cancelAnimationFrame(id)
+  }, [isActive, smoothFrame])
 
   return (
-    <motion.div 
-      initial={false} 
-      animate={{ opacity: isActive ? 1 : 0 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isActive ? 1 : 0 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
       className="absolute inset-0 pointer-events-none"
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block object-cover" />
-      
+
       {/* Title */}
-      <div 
+      <div
         className="absolute bottom-[12%] left-0 right-0 flex flex-col items-center"
         style={{ opacity, transform: `translateY(${yPos}px)` }}
       >
