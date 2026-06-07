@@ -1,67 +1,106 @@
-'use client'
+// ============================================================================
+// 2. PALACE SCENE (Canvas Scrub)
+// ============================================================================
+function PalaceScene({ isActive, frameRef }: { isActive: boolean; frameRef: React.MutableRefObject<number> }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const drawnRef = useRef(-1)
+  const framesRef = useRef<HTMLImageElement[]>([])
+  const [opacity, setOpacity] = useState(0)
+  const [yPos, setYPos] = useState(20)
 
-import { useEffect, useRef } from 'react'
+  // ── 1. THE FILE PATH FIX ──────────────────────────────────────────────────
+  // If your files are in "public/palace-frame_0001.webp", use: 
+  // `/${String(n).padStart(4, '0')}.webp`
+  //
+  // If your files are in "public/palace/palace-frame_0001.webp", use:
+  const FRAME_PATH = (n: number) => `/palace/palace-frame_${String(n).padStart(4, '0')}.webp`
+  // ──────────────────────────────────────────────────────────────────────────
 
-export default function PalaceScene({ frame, isActive }: { frame: number; isActive: boolean }) {
+  const drawAt = (idx: number) => {
+    const c = canvasRef.current; 
+    const img = framesRef.current[idx]
+    if (!c || !img?.complete || !img.naturalWidth) return
+    const ctx = c.getContext('2d'); 
+    if (!ctx) return
+    
+    // Apple-style object-cover math for canvas
+    const scale = Math.max(c.width / img.naturalWidth, c.height / img.naturalHeight)
+    const sw = img.naturalWidth * scale; 
+    const sh = img.naturalHeight * scale
+    ctx.drawImage(img, (c.width - sw) / 2, (c.height - sh) / 2, sw, sh)
+    drawnRef.current = idx
+  }
+
+  // Preload Images securely
   useEffect(() => {
-    // Cleanup would go here if needed
-  }, [frame, isActive])
+    const images = new Array(PALACE_FRAMES + 1)
+    framesRef.current = images
+    
+    for (let i = 1; i <= PALACE_FRAMES; i++) {
+      const img = new Image()
+      img.onload = () => { 
+        // Draw the very first frame immediately so the screen isn't black
+        if (i === 1 && drawnRef.current === -1) drawAt(1) 
+      }
+      img.src = FRAME_PATH(i)
+      images[i] = img
+    }
+  }, [])
 
-  if (!isActive) return null
+  // Canvas Resize Handler
+  useEffect(() => {
+    const resize = () => {
+      const c = canvasRef.current; 
+      if (c) { 
+        c.width = window.innerWidth; 
+        c.height = window.innerHeight; 
+        drawAt(drawnRef.current > 0 ? drawnRef.current : 1) 
+      }
+    }
+    resize()
+    window.addEventListener('resize', resize)
+    return () => window.removeEventListener('resize', resize)
+  }, [])
 
-  // Calculate which frame to display (0-144)
-  const currentFrame = Math.min(frame, 144)
-  const frameString = currentFrame.toString().padStart(4, '0')
-  const imageSrc = `/palace/palace-frame_${frameString}.webp`
+  // Scrub Physics Loop
+  useEffect(() => {
+    let smooth = frameRef.current; let raf: number
+    const tick = () => {
+      if (isActive) {
+        smooth += (frameRef.current - smooth) * 0.1
+        const idx = Math.min(PALACE_FRAMES, Math.max(1, Math.round(smooth)))
+        if (idx !== drawnRef.current) drawAt(idx)
 
-  // Text appears during frames 100-144
-  const showText = currentFrame >= 100
-  const textProgress = showText ? (currentFrame - 100) / 44 : 0 // 0 to 1 over frames 100-144
+        // Text fades in during the last 45 frames (Apple scroll reveal)
+        const progress = Math.max(0, Math.min(1, (smooth - 100) / 45))
+        setOpacity(progress)
+        setYPos(20 * (1 - progress))
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [isActive, frameRef])
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      overflow: 'hidden',
-      backgroundColor: '#020202'
-    }}>
-      {/* Palace Frame Scrub */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        opacity: isActive ? 1 : 0,
-        transition: 'opacity 1s cubic-bezier(0.16,1,0.3,1)'
-      }}>
-        <img
-          src={imageSrc}
-          alt="Palace Frame"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block'
-          }}
-        />
-      </div>
-
-      {/* Text Animation (frames 100-144) */}
-      {showText && (
-        <div style={{
-          position: 'absolute',
-          bottom: '20vh',
-          left: '50%',
-          transform: `translateX(-50%) translateY(${20 * (1 - textProgress)}px)`,
-          opacity: textProgress,
-          fontFamily: "'Cinzel', 'Times New Roman', serif",
-          fontSize: 'clamp(3rem,7vw,6rem)',
-          color: '#FFFFFF',
-          textAlign: 'center',
-          pointerEvents: 'none',
-          transition: `all 1s cubic-bezier(0.16,1,0.3,1)`
-        }}>
+    <motion.div 
+      initial={false} 
+      animate={{ opacity: isActive ? 1 : 0 }} 
+      transition={{ duration: 0.8 }}
+      className="absolute inset-0 pointer-events-none"
+    >
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block object-cover" />
+      
+      {/* Title */}
+      <div 
+        className="absolute bottom-[12%] left-0 right-0 flex flex-col items-center"
+        style={{ opacity, transform: `translateY(${yPos}px)` }}
+      >
+        <span className="text-white/50 tracking-[0.3em] text-xs uppercase mb-4 font-['Space_Mono']">✦ Palace ✦</span>
+        <h2 className="text-white text-[clamp(3rem,7vw,6rem)] leading-none italic drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)]" style={{ fontFamily: "'Instrument Serif', serif" }}>
           Kingdoms Never Sleep
-        </div>
-      )}
-    </div>
+        </h2>
+      </div>
+    </motion.div>
   )
 }
