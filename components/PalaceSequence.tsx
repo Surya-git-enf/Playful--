@@ -12,8 +12,7 @@ interface PalaceSequenceProps {
 const PALACE_TOTAL_FRAMES = 144
 const padded = (n: number) => String(n).padStart(4, '0')
 
-// Note: Ensure this points to your actual local folder: `/palace/palace-frame_${padded(n)}.webp`
-const FRAME_PATH = (n: number) => `https://picsum.photos/id/${(n % 50) + 10}/1920/1080`
+const FRAME_PATH = (n: number) => `/palace/palace-frame_${padded(n)}.webp`
 
 // 2. APPLYING THE BLUEPRINT TO THE COMPONENT
 export default function PalaceSequence({ isActive, frameRef, palaceFrame }: PalaceSequenceProps) {

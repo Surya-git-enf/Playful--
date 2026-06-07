@@ -10,6 +10,7 @@ import { motion, useSpring } from 'framer-motion'
 const PALACE_FRAMES = 145
 
 export default function PalaceScene({ isActive, frame }: { isActive: boolean; frame: number }) {
+  console.log('PalaceScene rendering:', { isActive, frame, frameType: typeof frame, timestamp: Date.now() })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const drawnRef = useRef(-1)
   const framesRef = useRef<HTMLImageElement[]>([])
@@ -18,6 +19,8 @@ export default function PalaceScene({ isActive, frame }: { isActive: boolean; fr
   const smoothFrame = useSpring(frame, { damping: 20, stiffness: 150 })
   const [opacity, setOpacity] = useState(0)
   const [yPos, setYPos] = useState(20)
+
+  console.log('PalaceScene initialized with frame:', frame)
 
   // File Path for the frames:
   const FRAME_PATH = (n: number) => `/palace/palace-frame_${String(n).padStart(4, '0')}.webp`
@@ -45,8 +48,15 @@ export default function PalaceScene({ isActive, frame }: { isActive: boolean; fr
     for (let i = 1; i <= PALACE_FRAMES; i++) {
       const img = new Image()
       img.onload = () => {
+        console.log(`Image ${i} loaded:`, img.src, img.width, img.height)
         // Draw the very first frame immediately so the screen isn't black
-        if (i === 1 && drawnRef.current === -1) drawAt(1)
+        if (i === 1 && drawnRef.current === -1) {
+          console.log('Drawing first frame')
+          drawAt(1)
+        }
+      }
+      img.onerror = () => {
+        console.error(`Failed to load image ${i}:`, FRAME_PATH(i))
       }
       img.src = FRAME_PATH(i)
       images[i] = img
