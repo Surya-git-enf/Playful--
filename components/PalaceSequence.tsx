@@ -1,203 +1,210 @@
-'use client';
+'use client'
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useImageSequence } from "../hooks/useImageSequence";
+import { useEffect, useRef, useState } from 'react'
 
-gsap.registerPlugin(ScrollTrigger);
+const TOTAL_FRAMES = 145
+const pad = (n: number) => String(n).padStart(4, '0')
+const FRAME_URL = (n: number) => `/palace/palace-frame_${pad(n)}.webp`
+
+// How much wheel delta = 1 frame advance
+const DELTA_PER_FRAME = 18
 
 function drawCover(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
-  canvasW: number,
-  canvasH: number
+  w: number,
+  h: number
 ) {
-  const imgRatio = img.naturalWidth / img.naturalHeight;
-  const canvasRatio = canvasW / canvasH;
-  let drawW: number, drawH: number, offsetX: number, offsetY: number;
-
-  if (imgRatio > canvasRatio) {
-    drawH = canvasH;
-    drawW = drawH * imgRatio;
-    offsetX = (canvasW - drawW) / 2;
-    offsetY = 0;
+  const ir = img.naturalWidth / img.naturalHeight
+  const cr = w / h
+  let dw: number, dh: number, ox: number, oy: number
+  if (ir > cr) {
+    dh = h; dw = dh * ir; ox = (w - dw) / 2; oy = 0
   } else {
-    drawW = canvasW;
-    drawH = drawW / imgRatio;
-    offsetX = 0;
-    offsetY = (canvasH - drawH) / 2;
+    dw = w; dh = dw / ir; ox = 0; oy = (h - dh) / 2
   }
-
-  ctx.clearRect(0, 0, canvasW, canvasH);
-  ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+  ctx.clearRect(0, 0, w, h)
+  ctx.drawImage(img, ox, oy, dw, dh)
 }
 
-export default function PalaceSequence({ isActive }: { isActive: boolean }) {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number | null>(null);
-  const frameIndexRef = useRef(0);
-  const needsDrawRef = useRef(false);
+interface Props {
+  isActive: boolean
+  // Called when user scrolls past last frame (wants next scene)
+  onExitForward?: () => void
+  // Called when user scrolls back before frame 0 (wants prev scene)
+  onExitBackward?: () => void
+}
 
-  const { images, loaded, loadProgress, totalFrames } = useImageSequence();
+export default function PalaceSequence({ isActive, onExitForward, onExitBackward }: Props) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imagesRef = useRef<(HTMLImageElement | null)[]>([])
+  const frameRef = useRef(0)
+  const accDeltaRef = useRef(0)
+  const rafRef = useRef<number>(0)
+  const drawnRef = useRef(-1)
+  const needsDrawRef = useRef(false)
+  const [loadPct, setLoadPct] = useState(0)
+  const [textProgress, setTextProgress] = useState(0)
 
-  const setupCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  // ── Preload all frames ──────────────────────────────────────────
+  useEffect(() => {
+    let loaded = 0
+    const imgs: (HTMLImageElement | null)[] = Array(TOTAL_FRAMES).fill(null)
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    for (let i = 0; i < TOTAL_FRAMES; i++) {
+      const img = new Image()
+      img.src = FRAME_URL(i)
+      img.onload = () => {
+        loaded++
+        setLoadPct(Math.round((loaded / TOTAL_FRAMES) * 100))
+        if (drawnRef.current === -1 && i === 0) {
+          // Draw frame 0 as soon as it arrives
+          needsDrawRef.current = true
+        }
+      }
+      imgs[i] = img
+    }
+    imagesRef.current = imgs
+  }, [])
 
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
+  // ── Canvas resize ───────────────────────────────────────────────
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const w = window.innerWidth, h = window.innerHeight
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      canvas.style.width = `${w}px`
+      canvas.style.height = `${h}px`
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.scale(dpr, dpr)
+        needsDrawRef.current = true
+      }
+    }
+    resize()
+    window.addEventListener('resize', resize)
+    return () => window.removeEventListener('resize', resize)
+  }, [])
 
-    const ctx = canvas.getContext("2d");
-    if (ctx) ctx.scale(dpr, dpr);
-  };
-
-  const drawFrame = (index: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const imgs = images.current;
-    if (!imgs || imgs.length === 0) return;
-
-    const img = imgs[Math.max(0, Math.min(index, imgs.length - 1))];
-    if (!img || !img.complete || img.naturalWidth === 0) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    drawCover(ctx, img, canvas.width / dpr, canvas.height / dpr);
-  };
-
-  const startRAF = () => {
+  // ── RAF draw loop ───────────────────────────────────────────────
+  useEffect(() => {
     const loop = () => {
       if (needsDrawRef.current) {
-        drawFrame(frameIndexRef.current);
-        needsDrawRef.current = false;
+        const canvas = canvasRef.current
+        const ctx = canvas?.getContext('2d')
+        const img = imagesRef.current[frameRef.current]
+        if (canvas && ctx && img?.complete && img.naturalWidth > 0) {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2)
+          drawCover(ctx, img, canvas.width / dpr, canvas.height / dpr)
+          drawnRef.current = frameRef.current
+        }
+        needsDrawRef.current = false
+
+        // Update text progress
+        const TEXT_START = 100
+        const TEXT_END = TOTAL_FRAMES - 1
+        const f = frameRef.current
+        const tp = f < TEXT_START ? 0 : Math.min(1, (f - TEXT_START) / (TEXT_END - TEXT_START))
+        setTextProgress(tp)
       }
-      rafRef.current = requestAnimationFrame(loop);
-    };
+      rafRef.current = requestAnimationFrame(loop)
+    }
+    rafRef.current = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [])
 
-    rafRef.current = requestAnimationFrame(loop);
-  };
-
+  // ── Wheel handler — only active when this scene is shown ────────
   useEffect(() => {
-    if (!loaded) return;
+    if (!isActive) {
+      accDeltaRef.current = 0
+      return
+    }
 
-    setupCanvas();
-    frameIndexRef.current = 0;
-    drawFrame(0);
-    startRAF();
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      accDeltaRef.current += e.deltaY
 
-    const section = sectionRef.current!;
-
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top top",
-      end: "+=400%",
-      pin: true,
-      pinSpacing: true,
-      scrub: true,
-      onUpdate: (self) => {
-        const progress = self.progress;
-
-        const frameIdx = Math.floor(progress * (totalFrames - 1));
-        if (frameIdx !== frameIndexRef.current) {
-          frameIndexRef.current = frameIdx;
-          needsDrawRef.current = true;
-        }
-
-        // Calculate text animation progress within the 100-120 frame range
-        const frameStart = 100;
-        const frameEnd = 120;
-        const totalFramesInRange = frameEnd - frameStart; // 20 frames
-
-        let textProgress = 0;
-        if (frameIdx >= frameStart && frameIdx <= frameEnd) {
-          // Map frame 100-120 to text progress 0-1
-          textProgress = (frameIdx - frameStart) / totalFramesInRange;
-        } else if (frameIdx < frameStart) {
-          textProgress = 0; // Before animation range
+      // Advance/retreat frames
+      while (accDeltaRef.current >= DELTA_PER_FRAME) {
+        accDeltaRef.current -= DELTA_PER_FRAME
+        if (frameRef.current < TOTAL_FRAMES - 1) {
+          frameRef.current++
+          needsDrawRef.current = true
         } else {
-          textProgress = 1; // After animation range
+          // Past last frame → hand off to scene manager
+          onExitForward?.()
+          accDeltaRef.current = 0
+          return
         }
+      }
 
-        // Apply animation to the headline
-        const headline = document.getElementById("palace-headline");
-        if (headline) {
-          // Fade in and slide up
-          headline.style.opacity = String(textProgress);
-          headline.style.transform = `translateY(${(1 - textProgress) * 20}px)`;
+      while (accDeltaRef.current <= -DELTA_PER_FRAME) {
+        accDeltaRef.current += DELTA_PER_FRAME
+        if (frameRef.current > 0) {
+          frameRef.current--
+          needsDrawRef.current = true
+        } else {
+          onExitBackward?.()
+          accDeltaRef.current = 0
+          return
         }
-      },
-    });
+      }
+    }
 
-    const handleResize = () => {
-      setupCanvas();
-      drawFrame(frameIndexRef.current);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded]);
+    window.addEventListener('wheel', onWheel, { passive: false })
+    return () => window.removeEventListener('wheel', onWheel)
+  }, [isActive, onExitForward, onExitBackward])
 
   return (
-    <div
-      ref={sectionRef}
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100vh",
-        overflow: "hidden",
-        background: "#020202",
-      }}
-    >
+    <div style={{ position: 'absolute', inset: 0, background: '#020202' }}>
       <canvas
         ref={canvasRef}
-        style={{ position: "absolute", inset: 0, display: "block" }}
+        style={{ position: 'absolute', inset: 0, display: 'block' }}
       />
 
+      {/* Loading bar */}
+      {loadPct < 100 && (
+        <div style={{
+          position: 'absolute', bottom: '32px', left: '50%',
+          transform: 'translateX(-50%)', width: '180px',
+          height: '2px', background: 'rgba(255,255,255,0.08)',
+          borderRadius: '2px', zIndex: 10,
+        }}>
+          <div style={{
+            height: '100%', width: `${loadPct}%`,
+            background: '#00eaff', borderRadius: '2px',
+            boxShadow: '0 0 8px rgba(0,234,255,0.7)',
+            transition: 'width 0.2s ease',
+          }} />
+        </div>
+      )}
+
+      {/* Headline — fades in frames 100–144 */}
       <div
         style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100%",
-          pointerEvents: "none",
+          position: 'absolute', bottom: '12%', left: '50%',
+          transform: `translateX(-50%) translateY(${(1 - textProgress) * 24}px)`,
+          opacity: textProgress,
+          textAlign: 'center', pointerEvents: 'none', zIndex: 10,
+          transition: 'none',
+          willChange: 'opacity, transform',
         }}
       >
-        <h2
-          id="palace-headline"
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontStyle: "italic",
-            fontWeight: 400,
-            fontSize: "clamp(1.6rem, 4vw, 3rem)",
-            letterSpacing: "0.02em",
-            color: "#FFFFFF",
-            marginBottom: "1.5rem",
-            lineHeight: 1.2,
-          }}
-        >
-          Step Inside the Kingdom
+        <h2 style={{
+          fontFamily: "'Instrument Serif', serif",
+          fontStyle: 'italic', fontWeight: 400,
+          fontSize: 'clamp(2.4rem, 6vw, 5.5rem)',
+          color: '#fff',
+          textShadow: '0 4px 40px rgba(0,0,0,0.8)',
+          whiteSpace: 'nowrap',
+          lineHeight: 1,
+        }}>
+          Kingdoms Never Sleep
         </h2>
       </div>
     </div>
-  );
+  )
 }
