@@ -6,7 +6,7 @@ import RacingSequence from './RacingSequence'
 import OpenWorldSequence from './OpenWorldSequence'
 import SpaceSequence from './SpaceSequence'
 
-const TOTAL_SCENES = 4   // 0=Palace 1=Retro 2=Racing 3=OpenWorld 4=Space
+const TOTAL_SCENES = 4
 const TOTAL_FRAMES = 144
 const SNAP_LOCK_MS = 1000
 const TEXT_FADE_START = 100
@@ -40,7 +40,6 @@ export default function HeroCanvas({ onRelease }: Props) {
   const wheelActive = useRef(false)
   const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const releasedRef = useRef(false)
-
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imagesRef = useRef<(HTMLImageElement | null)[]>([])
   const rafRef = useRef<number>(0)
@@ -56,7 +55,6 @@ export default function HeroCanvas({ onRelease }: Props) {
     onRelease()
   }, [onRelease])
 
-  // ── Canvas setup ─────────────────────────────────────────────
   const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -69,7 +67,6 @@ export default function HeroCanvas({ onRelease }: Props) {
     if (ctx) ctx.scale(dpr, dpr)
   }, [])
 
-  // ── Draw a specific frame immediately ────────────────────────
   const drawFrame = useCallback((idx: number) => {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
@@ -80,7 +77,7 @@ export default function HeroCanvas({ onRelease }: Props) {
     frameDisplayed.current = idx
   }, [])
 
-  // ── Preload — draw frame 0 the instant it lands ──────────────
+  // Preload — frame 0 drawn immediately on load
   useEffect(() => {
     setupCanvas()
     window.addEventListener('resize', setupCanvas)
@@ -88,13 +85,11 @@ export default function HeroCanvas({ onRelease }: Props) {
     const imgs: (HTMLImageElement | null)[] = Array(TOTAL_FRAMES + 1).fill(null)
     imagesRef.current = imgs
 
-    // Frame 0 first — show it immediately
     const frame0 = new Image()
     frame0.src = `/palace/palace-frame_${pad(0)}.webp`
     frame0.onload = () => drawFrame(0)
     imgs[0] = frame0
 
-    // Rest in order
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
       const img = new Image()
       img.src = `/palace/palace-frame_${pad(i)}.webp`
@@ -104,7 +99,6 @@ export default function HeroCanvas({ onRelease }: Props) {
     return () => window.removeEventListener('resize', setupCanvas)
   }, [setupCanvas, drawFrame])
 
-  // ── Snap helper ──────────────────────────────────────────────
   const snapTo = useCallback((next: number) => {
     if (snapLocked.current || next < 0) return
     velocity.current = 0
@@ -119,7 +113,7 @@ export default function HeroCanvas({ onRelease }: Props) {
     setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
   }, [doRelease, setScene])
 
-  // ── RAF: momentum + draw ─────────────────────────────────────
+  // RAF momentum + draw loop
   useEffect(() => {
     const loop = () => {
       if (sceneRef.current === 0) {
@@ -129,18 +123,14 @@ export default function HeroCanvas({ onRelease }: Props) {
         } else if (!wheelActive.current) {
           velocity.current = 0
         }
-
         frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current))
         const idx = Math.round(frameFloat.current)
-
         if (idx !== frameDisplayed.current) {
           drawFrame(idx)
           const tp = idx < TEXT_FADE_START
             ? 0
             : Math.min(1, (idx - TEXT_FADE_START) / (TOTAL_FRAMES - TEXT_FADE_START))
           setTextProgress(tp)
-
-          // Momentum carried us to the end → advance scene
           if (idx >= TOTAL_FRAMES && !wheelActive.current && Math.abs(velocity.current) < 0.1) {
             snapTo(1)
           }
@@ -152,9 +142,10 @@ export default function HeroCanvas({ onRelease }: Props) {
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-  // ── Wheel + touch ────────────────────────────────────────────
+  // Scroll lock + wheel + touch
   useEffect(() => {
     document.body.style.overflow = 'hidden'
+    window.scrollTo(0, 0)
 
     const handleWheel = (e: WheelEvent) => {
       if (releasedRef.current) return
@@ -172,7 +163,6 @@ export default function HeroCanvas({ onRelease }: Props) {
         }, 150)
         return
       }
-
       if (Math.abs(e.deltaY) > 15) {
         snapTo(sceneRef.current + (e.deltaY > 0 ? 1 : -1))
       }
@@ -190,7 +180,6 @@ export default function HeroCanvas({ onRelease }: Props) {
       const dy = tyLast - e.touches[0].clientY
       tvY = dy / Math.max(1, now - ttLast)
       tyLast = e.touches[0].clientY; ttLast = now
-
       if (sceneRef.current === 0) {
         frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current + dy * 0.55))
       }
@@ -212,7 +201,9 @@ export default function HeroCanvas({ onRelease }: Props) {
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
     window.addEventListener('touchmove', handleTouchMove, { passive: false })
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
+
     return () => {
+      document.body.style.overflow = 'auto'
       window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('touchmove', handleTouchMove)
@@ -231,7 +222,7 @@ export default function HeroCanvas({ onRelease }: Props) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020202' }}>
 
-      {/* Palace */}
+      {/* Scene 0 — Palace */}
       <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block' }} />
         <div style={{
@@ -256,7 +247,7 @@ export default function HeroCanvas({ onRelease }: Props) {
       <div style={gs(3)}><OpenWorldSequence isActive={scene === 3} /></div>
       <div style={gs(4)}><SpaceSequence isActive={scene === 4} /></div>
 
-      {/* Dots */}
+      {/* Scene dots */}
       <div style={{
         position: 'absolute', right: '28px', top: '50%',
         transform: 'translateY(-50%)',
