@@ -25,13 +25,14 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: numb
 }
 
 interface Props {
-  onRelease: () => void
+  onRelease?: () => void
   onHeaderVisibilityChange: (visible: boolean) => void
 }
 
 export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Props) {
   const [scene, setSceneState] = useState(0)
   const [textProgress, setTextProgress] = useState(0)
+  const [isReleased, setIsReleased] = useState(false)
 
   const sceneRef = useRef(0)
   const frameFloat = useRef(0)
@@ -53,7 +54,8 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
   const doRelease = useCallback(() => {
     if (releasedRef.current) return
     releasedRef.current = true
-    onRelease()
+    setIsReleased(true)
+    onRelease?.()
   }, [onRelease])
 
   const setupCanvas = useCallback(() => {
@@ -143,10 +145,8 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-  // Header visibility control
+  // Header visibility — hide while in hero, show once released
   useEffect(() => {
-    // When released (scrolled past space/snapcards), show header
-    // When not released (in hero canvas), hide header
     onHeaderVisibilityChange(!isReleased)
   }, [isReleased, onHeaderVisibilityChange])
 
