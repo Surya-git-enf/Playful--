@@ -852,6 +852,12 @@ body.snap-active {
   100% { color: #00eaff; text-shadow: 0 0 15px rgba(0,234,255,0.4); }
 }
 
+/* Shimmer effect for loading text */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 @keyframes arrowGlow {
   0%, 100% { opacity: 0.15; }
   50%       { opacity: 1; }

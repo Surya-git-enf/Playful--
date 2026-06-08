@@ -12,6 +12,7 @@ interface PalaceSequenceProps {
 const PALACE_TOTAL_FRAMES = 144
 const padded = (n: number) => String(n).padStart(4, '0')
 
+// Note: Ensure this points to your actual local folder: `/palace/palace-frame_${padded(n)}.webp`
 const FRAME_PATH = (n: number) => `/palace/palace-frame_${padded(n)}.webp`
 
 // 2. APPLYING THE BLUEPRINT TO THE COMPONENT
@@ -126,20 +127,58 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
         background: 'linear-gradient(to top, rgba(2,2,2,0.9) 0%, rgba(2,2,2,0.4) 25%, transparent 60%)'
       }} />
 
-      <div ref={titleRef} style={{
-        position: 'absolute', bottom: '12%', left: '0', right: '0',
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        opacity: 0, pointerEvents: 'none', willChange: 'opacity, transform, filter'
-      }}>
-        <span className="font-ui" style={{ fontSize: '0.75rem', letterSpacing: '0.3em', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '16px' }}>
-          ✦ Palace ✦
-        </span>
-        <h2 className="font-display" style={{
-          fontSize: 'clamp(3rem, 7vw, 6rem)', fontWeight: 500, margin: 0,
-          color: '#FFFFFF', lineHeight: 1.1, textShadow: '0 10px 40px rgba(0,0,0,0.5)'
-        }}>
-          Kingdoms Never Sleep
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
+      >
+        <div
+          className="loading-text"
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.65rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.25em',
+            color: 'rgba(255,255,255,0.3)',
+            marginBottom: '1rem',
+          }}
+        >
+          Loading
+        </div>
+
+        <h2
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontStyle: 'italic',
+            fontWeight: 400,
+            fontSize: 'clamp(1.6rem, 4vw, 3rem)',
+            letterSpacing: '0.02em',
+            color: '#FFFFFF',
+            marginBottom: '1.5rem',
+            lineHeight: 1.2,
+          }}
+        >
+          Step Inside the Kingdom
         </h2>
+
+        <div
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.6rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.3em',
+            color: 'rgba(255,255,255,0.5)',
+          }}
+        >
+          scroll to explore
+        </div>
       </div>
     </div>
   )
