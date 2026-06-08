@@ -1,62 +1,57 @@
+#!/bin/bash
 
+echo "🚀 Booting Modular AI God-Mode..."
 
-echo "🚀 Booting up Modular AI God-Mode..."
+# ==========================================
+# Install Core Dependencies
+# ==========================================
+echo "📦 Installing core tools..."
 
-# ============================================
-# 1. Install Core Tools
-# ============================================
+rm -rf "$(npm root -g)/@anthropic-ai" 2>/dev/null || true
 
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
 export PATH="$HOME/.local/bin:$PATH"
 
 npm install -g @anthropic-ai/claude-code
 
-uv python install 3.14
-
-# ============================================
-# 2. Install CLEAN Engine
-# ============================================
-
+# ==========================================
+# Install Python & AI Engine
+# ==========================================
 echo "⚙️ Installing AI engine..."
 
-uv tool install --force \
+uv python install 3.12
+uv tool install --force --python 3.12 \
   git+https://github.com/Alishahryar1/free-claude-code.git
 
-# ============================================
-# 3. Inject Custom Skills / Personas
-# ============================================
+# ==========================================
+# Sync Claude Skills
+# ==========================================
+echo "🧠 Syncing Claude Skills..."
 
-if [ ! -d "$HOME/.claude/skills" ]; then
+rm -rf ~/.claude/skills
+mkdir -p ~/.claude/skills
 
-  echo "🧠 Downloading custom AI personas..."
+TEMP_DIR=$(mktemp -d)
 
-  TEMP_DIR=$(mktemp -d)
+if git clone --quiet --depth 1 \
+  https://github.com/Surya-git-enf/Claude-skills.git "$TEMP_DIR"; then
 
-  git clone --depth 1 \
-    https://github.com/Surya-git-enf/Claude-skills.git \
-    "$TEMP_DIR"
+    find "$TEMP_DIR" -type f -iname "*.md" \
+      -exec cp {} ~/.claude/skills/ \;
 
-  mkdir -p "$HOME/.claude/skills"
-
-  cp -r "$TEMP_DIR"/* \
-    "$HOME/.claude/skills/"
-
-  rm -rf "$TEMP_DIR"
-
+    echo "✅ Skills synced successfully"
 else
-  echo "⚡ Custom personas already loaded! Skipping..."
+    echo "❌ Failed to sync skills"
 fi
 
-# ============================================
-# 4. Configure Claude Routing
-# ============================================
+rm -rf "$TEMP_DIR"
 
+# ==========================================
+# Configure Environment
+# ==========================================
 export ANTHROPIC_AUTH_TOKEN="freecc"
-
 export ANTHROPIC_BASE_URL="http://127.0.0.1:8082"
 
-# Persist variables
 grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc || \
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 
@@ -66,74 +61,49 @@ echo 'export ANTHROPIC_AUTH_TOKEN="freecc"' >> ~/.bashrc
 grep -qxF 'export ANTHROPIC_BASE_URL="http://127.0.0.1:8082"' ~/.bashrc || \
 echo 'export ANTHROPIC_BASE_URL="http://127.0.0.1:8082"' >> ~/.bashrc
 
-source ~/.bashrc
-
-# ============================================
-# 5. Load Local .env Variables
-# ============================================
-
+# ==========================================
+# Load Local Environment Variables
+# ==========================================
 if [ -f .env ]; then
-
-  echo "📂 Loading API keys from local .env..."
-
-  set -a
-  source .env
-  set +a
-
-else
-
-  echo "⚠️ WARNING: No .env file found!"
-
+    echo "📂 Loading .env variables..."
+    set -a
+    source .env
+    set +a
 fi
-
-# ============================================
-# 6. Fix Missing .env.example Issue
-# ============================================
 
 if [ ! -f .env.example ]; then
-  cp .env .env.example 2>/dev/null || touch .env.example
+    cp .env .env.example 2>/dev/null || touch .env.example
 fi
 
-# ============================================
-# 7. Kill Old Proxy
-# ============================================
+# ==========================================
+# Restart Proxy
+# ==========================================
+echo "⚡ Starting proxy..."
 
+pkill -f python || true
 pkill -f fcc-server || true
 
-# ============================================
-# 8. Start Proxy Server
-# ============================================
-
-echo "⚡ Booting Engine..."
-
-$HOME/.local/bin/fcc-server \
-  > proxy.log 2>&1 &
-
+"$HOME/.local/bin/fcc-server" > proxy.log 2>&1 &
 sleep 5
 
-# ============================================
-# 9. Verify Proxy Status
-# ============================================
-
-if lsof -i :8082 > /dev/null; then
-
-  echo "✅ Proxy server running on port 8082"
-
+# ==========================================
+# Health Check
+# ==========================================
+if curl -s http://127.0.0.1:8082 >/dev/null; then
+    echo "✅ Proxy server running on port 8082"
 else
-
-  echo "❌ Proxy failed to start"
-  echo "📄 Proxy Logs:"
-  cat proxy.log
-
+    echo "❌ Proxy startup failed"
+    cat proxy.log
 fi
 
-# ============================================
-# 10. Launch Claude Interface
-# ============================================
+# ==========================================
+# Launch Claude
+# ==========================================
+echo "🚀 Launching Claude..."
 
-echo "🚀 Launching AI Interface..."
+chmod +x "$(which claude 2>/dev/null)" 2>/dev/null || true
 
 npx -y @anthropic-ai/claude-code \
   --continue \
   --dangerously-skip-permissions
-  claude
+
