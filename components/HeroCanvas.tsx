@@ -82,7 +82,7 @@ export default function HeroCanvas() {
 
   // ── Main RAF loop — momentum + draw ─────────────────────────
   useEffect(() => {
-    const FRICTION = 0.82        // higher = more coast (0–1)
+    const FRICTION = 0.60        // higher = more coast (0–1)
     const MIN_VEL = 0.04         // stop threshold
     const FRAMES_PER_DELTA = 0.18 // sensitivity: delta px → frames
 
