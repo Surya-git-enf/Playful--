@@ -171,7 +171,7 @@ export default function HeroCanvas() {
     >
       {/* 0. Palace Canvas Layer */}
       <div style={getSceneStyle(0)}>
-        <PalaceSequence isActive={scene === 0} frameRef={frameRef} />
+        <PalaceSequence isActive={scene === 0} />
       </div>
 
       {/* 1. Retro Layer */}

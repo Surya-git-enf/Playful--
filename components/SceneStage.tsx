@@ -11,12 +11,11 @@ import { TOTAL_SNAP }    from '../hooks/useSnapScroll'
 
 interface Props {
   section: number
-  palaceFrame: React.MutableRefObject<number>
 }
 
 const VH = () => (typeof window !== 'undefined' ? window.innerHeight : 800)
 
-export default function SceneStage({ section, palaceFrame }: Props) {
+export default function SceneStage({ section }: Props) {
   const stageRef = useRef<HTMLDivElement>(null)
   const tapeRef  = useRef<HTMLDivElement>(null)
   const prevSec  = useRef(0)
@@ -76,7 +75,7 @@ export default function SceneStage({ section, palaceFrame }: Props) {
       >
         {/* 0 — Palace */}
         <div style={{ position: 'absolute', top: '0vh', left: 0, right: 0, height: '100vh' }}>
-          <PalaceSequence isActive={section === 0} palaceFrame={palaceFrame} />
+          <PalaceSequence isActive={section === 0} />
         </div>
 
         {/* 1 — Retro */}

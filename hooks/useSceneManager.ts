@@ -10,8 +10,6 @@ export const useSceneManager = () => {
   const tickingRef = useRef(false);
   const lastSceneTimeRef = useRef(Date.now());
 
-  // Palace scene specific - frame scrubbing
-  const [palaceFrame, setPalaceFrame] = useState(0);
 
   useEffect(() => {
     setIsMounted(true);
@@ -85,22 +83,6 @@ export const useSceneManager = () => {
     };
   }, [sceneIndex, isMounted]);
 
-  // Palace frame calculation based on scroll progress within scene 0
-  useEffect(() => {
-    if (sceneIndex === 0 && isMounted) {
-      // For Palace scene, we'll simulate frame scrubbing based on a virtual scroll
-      // This would typically be tied to actual scroll position within the scene
-      // For simplicity, we'll animate frames automatically when in Palace scene
-      const frameInterval = setInterval(() => {
-        setPalaceFrame(prev => (prev + 1) % 145); // 0-144 frames
-      }, 16.67); // ~60fps
-
-      return () => clearInterval(frameInterval);
-    } else {
-      // Reset frame when leaving palace scene
-      setPalaceFrame(0);
-    }
-  }, [sceneIndex, isMounted]);
 
   // Determine if body scroll should be enabled (only for Space scene and beyond)
   const shouldEnableBodyScroll = sceneIndex >= 4; // Space scene index is 4
@@ -126,7 +108,6 @@ export const useSceneManager = () => {
     isMounted,
     sceneRefs,
     setSceneRefs,
-    palaceFrame,
     shouldEnableBodyScroll
   };
 };

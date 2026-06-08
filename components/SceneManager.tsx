@@ -9,10 +9,10 @@ import SpaceSequence from './SpaceSequence'
 import SnapCards from './SnapCards'
 
 export default function SceneManager() {
-  const { sceneIndex, isMounted, palaceFrame, shouldEnableBodyScroll } = useSceneManager()
+  const { sceneIndex, isMounted, shouldEnableBodyScroll } = useSceneManager()
 
   const scenes = [
-    <PalaceScene key="palace" frame={palaceFrame} isActive={sceneIndex === 0} />,
+    <PalaceScene key="palace" isActive={sceneIndex === 0} />,
     <RetroSequence key="retro" isActive={sceneIndex === 1} />,
     <RacingSequence key="racing" isActive={sceneIndex === 2} />,
     <OpenWorldSequence key="openworld" isActive={sceneIndex === 3} />,
