@@ -7,7 +7,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 
 npm install -g @anthropic-ai/claude-code
-uv python install 3.14
+uv python install 3.12
 
 # Install AI proxy
 uv tool install --force git+https://github.com/Alishahryar1/free-claude-code.git
