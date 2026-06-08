@@ -1,53 +1,76 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 const HeroCanvas = dynamic(() => import('../components/HeroCanvas'), { ssr: false })
+const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: false })
+const GlassFooter = dynamic(() => import('../components/GlassFooter'), { ssr: false })
 
 export default function Home() {
   const [released, setReleased] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  // Lock scroll on mount
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+  }, [])
 
   const handleRelease = useCallback(() => {
     setReleased(true)
     document.body.style.overflow = 'auto'
-    // Small delay so the state update renders before scroll
+    // Scroll to bottom content smoothly
     setTimeout(() => {
-      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, 80)
   }, [])
 
-  // Lock scroll on mount until hero releases
+  // Re-lock and remount hero when user scrolls back to very top
   useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = 'auto' }
-  }, [])
+    if (!released) return
+
+    const onScroll = () => {
+      if (window.scrollY === 0) {
+        document.body.style.overflow = 'hidden'
+        setReleased(false)
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [released])
 
   return (
     <>
-      {/* Fixed hero — sits on top until released */}
+      {/* ── Fixed hero — unmounts after release, remounts at top ── */}
       {!released && <HeroCanvas onRelease={handleRelease} />}
 
-      {/* Spacer — pushes bottom content below the fold */}
-      <div style={{ height: '100vh' }} aria-hidden="true" />
+      {/* Spacer that fills exactly one viewport so bottom content starts below */}
+      <div style={{ height: '100vh', pointerEvents: 'none' }} aria-hidden="true" />
 
-      {/* ── Bottom content — scrolls naturally after release ── */}
-      <main style={{ background: '#020202', color: '#fff', position: 'relative', zIndex: 10 }}>
-
-        {/* Lego of Logic section */}
+      {/* ── Bottom content ── */}
+      <main
+        ref={bottomRef}
+        style={{
+          background: '#020202',
+          color: '#fff',
+          position: 'relative',
+          zIndex: 10,
+        }}
+      >
+        {/* Lego of Logic */}
         <section style={{
           minHeight: '100vh',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          padding: '80px 20px',
+          padding: 'clamp(60px,10vh,120px) clamp(20px,5vw,80px)',
         }}>
           <h2 style={{
             fontFamily: 'var(--font-serif), "Instrument Serif", serif',
             fontStyle: 'italic', fontWeight: 400,
-            fontSize: 'clamp(3.5rem, 8vw, 7.5rem)',
+            fontSize: 'clamp(3.5rem,8vw,7.5rem)',
             color: '#fff', textAlign: 'center',
-            textShadow: '0 10px 40px rgba(0,0,0,0.8)',
-            lineHeight: 1, margin: '0 0 40px',
+            lineHeight: 1, margin: '0 0 clamp(24px,4vw,48px)',
           }}>
             Lego of Logic
           </h2>
@@ -57,27 +80,26 @@ export default function Home() {
             style={{
               width: '100%', maxWidth: '900px',
               borderRadius: '20px',
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              boxShadow: '0 40px 80px rgba(0,0,0,0.7)',
             }}
           />
         </section>
 
-        {/* Big Bang section */}
+        {/* Big Bang */}
         <section style={{
           minHeight: '100vh',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          padding: '80px 20px',
+          padding: 'clamp(60px,10vh,120px) clamp(20px,5vw,80px)',
           borderTop: '1px solid rgba(255,255,255,0.05)',
         }}>
           <h2 style={{
             fontFamily: 'var(--font-serif), "Instrument Serif", serif',
             fontStyle: 'italic', fontWeight: 400,
-            fontSize: 'clamp(3.5rem, 8vw, 7.5rem)',
+            fontSize: 'clamp(3.5rem,8vw,7.5rem)',
             color: '#fff', textAlign: 'center',
-            textShadow: '0 10px 40px rgba(0,0,0,0.8)',
-            lineHeight: 1, margin: '0 0 40px',
+            lineHeight: 1, margin: '0 0 clamp(24px,4vw,48px)',
           }}>
             Big Bang
           </h2>
@@ -87,36 +109,23 @@ export default function Home() {
             style={{
               width: '100%', maxWidth: '900px',
               borderRadius: '20px',
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: '0 40px 80px rgba(0,0,0,0.6)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              boxShadow: '0 40px 80px rgba(0,0,0,0.7)',
             }}
           />
         </section>
 
-        {/* Footer */}
-        <footer style={{
-          borderTop: '1px solid rgba(255,255,255,0.07)',
-          padding: '60px 5% 40px',
-          display: 'flex', flexWrap: 'wrap' as const,
-          justifyContent: 'space-between', alignItems: 'flex-start',
-          gap: '40px',
+        {/* Snap Cards */}
+        <section style={{
+          minHeight: '100vh',
+          borderTop: '1px solid rgba(255,255,255,0.05)',
         }}>
-          <div>
-            <div style={{
-              fontFamily: 'var(--font-orbitron), Orbitron, sans-serif',
-              fontWeight: 900, fontSize: '1.1rem',
-              letterSpacing: '.2em', color: '#fff', marginBottom: '10px',
-            }}>PLAYFUL</div>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '.8rem', maxWidth: '280px', lineHeight: 1.6 }}>
-              Turn your words into worlds. No code required.
-            </p>
-          </div>
-          <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '.75rem', alignSelf: 'flex-end' }}>
-            © 2026 Playful. All rights reserved.
-          </div>
-        </footer>
+          <SnapCards isActive={true} />
+        </section>
+
+        {/* Footer */}
+        <GlassFooter />
       </main>
     </>
   )
 }
-
