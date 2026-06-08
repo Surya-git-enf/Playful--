@@ -1,102 +1,135 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+const TOTAL_SCENES = 6;
+const TOTAL_PALACE_FRAMES = 144;
+const SCENE_COOLDOWN_MS = 1000;
+const PALACE_DELTA_PER_FRAME = 12;
 
 export const useSceneManager = () => {
   const [sceneIndex, setSceneIndex] = useState(0);
+  const [palaceFrame, setPalaceFrame] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
-  const [sceneRefs, setSceneRefs] = useState<Array<HTMLDivElement | null>>([
-    null, null, null, null, null, null
-  ]);
-  const wheelDeltaRef = useRef(0);
-  const tickingRef = useRef(false);
-  const lastSceneTimeRef = useRef(Date.now());
 
+  const sceneRef = useRef(0);
+  const palaceFrameRef = useRef(0);
+  const lastSceneTime = useRef(Date.now());
+  const accDelta = useRef(0);
 
   useEffect(() => {
     setIsMounted(true);
+  }, []);
 
+  useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Prevent default scrolling
       e.preventDefault();
 
-      // Accumulate delta
-      wheelDeltaRef.current += e.deltaY;
+      const down = e.deltaY > 0;
+      const now = Date.now();
 
-      // Request animation frame for smooth handling
-      if (!tickingRef.current) {
-        tickingRef.current = true;
-        requestAnimationFrame(() => {
-          const now = Date.now();
-          // Throttle to prevent too frequent scene changes
-          if (now - lastSceneTimeRef.current > 1200) { // 1.2s crossfade duration
-            if (wheelDeltaRef.current > 50) {
-              // Scroll down - next scene
-              if (sceneIndex < 5) { // Max 5 scenes (0-5)
-                setSceneIndex(prev => prev + 1);
-                lastSceneTimeRef.current = now;
+      // ── Scene 0: scrub palace frames first ──────────────────────
+      if (sceneRef.current === 0) {
+        accDelta.current += e.deltaY;
+
+        if (down) {
+          while (accDelta.current >= PALACE_DELTA_PER_FRAME) {
+            accDelta.current -= PALACE_DELTA_PER_FRAME;
+            if (palaceFrameRef.current < TOTAL_PALACE_FRAMES) {
+              palaceFrameRef.current++;
+              setPalaceFrame(palaceFrameRef.current);
+            } else {
+              // Frames exhausted → advance scene
+              if (now - lastSceneTime.current > SCENE_COOLDOWN_MS) {
+                sceneRef.current = 1;
+                setSceneIndex(1);
+                lastSceneTime.current = now;
+                accDelta.current = 0;
               }
-            } else if (wheelDeltaRef.current < -50) {
-              // Scroll up - previous scene
-              if (sceneIndex > 0) {
-                setSceneIndex(prev => prev - 1);
-                lastSceneTimeRef.current = now;
-              }
+              return;
             }
-            wheelDeltaRef.current = 0;
           }
-          tickingRef.current = false;
-        });
+        } else {
+          while (accDelta.current <= -PALACE_DELTA_PER_FRAME) {
+            accDelta.current += PALACE_DELTA_PER_FRAME;
+            if (palaceFrameRef.current > 0) {
+              palaceFrameRef.current--;
+              setPalaceFrame(palaceFrameRef.current);
+            }
+            // At frame 0 scrolling up — no previous scene
+          }
+        }
+        return;
+      }
+
+      // ── All other scenes: snap on cooldown ──────────────────────
+      if (now - lastSceneTime.current < SCENE_COOLDOWN_MS) return;
+
+      if (down && sceneRef.current < TOTAL_SCENES - 1) {
+        sceneRef.current++;
+        setSceneIndex(sceneRef.current);
+        lastSceneTime.current = now;
+      } else if (!down && sceneRef.current > 0) {
+        sceneRef.current--;
+        // Reset palace frames when going back to scene 0
+        if (sceneRef.current === 0) {
+          palaceFrameRef.current = TOTAL_PALACE_FRAMES;
+          setPalaceFrame(TOTAL_PALACE_FRAMES);
+        }
+        setSceneIndex(sceneRef.current);
+        lastSceneTime.current = now;
       }
     };
 
-    // Handle touch events for mobile
     let touchStartY = 0;
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY = e.touches[0].clientY;
     };
-
     const handleTouchEnd = (e: TouchEvent) => {
-      const touchEndY = e.changedTouches[0].clientY;
-      const diff = touchStartY - touchEndY;
-
+      const diff = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(diff) < 50) return;
       const now = Date.now();
-      if (now - lastSceneTimeRef.current > 1200 && Math.abs(diff) > 50) {
-        if (diff > 0 && sceneIndex < 5) {
-          // Swipe up - next scene
-          setSceneIndex(prev => prev + 1);
-          lastSceneTimeRef.current = now;
-        } else if (diff < 0 && sceneIndex > 0) {
-          // Swipe down - previous scene
-          setSceneIndex(prev => prev - 1);
-          lastSceneTimeRef.current = now;
+      if (now - lastSceneTime.current < SCENE_COOLDOWN_MS) return;
+      const down = diff > 0;
+
+      if (sceneRef.current === 0) {
+        // On mobile just advance scene directly (no frame scrub on swipe)
+        if (down) {
+          sceneRef.current = 1;
+          setSceneIndex(1);
+          lastSceneTime.current = now;
         }
+        return;
+      }
+
+      if (down && sceneRef.current < TOTAL_SCENES - 1) {
+        sceneRef.current++;
+        setSceneIndex(sceneRef.current);
+        lastSceneTime.current = now;
+      } else if (!down && sceneRef.current > 0) {
+        sceneRef.current--;
+        if (sceneRef.current === 0) {
+          palaceFrameRef.current = TOTAL_PALACE_FRAMES;
+          setPalaceFrame(TOTAL_PALACE_FRAMES);
+        }
+        setSceneIndex(sceneRef.current);
+        lastSceneTime.current = now;
       }
     };
 
     window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
-
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
     return () => {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [sceneIndex, isMounted]);
+  }, []);
 
+  const shouldEnableBodyScroll = sceneIndex >= 5;
 
-  // Determine if body scroll should be enabled (only for Space scene and beyond)
-  const shouldEnableBodyScroll = sceneIndex >= 4; // Space scene index is 4
-
-  // Set body overflow based on scroll state
   useEffect(() => {
-    if (shouldEnableBodyScroll) {
-      document.body.style.overflow = 'auto';
-      document.body.style.height = 'auto';
-    } else {
-      document.body.style.overflow = 'hidden';
-      document.body.style.height = '100vh';
-    }
-
+    document.body.style.overflow = shouldEnableBodyScroll ? 'auto' : 'hidden';
+    document.body.style.height = shouldEnableBodyScroll ? 'auto' : '100vh';
     return () => {
       document.body.style.overflow = '';
       document.body.style.height = '';
@@ -105,9 +138,8 @@ export const useSceneManager = () => {
 
   return {
     sceneIndex,
+    palaceFrame,
     isMounted,
-    sceneRefs,
-    setSceneRefs,
-    shouldEnableBodyScroll
+    shouldEnableBodyScroll,
   };
 };
