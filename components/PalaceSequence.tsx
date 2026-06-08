@@ -22,6 +22,9 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
   const titleRef = useRef<HTMLDivElement>(null)
   const framesRef = useRef<HTMLImageElement[]>([])
   const drawnRef = useRef(-1)
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const frameIndexRef = useRef(0)
+  const needsDrawRef = useRef(false)
   const [loadedPct, setLoadedPct] = useState(0)
 
   // -- Draw Frame Logic --
@@ -45,15 +48,15 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
 
   // -- Preload Images --
   useEffect(() => {
-    let loaded = 0
+    let loadedCount = 0
     const images = new Array(PALACE_TOTAL_FRAMES + 1)
     framesRef.current = images
 
     for (let i = 0; i <= PALACE_TOTAL_FRAMES; i++) {
       const img = new Image()
       img.onload = () => {
-        loaded++
-        setLoadedPct(Math.round((loaded / (PALACE_TOTAL_FRAMES + 1)) * 100))
+        loadedCount++
+        setLoadedPct(Math.round((loadedCount / (PALACE_TOTAL_FRAMES + 1)) * 100))
         if (i === 0) drawAt(0)
       }
       img.src = FRAME_PATH(i + 1)
@@ -76,35 +79,71 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
     return () => window.removeEventListener('resize', resize)
   }, [])
 
-  // -- RAF Render Loop --
+  // -- Is loaded flag --
+  const isLoaded = loadedPct >= 100
+
+  // -- Initial frame draw --
   useEffect(() => {
-    if (!resolvedFrameRef) return
-    
-    let smoothFrame = resolvedFrameRef.current || 0
-    let raf: number
-
-    const tick = () => {
-      if (isActive && resolvedFrameRef.current !== undefined) {
-        smoothFrame += (resolvedFrameRef.current - smoothFrame) * 0.08
-        const currentIdx = Math.min(PALACE_TOTAL_FRAMES, Math.max(0, Math.round(smoothFrame)))
-        
-        if (currentIdx !== drawnRef.current) {
-          drawAt(currentIdx)
-        }
-
-        if (titleRef.current) {
-          const progress = Math.max(0, Math.min(1, (smoothFrame - 100) / 44))
-          titleRef.current.style.opacity = String(progress)
-          titleRef.current.style.transform = `translateY(${(1 - progress) * 20}px)`
-          titleRef.current.style.filter = `blur(${(1 - progress) * 10}px)`
-        }
-      }
-      raf = requestAnimationFrame(tick)
+    if (isLoaded) {
+      drawAt(0);
     }
+  }, [isLoaded]);
 
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [isActive, resolvedFrameRef])
+  // -- ScrollTrigger for frame sequencing and text animation --
+  useEffect(() => {
+    if (!isLoaded || !isActive) return;
+
+    const section = sectionRef.current;
+    if (!section) return;
+
+    // Create ScrollTrigger for frame sequencing and text animation
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top top",
+      end: "+=400%", // Total scroll distance for the full frame sequence (0-144)
+      pin: true,
+      pinSpacing: true,
+      scrub: true, // Smooth scrolling synchronization
+      onUpdate: (self) => {
+        const progress = self.progress; // 0 to 1 based on scroll position in the trigger
+
+        // Map scroll progress to full frame range 0-144
+        const currentFrame = Math.floor(progress * (PALACE_TOTAL_FRAMES - 1));
+        frameIndexRef.current = currentFrame;
+        needsDrawRef.current = true;
+
+        // Draw the current frame on canvas
+        drawAt(currentFrame);
+
+        // Calculate text animation progress within the 100-120 frame range
+        const frameStart = 100;
+        const frameEnd = 120;
+        const totalFramesInRange = frameEnd - frameStart; // 20 frames
+
+        let textProgress = 0;
+        if (currentFrame >= frameStart && currentFrame <= frameEnd) {
+          // Map frame 100-120 to text progress 0-1
+          textProgress = (currentFrame - frameStart) / totalFramesInRange;
+        } else if (currentFrame < frameStart) {
+          textProgress = 0; // Before animation range
+        } else {
+          textProgress = 1; // After animation range
+        }
+
+        // Apply animation to the headline
+        const headline = document.getElementById("palace-headline");
+        if (headline) {
+          // Fade in and slide up
+          headline.style.opacity = String(textProgress);
+          headline.style.transform = `translateY(${(1 - textProgress) * 20}px)`;
+        }
+      },
+    });
+
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, [isLoaded, isActive]);
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
@@ -116,11 +155,7 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
         }}
       />
       
-      {loadedPct < 100 && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'rgba(255,255,255,0.05)' }}>
-          <div style={{ height: '100%', width: `${loadedPct}%`, background: '#FFFFFF', transition: 'width 0.2s ease' }} />
-        </div>
-      )}
+      {/* Progress bar removed - not needed for this effect */}
 
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -140,7 +175,6 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
         }}
       >
         <div
-          className="loading-text"
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: '0.65rem',
@@ -154,6 +188,7 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
         </div>
 
         <h2
+          id="palace-headline"
           style={{
             fontFamily: 'var(--font-serif)',
             fontStyle: 'italic',
