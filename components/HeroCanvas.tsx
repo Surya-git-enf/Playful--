@@ -6,10 +6,12 @@ import RacingSequence from './RacingSequence'
 import OpenWorldSequence from './OpenWorldSequence'
 import SpaceSequence from './SpaceSequence'
 
-const TOTAL_SCENES = 4
+const TOTAL_SCENES = 4   // 0=Palace 1=Retro 2=Racing 3=OpenWorld 4=Space
 const TOTAL_FRAMES = 144
-const SNAP_LOCK_MS = 1100
+const SNAP_LOCK_MS = 1000
 const TEXT_FADE_START = 100
+const FRICTION = 0.80
+const FRAMES_PER_DELTA = 0.16
 
 const pad = (n: number) => String(n).padStart(4, '0')
 
@@ -22,256 +24,203 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: numb
   ctx.drawImage(img, ox, oy, dw, dh)
 }
 
-export default function HeroCanvas() {
+interface Props {
+  onRelease: () => void
+}
+
+export default function HeroCanvas({ onRelease }: Props) {
   const [scene, setSceneState] = useState(0)
-  const [isReleased, setIsReleased] = useState(false)
-  const [loadPct, setLoadPct] = useState(0)
   const [textProgress, setTextProgress] = useState(0)
 
   const sceneRef = useRef(0)
-  // Use a float ref for smooth sub-frame interpolation
   const frameFloat = useRef(0)
   const frameDisplayed = useRef(-1)
-  const velocity = useRef(0)          // frames/tick momentum
+  const velocity = useRef(0)
   const snapLocked = useRef(false)
+  const wheelActive = useRef(false)
+  const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const releasedRef = useRef(false)
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imagesRef = useRef<(HTMLImageElement | null)[]>([])
   const rafRef = useRef<number>(0)
-  // Wheel-end detection
-  const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const wheelActive = useRef(false)
 
   const setScene = useCallback((n: number) => {
     sceneRef.current = n
     setSceneState(n)
   }, [])
 
-  // ── Preload ──────────────────────────────────────────────────
-  useEffect(() => {
-    let loaded = 0
-    const imgs: (HTMLImageElement | null)[] = Array(TOTAL_FRAMES + 1).fill(null)
-    for (let i = 0; i <= TOTAL_FRAMES; i++) {
-      const img = new Image()
-      img.src = `/palace/palace-frame_${pad(i)}.webp`
-      img.onload = () => {
-        loaded++
-        setLoadPct(Math.round((loaded / (TOTAL_FRAMES + 1)) * 100))
-      }
-      imgs[i] = img
-    }
-    imagesRef.current = imgs
-  }, [])
+  const doRelease = useCallback(() => {
+    if (releasedRef.current) return
+    releasedRef.current = true
+    onRelease()
+  }, [onRelease])
 
-  // ── Canvas resize ────────────────────────────────────────────
-  useEffect(() => {
+  // ── Canvas setup ─────────────────────────────────────────────
+  const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      canvas.width = window.innerWidth * dpr
-      canvas.height = window.innerHeight * dpr
-      canvas.style.width = `${window.innerWidth}px`
-      canvas.style.height = `${window.innerHeight}px`
-      const ctx = canvas.getContext('2d')
-      if (ctx) ctx.scale(dpr, dpr)
-    }
-    resize()
-    window.addEventListener('resize', resize)
-    return () => window.removeEventListener('resize', resize)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    canvas.width = window.innerWidth * dpr
+    canvas.height = window.innerHeight * dpr
+    canvas.style.width = `${window.innerWidth}px`
+    canvas.style.height = `${window.innerHeight}px`
+    const ctx = canvas.getContext('2d')
+    if (ctx) ctx.scale(dpr, dpr)
   }, [])
 
-  // ── Main RAF loop — momentum + draw ─────────────────────────
-  useEffect(() => {
-    const FRICTION = 0.60        // higher = more coast (0–1)
-    const MIN_VEL = 0.04         // stop threshold
-    const FRAMES_PER_DELTA = 0.18 // sensitivity: delta px → frames
+  // ── Draw a specific frame immediately ────────────────────────
+  const drawFrame = useCallback((idx: number) => {
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
+    const img = imagesRef.current[idx]
+    if (!canvas || !ctx || !img?.complete || img.naturalWidth === 0) return
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    drawCover(ctx, img, canvas.width / dpr, canvas.height / dpr)
+    frameDisplayed.current = idx
+  }, [])
 
-    const snapTo = (next: number) => {
-      if (snapLocked.current || next < 0) return
-      if (next > TOTAL_SCENES) {
-        snapLocked.current = true
-        setIsReleased(true)
-        document.body.style.overflow = 'auto'
-        velocity.current = 0
-        setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
-        return
-      }
-      snapLocked.current = true
-      velocity.current = 0
-      setScene(next)
-      setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
+  // ── Preload — draw frame 0 the instant it lands ──────────────
+  useEffect(() => {
+    setupCanvas()
+    window.addEventListener('resize', setupCanvas)
+
+    const imgs: (HTMLImageElement | null)[] = Array(TOTAL_FRAMES + 1).fill(null)
+    imagesRef.current = imgs
+
+    // Frame 0 first — show it immediately
+    const frame0 = new Image()
+    frame0.src = `/palace/palace-frame_${pad(0)}.webp`
+    frame0.onload = () => drawFrame(0)
+    imgs[0] = frame0
+
+    // Rest in order
+    for (let i = 1; i <= TOTAL_FRAMES; i++) {
+      const img = new Image()
+      img.src = `/palace/palace-frame_${pad(i)}.webp`
+      imgs[i] = img
     }
 
+    return () => window.removeEventListener('resize', setupCanvas)
+  }, [setupCanvas, drawFrame])
+
+  // ── Snap helper ──────────────────────────────────────────────
+  const snapTo = useCallback((next: number) => {
+    if (snapLocked.current || next < 0) return
+    velocity.current = 0
+    if (next > TOTAL_SCENES) {
+      snapLocked.current = true
+      doRelease()
+      setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
+      return
+    }
+    snapLocked.current = true
+    setScene(next)
+    setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
+  }, [doRelease, setScene])
+
+  // ── RAF: momentum + draw ─────────────────────────────────────
+  useEffect(() => {
     const loop = () => {
       if (sceneRef.current === 0) {
-        // Apply friction when wheel not actively spinning
-        if (!wheelActive.current && Math.abs(velocity.current) > MIN_VEL) {
+        if (!wheelActive.current && Math.abs(velocity.current) > 0.05) {
           velocity.current *= FRICTION
           frameFloat.current += velocity.current
         } else if (!wheelActive.current) {
           velocity.current = 0
         }
 
-        // Clamp
         frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current))
+        const idx = Math.round(frameFloat.current)
 
-        const frameIdx = Math.round(frameFloat.current)
-
-        // Draw only when frame changes
-        if (frameIdx !== frameDisplayed.current) {
-          const canvas = canvasRef.current
-          const ctx = canvas?.getContext('2d')
-          const img = imagesRef.current[frameIdx]
-          if (canvas && ctx && img?.complete && img.naturalWidth > 0) {
-            const dpr = Math.min(window.devicePixelRatio || 1, 2)
-            drawCover(ctx, img, canvas.width / dpr, canvas.height / dpr)
-            frameDisplayed.current = frameIdx
-          }
-
-          // Text progress
-          const tp = frameIdx < TEXT_FADE_START
+        if (idx !== frameDisplayed.current) {
+          drawFrame(idx)
+          const tp = idx < TEXT_FADE_START
             ? 0
-            : Math.min(1, (frameIdx - TEXT_FADE_START) / (TOTAL_FRAMES - TEXT_FADE_START))
+            : Math.min(1, (idx - TEXT_FADE_START) / (TOTAL_FRAMES - TEXT_FADE_START))
           setTextProgress(tp)
 
-          // Auto-advance scene when frames exhausted by momentum
-          if (frameIdx >= TOTAL_FRAMES && Math.abs(velocity.current) < MIN_VEL && !wheelActive.current) {
+          // Momentum carried us to the end → advance scene
+          if (idx >= TOTAL_FRAMES && !wheelActive.current && Math.abs(velocity.current) < 0.1) {
             snapTo(1)
           }
         }
       }
-
       rafRef.current = requestAnimationFrame(loop)
     }
-
     rafRef.current = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(rafRef.current)
+  }, [drawFrame, snapTo])
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setScene])
-
-  // ── Input handlers ───────────────────────────────────────────
+  // ── Wheel + touch ────────────────────────────────────────────
   useEffect(() => {
     document.body.style.overflow = 'hidden'
 
-    const FRAMES_PER_DELTA = 0.18
-    const TOUCH_MULTIPLIER = 0.6
-
-    const snapTo = (next: number) => {
-      if (snapLocked.current || next < 0) return
-      if (next > TOTAL_SCENES) {
-        snapLocked.current = true
-        setIsReleased(true)
-        document.body.style.overflow = 'auto'
-        velocity.current = 0
-        setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
-        return
-      }
-      snapLocked.current = true
-      velocity.current = 0
-      setScene(next)
-      setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
-    }
-
     const handleWheel = (e: WheelEvent) => {
-      if (isReleased) return
+      if (releasedRef.current) return
       e.preventDefault()
       if (snapLocked.current) return
 
       if (sceneRef.current === 0) {
-        // Accumulate velocity — trackpad gives small deltas, mouse wheel gives large
-        const delta = e.deltaY * FRAMES_PER_DELTA
-        velocity.current += delta
-
-        // Mark wheel as active, reset end-detection timer
+        velocity.current += e.deltaY * FRAMES_PER_DELTA
         wheelActive.current = true
         if (wheelTimer.current) clearTimeout(wheelTimer.current)
         wheelTimer.current = setTimeout(() => {
           wheelActive.current = false
-          // Snap to next scene if coasted past end
-          if (frameFloat.current >= TOTAL_FRAMES - 2) snapTo(1)
-          // Snap back if barely moved
-          if (frameFloat.current < 5) frameFloat.current = 0
-        }, 120)
+          if (frameFloat.current >= TOTAL_FRAMES - 1) snapTo(1)
+          if (frameFloat.current <= 1) { frameFloat.current = 0; velocity.current = 0 }
+        }, 150)
         return
       }
 
-      // Other scenes — snap on intent (>20px delta)
-      if (Math.abs(e.deltaY) > 20) {
+      if (Math.abs(e.deltaY) > 15) {
         snapTo(sceneRef.current + (e.deltaY > 0 ? 1 : -1))
       }
     }
 
-    // ── Touch — velocity from swipe distance ─────────────────
-    let touchStartY = 0
-    let touchLastY = 0
-    let touchVelY = 0
-    let touchLastTime = 0
-
+    let ty0 = 0, tyLast = 0, tvY = 0, ttLast = 0
     const handleTouchStart = (e: TouchEvent) => {
-      touchStartY = e.touches[0].clientY
-      touchLastY = touchStartY
-      touchVelY = 0
-      touchLastTime = Date.now()
+      ty0 = e.touches[0].clientY
+      tyLast = ty0; tvY = 0; ttLast = Date.now()
     }
-
     const handleTouchMove = (e: TouchEvent) => {
-      if (isReleased) return
+      if (releasedRef.current) return
       e.preventDefault()
-
       const now = Date.now()
-      const dt = Math.max(1, now - touchLastTime)
-      const dy = touchLastY - e.touches[0].clientY
-      touchVelY = dy / dt  // px per ms
-
-      touchLastY = e.touches[0].clientY
-      touchLastTime = now
+      const dy = tyLast - e.touches[0].clientY
+      tvY = dy / Math.max(1, now - ttLast)
+      tyLast = e.touches[0].clientY; ttLast = now
 
       if (sceneRef.current === 0) {
-        frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES,
-          frameFloat.current + dy * TOUCH_MULTIPLIER
-        ))
+        frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current + dy * 0.55))
       }
     }
-
     const handleTouchEnd = () => {
-      if (isReleased || snapLocked.current) return
-
+      if (releasedRef.current || snapLocked.current) return
       if (sceneRef.current === 0) {
-        // Fling: inject velocity from swipe speed (px/ms → frames/tick at 60fps)
-        velocity.current = touchVelY * 16.67 * TOUCH_MULTIPLIER
+        velocity.current = tvY * 16.67 * 0.55
         wheelActive.current = false
-
-        // Snap to next scene if flung hard enough or past threshold
-        if (frameFloat.current >= TOTAL_FRAMES - 5 || velocity.current > 8) {
-          snapTo(1)
-        } else if (frameFloat.current <= 5 && velocity.current < -4) {
-          frameFloat.current = 0
-          velocity.current = 0
-        }
+        if (frameFloat.current >= TOTAL_FRAMES - 4 || velocity.current > 6) { snapTo(1); return }
+        if (frameFloat.current <= 3 && velocity.current < -3) { frameFloat.current = 0; velocity.current = 0 }
         return
       }
-
-      const totalDy = touchStartY - touchLastY
-      if (Math.abs(totalDy) > 40) {
-        snapTo(sceneRef.current + (totalDy > 0 ? 1 : -1))
-      }
+      const totalDy = ty0 - tyLast
+      if (Math.abs(totalDy) > 40) snapTo(sceneRef.current + (totalDy > 0 ? 1 : -1))
     }
 
     window.addEventListener('wheel', handleWheel, { passive: false })
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
     window.addEventListener('touchmove', handleTouchMove, { passive: false })
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
-
     return () => {
       window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('touchmove', handleTouchMove)
       window.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [isReleased, setScene])
+  }, [snapTo])
 
-  const getSceneStyle = (i: number): React.CSSProperties => ({
+  const gs = (i: number): React.CSSProperties => ({
     position: 'absolute', inset: 0,
     opacity: scene === i ? 1 : 0,
     pointerEvents: scene === i ? 'auto' : 'none',
@@ -280,38 +229,16 @@ export default function HeroCanvas() {
   })
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      zIndex: isReleased ? -1 : 100,
-      overflow: 'hidden',
-      background: '#020202',
-      pointerEvents: isReleased ? 'none' : 'auto',
-    }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020202' }}>
 
-      {/* ── Scene 0: Palace ── */}
-      <div style={getSceneStyle(0)}>
+      {/* Palace */}
+      <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block' }} />
-
-        {loadPct < 100 && scene === 0 && (
-          <div style={{
-            position: 'absolute', bottom: '28px', left: '50%',
-            transform: 'translateX(-50%)', width: '140px',
-            height: '1.5px', background: 'rgba(255,255,255,0.07)', borderRadius: '2px', zIndex: 20,
-          }}>
-            <div style={{
-              height: '100%', width: `${loadPct}%`, background: '#00eaff',
-              borderRadius: '2px', boxShadow: '0 0 8px rgba(0,234,255,0.6)',
-              transition: 'width 0.1s linear',
-            }} />
-          </div>
-        )}
-
         <div style={{
           position: 'absolute', bottom: '12%', left: '50%',
           transform: `translateX(-50%) translateY(${(1 - textProgress) * 30}px)`,
-          opacity: textProgress,
-          textAlign: 'center', pointerEvents: 'none', zIndex: 20,
-          willChange: 'opacity, transform',
+          opacity: textProgress, textAlign: 'center',
+          pointerEvents: 'none', zIndex: 20, willChange: 'opacity, transform',
         }}>
           <h2 style={{
             fontFamily: 'var(--font-serif), "Instrument Serif", serif',
@@ -320,35 +247,30 @@ export default function HeroCanvas() {
             color: '#fff', margin: 0,
             textShadow: '0 4px 40px rgba(0,0,0,0.8)',
             whiteSpace: 'nowrap',
-          }}>
-            Kingdoms Never Sleep
-          </h2>
+          }}>Kingdoms Never Sleep</h2>
         </div>
       </div>
 
-      {/* ── Scene 1–4 ── */}
-      <div style={getSceneStyle(1)}><RetroSequence isActive={scene === 1} /></div>
-      <div style={getSceneStyle(2)}><RacingSequence isActive={scene === 2} /></div>
-      <div style={getSceneStyle(3)}><OpenWorldSequence isActive={scene === 3} /></div>
-      <div style={getSceneStyle(4)}><SpaceSequence isActive={scene === 4} /></div>
+      <div style={gs(1)}><RetroSequence isActive={scene === 1} /></div>
+      <div style={gs(2)}><RacingSequence isActive={scene === 2} /></div>
+      <div style={gs(3)}><OpenWorldSequence isActive={scene === 3} /></div>
+      <div style={gs(4)}><SpaceSequence isActive={scene === 4} /></div>
 
-      {/* Scene dots */}
+      {/* Dots */}
       <div style={{
         position: 'absolute', right: '28px', top: '50%',
         transform: 'translateY(-50%)',
         display: 'flex', flexDirection: 'column', gap: '10px', zIndex: 200,
       }}>
         {[0,1,2,3,4].map(i => (
-          <div key={i} style={{
-            width: '4px',
-            height: scene === i ? '24px' : '4px',
-            borderRadius: '4px',
+          <div key={i} onClick={() => { if (!snapLocked.current) snapTo(i) }} style={{
+            width: '4px', height: scene === i ? '24px' : '4px',
+            borderRadius: '4px', cursor: 'pointer',
             background: scene === i ? '#fff' : 'rgba(255,255,255,0.18)',
-            cursor: 'pointer',
             transition: 'all 0.5s cubic-bezier(0.65,0,0.35,1)',
           }} />
         ))}
       </div>
     </div>
   )
-        }
+}
