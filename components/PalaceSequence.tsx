@@ -174,19 +174,6 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
           pointerEvents: 'none',
         }}
       >
-        <div
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.65rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.25em',
-            color: 'rgba(255,255,255,0.3)',
-            marginBottom: '1rem',
-          }}
-        >
-          Loading
-        </div>
-
         <h2
           id="palace-headline"
           style={{
@@ -202,18 +189,6 @@ export default function PalaceSequence({ isActive, frameRef, palaceFrame }: Pala
         >
           Step Inside the Kingdom
         </h2>
-
-        <div
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.6rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.3em',
-            color: 'rgba(255,255,255,0.5)',
-          }}
-        >
-          scroll to explore
-        </div>
       </div>
     </div>
   )
