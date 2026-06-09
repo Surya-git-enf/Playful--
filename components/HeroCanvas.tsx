@@ -26,9 +26,12 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: numb
 
 interface Props {
   onRelease: () => void
+  onSceneChange: (scene: number) => void
+  isReleased: boolean
 }
 
-export default function HeroCanvas({ onRelease }: Props) {
+
+export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Props) {
   const [scene, setSceneState] = useState(0)
   const [textProgress, setTextProgress] = useState(0)
 
@@ -45,10 +48,17 @@ export default function HeroCanvas({ onRelease }: Props) {
   const imagesRef   = useRef<(HTMLImageElement | null)[]>([])
   const rafRef      = useRef<number>(0)
 
+    // NEW: Syncs the parent state to the internal ref to unfreeze scroll-back
+  useEffect(() => {
+    hasReleased.current = isReleased
+  }, [isReleased])
+
   const setScene = useCallback((n: number) => {
     sceneRef.current = n
     setSceneState(n)
-  }, [])
+    onSceneChange(n) // NEW: Notifies Page.tsx when we reach Space (scene 4)
+  }, [onSceneChange])
+  
 
   // canvas setup
   const setupCanvas = useCallback(() => {
