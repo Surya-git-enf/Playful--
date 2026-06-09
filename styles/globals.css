@@ -42,7 +42,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-mono);
-  overflow: hidden; /* controlled by useSnapScroll */
+  overflow-x: hidden; /* controlled by useSnapScroll */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
