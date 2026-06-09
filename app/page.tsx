@@ -8,39 +8,35 @@ const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: fals
 
 export default function Home() {
   const [heroReleased, setHeroReleased] = useState(false)
-  const [headerVisible, setHeaderVisible] = useState(false)
   const heroReleasedRef = useRef(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
 
   // Lock body on mount
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)
-    return () => { document.body.style.overflow = '' }
   }, [])
 
   const handleRelease = useCallback(() => {
     if (heroReleasedRef.current) return
     heroReleasedRef.current = true
     setHeroReleased(true)
-    setHeaderVisible(true)
-    // Unlock — the snap container takes over
+    // Unlock body — snap scroll takes over
     document.body.style.overflow = 'auto'
+    // Jump window scroll to the bottom content start
     setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
     }, 60)
   }, [])
 
-  // Re-lock when user scrolls back to very top
+  // Re-lock when user scrolls window back to top
   useEffect(() => {
     if (!heroReleased) return
     const onScroll = () => {
-      if (window.scrollY < 4) {
+      if (window.scrollY < 10) {
         heroReleasedRef.current = false
         document.body.style.overflow = 'hidden'
         window.scrollTo(0, 0)
         setHeroReleased(false)
-        setHeaderVisible(false)
       }
     }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -49,7 +45,7 @@ export default function Home() {
 
   return (
     <>
-      {/* Navbar — slides down after release */}
+      {/* Navbar — always visible */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         zIndex: 2000, height: '70px',
@@ -57,10 +53,6 @@ export default function Home() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         background: 'linear-gradient(to bottom,rgba(2,5,16,.95) 0%,transparent 100%)',
         backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        transition: 'opacity 0.5s ease, transform 0.5s ease',
-        opacity: headerVisible ? 1 : 0,
-        transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
-        pointerEvents: headerVisible ? 'auto' : 'none',
       }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
           <img src="/logo.png" alt="Playful" style={{
@@ -70,7 +62,7 @@ export default function Home() {
             boxShadow: '0 0 15px rgba(0,234,255,.2)',
           }} />
           <span style={{
-            fontFamily: 'var(--font-orbitron), Orbitron, sans-serif',
+            fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)',
             fontWeight: 900, fontSize: 'clamp(.85rem,2vw,1.3rem)',
             letterSpacing: '.2em', color: '#fff',
           }}>PLAYFUL</span>
@@ -81,30 +73,28 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero — fixed, always behind navbar */}
-      <HeroCanvas
-        onRelease={handleRelease}
-        onHeaderVisibilityChange={setHeaderVisible}
-      />
+      {/* Hero — fixed, fades out when released */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        opacity: heroReleased ? 0 : 1,
+        pointerEvents: heroReleased ? 'none' : 'auto',
+        transition: 'opacity 0.5s ease',
+      }}>
+        <HeroCanvas onRelease={handleRelease} onHeaderVisibilityChange={() => {}} />
+      </div>
 
-      {/* 100vh spacer so bottom content starts below fold */}
-      <div style={{ height: '100vh', pointerEvents: 'none' }} aria-hidden="true" />
+      {/* 
+        Document flow:
+        - First 100vh = spacer (hero sits fixed above it)
+        - Then snap sections follow naturally in window scroll
+      */}
+      <div style={{ height: "100vh", scrollSnapAlign: "start", flexShrink: 0 }} aria-hidden="true" />
 
-      {/* Snap scroll container — only active after release */}
-      <div
-        ref={bottomRef}
-        style={{
-          position: 'relative',
-          zIndex: heroReleased ? 200 : -1,
-          visibility: heroReleased ? 'visible' : 'hidden',
-          /* Snap scroll */
-          scrollSnapType: 'y mandatory',
-          overflowY: 'scroll',
-          height: '100vh',
-          /* Stack above the fixed hero */
-          isolation: 'isolate',
-        }}
-      >
+      {/* Snap sections — window-level scroll-snap */}
+      <div style={{
+        /* snap context on the sections themselves */
+        position: 'relative', zIndex: 200,
+      }}>
         <SnapCards isActive={heroReleased} />
       </div>
     </>
