@@ -1,40 +1,27 @@
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
-import RetroSequence from './RetroSequence'
+import RetroSequence, { RetroHandle } from './RetroSequence'
 import RacingSequence from './RacingSequence'
 import OpenWorldSequence from './OpenWorldSequence'
 import SpaceSequence from './SpaceSequence'
 
-const TOTAL_SCENES = 4   // scenes 0-4, scene 4 = Space
-const TOTAL_FRAMES = 144
-const SNAP_LOCK_MS = 900
+const TOTAL_SCENES   = 4
+const TOTAL_FRAMES   = 144
+const SNAP_LOCK_MS   = 900
 const TEXT_FADE_START = 100
-const FRICTION = 0.80
+const FRICTION       = 0.80
 const FRAMES_PER_DELTA = 0.16
 
 const pad = (n: number) => String(n).padStart(4, '0')
 
 function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number) {
-  // NEW: Add a zoom multiplier to crop out baked-in black borders.
-  // 1.1 = 10% zoom. If you still see black bars, increase it to 1.15 or 1.2.
-  const ZOOM_FACTOR = 1.1; 
-
+  const ZOOM_FACTOR = 1.1
   const ir = img.naturalWidth / img.naturalHeight, cr = w / h
   let dw: number, dh: number, ox: number, oy: number
-  
-  if (ir > cr) { 
-    dh = h * ZOOM_FACTOR; 
-    dw = dh * ir; 
-  } else { 
-    dw = w * ZOOM_FACTOR; 
-    dh = dw / ir; 
-  }
-  
-  // This math ensures the zoomed image stays perfectly centered
-  ox = (w - dw) / 2; 
-  oy = (h - dh) / 2;
-  
+  if (ir > cr) { dh = h * ZOOM_FACTOR; dw = dh * ir }
+  else         { dw = w * ZOOM_FACTOR; dh = dw / ir  }
+  ox = (w - dw) / 2; oy = (h - dh) / 2
   ctx.clearRect(0, 0, w, h)
   ctx.drawImage(img, ox, oy, dw, dh)
 }
@@ -44,7 +31,6 @@ interface Props {
   onSceneChange: (scene: number) => void
   isReleased: boolean
 }
-
 
 export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Props) {
   const [scene, setSceneState] = useState(0)
@@ -63,24 +49,24 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const imagesRef   = useRef<(HTMLImageElement | null)[]>([])
   const rafRef      = useRef<number>(0)
 
-    // NEW: Syncs the parent state to the internal ref to unfreeze scroll-back
-  useEffect(() => {
-    hasReleased.current = isReleased
-  }, [isReleased])
+  // ── KEY ADDITION: ref to RetroSequence's exposed handle ─────────────────
+  const retroRef    = useRef<RetroHandle>(null)
+
+  useEffect(() => { hasReleased.current = isReleased }, [isReleased])
 
   const setScene = useCallback((n: number) => {
     sceneRef.current = n
     setSceneState(n)
-    onSceneChange(n) // NEW: Notifies Page.tsx when we reach Space (scene 4)
+    onSceneChange(n)
+    // Reset retro world when leaving it
+    if (n !== 1) retroRef.current?.reset()
   }, [onSceneChange])
-  
 
-  // canvas setup
   const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    canvas.width  = window.innerWidth * dpr
+    canvas.width  = window.innerWidth  * dpr
     canvas.height = window.innerHeight * dpr
     canvas.style.width  = `${window.innerWidth}px`
     canvas.style.height = `${window.innerHeight}px`
@@ -98,7 +84,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     frameDrawn.current = idx
   }, [])
 
-  // preload — frame 0 drawn immediately
   useEffect(() => {
     setupCanvas()
     window.addEventListener('resize', setupCanvas)
@@ -114,20 +99,16 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     return () => window.removeEventListener('resize', setupCanvas)
   }, [setupCanvas, drawFrame])
 
-  // release — unlock body so window can scroll, then call parent
   const doRelease = useCallback(() => {
     if (hasReleased.current) return
     hasReleased.current = true
-    // Unlock body FIRST so scroll-back detection works
     document.body.style.overflow = 'auto'
     onRelease()
   }, [onRelease])
 
-  // snap helper
   const snapTo = useCallback((next: number) => {
     if (snapLocked.current) return
     velocity.current = 0
-    // Scrolling down from Space (scene 4) → release
     if (next > TOTAL_SCENES) {
       snapLocked.current = true
       doRelease()
@@ -140,7 +121,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
   }, [doRelease, setScene])
 
-  // RAF momentum + draw
+  // RAF loop
   useEffect(() => {
     const loop = () => {
       if (sceneRef.current === 0) {
@@ -154,9 +135,11 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         const idx = Math.round(frameFloat.current)
         if (idx !== frameDrawn.current) {
           drawFrame(idx)
-          const tp = idx < TEXT_FADE_START ? 0 : Math.min(1, (idx - TEXT_FADE_START) / (TOTAL_FRAMES - TEXT_FADE_START))
+          const tp = idx < TEXT_FADE_START ? 0
+            : Math.min(1, (idx - TEXT_FADE_START) / (TOTAL_FRAMES - TEXT_FADE_START))
           setTextProgress(tp)
-          if (idx >= TOTAL_FRAMES && !wheelActive.current && Math.abs(velocity.current) < 0.1) snapTo(1)
+          if (idx >= TOTAL_FRAMES && !wheelActive.current && Math.abs(velocity.current) < 0.1)
+            snapTo(1)
         }
       }
       rafRef.current = requestAnimationFrame(loop)
@@ -165,18 +148,19 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-  // wheel + touch — lock body on mount, do NOT touch overflow after release
+  // ── WHEEL + TOUCH ────────────────────────────────────────────────────────
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)
 
     const handleWheel = (e: WheelEvent) => {
-      // After release, stop intercepting — let window scroll work
       if (hasReleased.current) return
       e.preventDefault()
       if (snapLocked.current) return
+
       const down = e.deltaY > 0
 
+      // ── SCENE 0 (Palace frame scrub) ──────────────────────────────────
       if (sceneRef.current === 0) {
         velocity.current += e.deltaY * FRAMES_PER_DELTA
         wheelActive.current = true
@@ -188,6 +172,24 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         }, 150)
         return
       }
+
+      // ── SCENE 1 (Retro world) — delegate to RetroSequence ─────────────
+      // Only let HeroCanvas snap away if Retro is at its boundary.
+      if (sceneRef.current === 1) {
+        const retro = retroRef.current
+        const dir   = down ? "down" : "up"
+
+        if (retro && retro.isAtEdge(dir)) {
+          // Retro world is at its edge — HeroCanvas takes over and snaps scenes
+          snapTo(sceneRef.current + (down ? 1 : -1))
+        } else if (retro) {
+          // Retro world has more panels — let it scroll internally
+          retro.onScroll(e.deltaY)
+        }
+        return
+      }
+
+      // ── ALL OTHER SCENES — snap between worlds ─────────────────────────
       if (Math.abs(e.deltaY) > 15) snapTo(sceneRef.current + (down ? 1 : -1))
     }
 
@@ -199,8 +201,8 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       if (hasReleased.current) return
       e.preventDefault()
       const now = Date.now()
-      const dy = tyLast - e.touches[0].clientY
-      tvY = dy / Math.max(1, now - ttLast)
+      const dy  = tyLast - e.touches[0].clientY
+      tvY    = dy / Math.max(1, now - ttLast)
       tyLast = e.touches[0].clientY; ttLast = now
       if (sceneRef.current === 0) {
         frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current + dy * 0.55))
@@ -208,21 +210,26 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     }
     const onTouchEnd = () => {
       if (hasReleased.current || snapLocked.current) return
+
       if (sceneRef.current === 0) {
-        velocity.current = tvY * 16.67 * 0.55
+        velocity.current    = tvY * 16.67 * 0.55
         wheelActive.current = false
         if (frameFloat.current >= TOTAL_FRAMES - 4 || velocity.current > 6) { snapTo(1); return }
         if (frameFloat.current <= 3 && velocity.current < -3) { frameFloat.current = 0; velocity.current = 0 }
         return
       }
+
+      // For scene 1 (Retro), RetroSequence's own touchend handler fires first
+      // (with stopPropagation if it consumed the event), so we only reach here
+      // when Retro is at its boundary. Fall through to normal snap logic.
       const dy = ty0 - tyLast
       if (Math.abs(dy) > 40) snapTo(sceneRef.current + (dy > 0 ? 1 : -1))
     }
 
     window.addEventListener('wheel',      handleWheel,  { passive: false })
-    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchstart', onTouchStart, { passive: true  })
     window.addEventListener('touchmove',  onTouchMove,  { passive: false })
-    window.addEventListener('touchend',   onTouchEnd,   { passive: true })
+    window.addEventListener('touchend',   onTouchEnd,   { passive: true  })
     return () => {
       window.removeEventListener('wheel',      handleWheel)
       window.removeEventListener('touchstart', onTouchStart)
@@ -244,8 +251,10 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
 
       {/* Scene 0 — Palace */}
       <div style={gs(0)}>
-        <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block', width: '100vw', height: '100dvh' }} />
-        
+        <canvas
+          ref={canvasRef}
+          style={{ position: 'absolute', inset: 0, display: 'block', width: '100vw', height: '100dvh' }}
+        />
         <div style={{
           position: 'absolute', bottom: '12%', left: '50%',
           transform: `translateX(-50%) translateY(${(1 - textProgress) * 30}px)`,
@@ -263,11 +272,15 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         </div>
       </div>
 
-      <div style={gs(1)}><RetroSequence   isActive={scene === 1} /></div>
-      <div style={gs(2)}><RacingSequence  isActive={scene === 2} /></div>
+      {/* Scene 1 — Retro (ref wired to retroRef so HeroCanvas can talk to it) */}
+      <div style={gs(1)}>
+        <RetroSequence ref={retroRef} isActive={scene === 1} />
+      </div>
+
+      <div style={gs(2)}><RacingSequence   isActive={scene === 2} /></div>
       <div style={gs(3)}><OpenWorldSequence isActive={scene === 3} /></div>
-      <div style={gs(4)}><SpaceSequence   isActive={scene === 4} /></div>
+      <div style={gs(4)}><SpaceSequence     isActive={scene === 4} /></div>
     </div>
   )
-        }
-        
+      }
+      
