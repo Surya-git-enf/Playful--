@@ -58,7 +58,7 @@ export default function RetroSequence({ isActive }: Props) {
 
         {/* ─── LAYER 2: CLOUDS (Hovers over the sky) ─── */}
         <div style={{ 
-          position: 'absolute', top: '5%', left: 0, right: 0, height: '40%', zIndex: 2,
+          position: 'absolute', top: '5%', left: 0, right: 0, height: '50%', zIndex: 2,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(-40px)',
           transition: `all 1.4s ${premiumEase} 0.1s`
@@ -75,7 +75,7 @@ export default function RetroSequence({ isActive }: Props) {
           transition: `all 1.3s ${premiumEase} 0.15s`
         }}>
           <div style={{
-            width: 'clamp(140px, 25vw, 280px)',
+            width: 'clamp(260px, 45vw, 380px)',
             animation: mounted ? 'castleLivePulse 6s ease-in-out infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
@@ -96,7 +96,7 @@ export default function RetroSequence({ isActive }: Props) {
 
         {/* ─── LAYER 5: TERRAIN (The platformer level locked to the bottom) ─── */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '35%',
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '55%',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(120px)',
           transition: `all 0.9s ${aggressiveEase} 0.25s`,
