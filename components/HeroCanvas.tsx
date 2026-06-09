@@ -16,10 +16,25 @@ const FRAMES_PER_DELTA = 0.16
 const pad = (n: number) => String(n).padStart(4, '0')
 
 function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number) {
+  // NEW: Add a zoom multiplier to crop out baked-in black borders.
+  // 1.1 = 10% zoom. If you still see black bars, increase it to 1.15 or 1.2.
+  const ZOOM_FACTOR = 1.1; 
+
   const ir = img.naturalWidth / img.naturalHeight, cr = w / h
   let dw: number, dh: number, ox: number, oy: number
-  if (ir > cr) { dh = h; dw = dh * ir; ox = (w - dw) / 2; oy = 0 }
-  else { dw = w; dh = dw / ir; ox = 0; oy = (h - dh) / 2 }
+  
+  if (ir > cr) { 
+    dh = h * ZOOM_FACTOR; 
+    dw = dh * ir; 
+  } else { 
+    dw = w * ZOOM_FACTOR; 
+    dh = dw / ir; 
+  }
+  
+  // This math ensures the zoomed image stays perfectly centered
+  ox = (w - dw) / 2; 
+  oy = (h - dh) / 2;
+  
   ctx.clearRect(0, 0, w, h)
   ctx.drawImage(img, ox, oy, dw, dh)
 }
