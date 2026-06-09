@@ -8,6 +8,7 @@ const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: fals
 
 export default function Home() {
   const [heroReleased, setHeroReleased] = useState(false)
+  const [currentScene, setCurrentScene] = useState(0) // NEW: Track scene
   const heroReleasedRef = useRef(false)
 
   useEffect(() => {
@@ -19,30 +20,32 @@ export default function Home() {
     if (heroReleasedRef.current) return
     heroReleasedRef.current = true
     setHeroReleased(true)
-    // body already unlocked by HeroCanvas.doRelease — just scroll down
     setTimeout(() => {
       window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
     }, 80)
   }, [])
 
-  // Scroll back to very top → remount hero
+  // Smoothed out scroll-back logic
   useEffect(() => {
     if (!heroReleased) return
     const onScroll = () => {
-      if (window.scrollY < 8) {
+      if (window.scrollY <= 10) { 
         heroReleasedRef.current = false
         setHeroReleased(false)
         document.body.style.overflow = 'hidden'
-        window.scrollTo(0, 0)
+        // Using 'instant' prevents layout shifting/jumping
+        window.scrollTo({ top: 0, behavior: 'instant' }) 
       }
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [heroReleased])
 
+  // NEW: Show navbar if released OR if we are on Space (Scene 4)
+  const showNavbar = heroReleased || currentScene === 4
+
   return (
     <>
-      {/* Navbar — hidden during hero, slides in after release */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         zIndex: 2000, height: '70px',
@@ -50,11 +53,12 @@ export default function Home() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         background: 'linear-gradient(to bottom,rgba(2,5,16,.95) 0%,transparent 100%)',
         backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        opacity: heroReleased ? 1 : 0,
-        transform: heroReleased ? 'translateY(0)' : 'translateY(-100%)',
-        pointerEvents: heroReleased ? 'auto' : 'none',
+        opacity: showNavbar ? 1 : 0,
+        transform: showNavbar ? 'translateY(0)' : 'translateY(-100%)',
+        pointerEvents: showNavbar ? 'auto' : 'none',
         transition: 'opacity 0.5s ease, transform 0.5s ease',
       }}>
+        {/* ... Keep your existing Logo and Buttons here ... */}
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
           <img src="/logo.png" alt="Playful" style={{
             width: 'clamp(36px,4vw,46px)', height: 'clamp(36px,4vw,46px)',
@@ -74,24 +78,21 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero — fixed behind everything, fades when released */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        opacity: heroReleased ? 0 : 1,
+        // FIX: Removed the opacity fade entirely to prevent the black screen flash.
+        // By just toggling pointerEvents, the canvas stays visually fixed in the background smoothly.
         pointerEvents: heroReleased ? 'none' : 'auto',
-        transition: 'opacity 0.6s ease',
       }}>
-        <HeroCanvas onRelease={handleRelease} />
+        <HeroCanvas 
+          onRelease={handleRelease} 
+          onSceneChange={setCurrentScene} 
+          isReleased={heroReleased} 
+        />
       </div>
 
-      {/*
-        100vh spacer = first "page" in the snap flow.
-        The fixed hero sits visually above it.
-        After release, window scrolls past this into SnapCards.
-      */}
       <div style={{ height: '100vh', scrollSnapAlign: 'start' }} aria-hidden="true" />
 
-      {/* Snap sections */}
       <div style={{ position: 'relative', zIndex: 200 }}>
         <SnapCards isActive={heroReleased} />
       </div>
