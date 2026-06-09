@@ -7,6 +7,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
+interface RetroProps {
+  isActive?: boolean;
+}
 
 export default function RetroSequence() {
   const containerRef = useRef<HTMLDivElement>(null);
