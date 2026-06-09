@@ -7,10 +7,11 @@ const HeroCanvas = dynamic(() => import('../components/HeroCanvas'), { ssr: fals
 const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: false })
 
 export default function Home() {
-  const [headerVisible, setHeaderVisible] = useState(true)
+  const [headerVisible, setHeaderVisible] = useState(false)
+  const [heroReleased, setHeroReleased] = useState(false)
 
-  const handleHeaderVisibility = (visible: boolean) => {
-    setHeaderVisible(visible)
+  const handleRelease = () => {
+    setHeroReleased(true)
   }
 
   return (
@@ -27,17 +28,20 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Pinned hero — manages its own scroll interception */}
-      <HeroCanvas onHeaderVisibilityChange={handleHeaderVisibility} />
+      {/* Hero — fixed, intercepts scroll until released */}
+      <HeroCanvas
+        onRelease={handleRelease}
+        onHeaderVisibilityChange={setHeaderVisible}
+      />
 
-      {/* Cards — CSS snap scroll, sits below hero */}
+      {/* Cards — only rendered/scrollable after hero releases */}
       <div style={{
-        position: 'relative', zIndex: 10,
-        scrollSnapType: 'y mandatory',
-        overflowY: 'scroll',     /* own scroll context */
-        height: '100vh',
+        position: 'relative',
+        zIndex: heroReleased ? 200 : -1,
+        marginTop: '100vh',
+        visibility: heroReleased ? 'visible' : 'hidden',
       }}>
-        <SnapCards isActive={true} />
+        <SnapCards isActive={heroReleased} />
       </div>
     </>
   )
