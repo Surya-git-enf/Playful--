@@ -55,7 +55,6 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     if (releasedRef.current) return
     releasedRef.current = true
     setIsReleased(true)
-    // Unlock page scroll so SnapCards section is reachable
     document.body.style.overflow = 'auto'
     onRelease?.()
   }, [onRelease])
@@ -82,25 +81,20 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     frameDisplayed.current = idx
   }, [])
 
-  // Preload — frame 0 drawn immediately on load
   useEffect(() => {
     setupCanvas()
     window.addEventListener('resize', setupCanvas)
-
     const imgs: (HTMLImageElement | null)[] = Array(TOTAL_FRAMES + 1).fill(null)
     imagesRef.current = imgs
-
     const frame0 = new Image()
     frame0.src = `/palace/palace-frame_${pad(0)}.webp`
     frame0.onload = () => drawFrame(0)
     imgs[0] = frame0
-
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
       const img = new Image()
       img.src = `/palace/palace-frame_${pad(i)}.webp`
       imgs[i] = img
     }
-
     return () => window.removeEventListener('resize', setupCanvas)
   }, [setupCanvas, drawFrame])
 
@@ -118,7 +112,7 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
   }, [doRelease, setScene])
 
-  // RAF momentum + draw loop
+  // RAF loop
   useEffect(() => {
     const loop = () => {
       if (sceneRef.current === 0) {
@@ -147,12 +141,12 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-  // Header visibility — hide during hero, show after release
+  // Header: only show when on SpaceSequence (scene 4)
   useEffect(() => {
-    onHeaderVisibilityChange(!isReleased)
-  }, [isReleased, onHeaderVisibilityChange])
+    onHeaderVisibilityChange(scene === 4)
+  }, [scene, onHeaderVisibilityChange])
 
-  // Scroll lock + wheel + touch — only active while not released
+  // Scroll/touch lock — detaches on release
   useEffect(() => {
     if (isReleased) return
     document.body.style.overflow = 'hidden'
@@ -162,7 +156,6 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
       if (releasedRef.current) return
       e.preventDefault()
       if (snapLocked.current) return
-
       if (sceneRef.current === 0) {
         velocity.current += e.deltaY * FRAMES_PER_DELTA
         wheelActive.current = true
@@ -229,16 +222,11 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     zIndex: scene === i ? 10 : 0,
   })
 
-  // After release: fade out and stop intercepting
-  if (isReleased) {
-    return null
-  }
+  if (isReleased) return null
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 100,
-      overflow: 'hidden', background: '#020202',
-    }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020510' }}>
+
       {/* Scene 0 — Palace */}
       <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block' }} />
@@ -249,7 +237,7 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
           pointerEvents: 'none', zIndex: 20, willChange: 'opacity, transform',
         }}>
           <h2 style={{
-            fontFamily: 'var(--font-serif), "Instrument Serif", serif',
+            fontFamily: '"Instrument Serif", serif',
             fontStyle: 'italic', fontWeight: 400,
             fontSize: 'clamp(2.2rem,6vw,5.5rem)',
             color: '#fff', margin: 0,
@@ -281,4 +269,4 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
       </div>
     </div>
   )
-}
+      }
