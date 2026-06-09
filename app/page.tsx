@@ -19,20 +19,21 @@ export default function Home() {
     if (heroReleasedRef.current) return
     heroReleasedRef.current = true
     setHeroReleased(true)
-    document.body.style.overflow = 'auto'
+    // body already unlocked by HeroCanvas.doRelease — just scroll down
     setTimeout(() => {
       window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
-    }, 60)
+    }, 80)
   }, [])
 
+  // Scroll back to very top → remount hero
   useEffect(() => {
     if (!heroReleased) return
     const onScroll = () => {
-      if (window.scrollY < 10) {
+      if (window.scrollY < 8) {
         heroReleasedRef.current = false
+        setHeroReleased(false)
         document.body.style.overflow = 'hidden'
         window.scrollTo(0, 0)
-        setHeroReleased(false)
       }
     }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -41,7 +42,7 @@ export default function Home() {
 
   return (
     <>
-      {/* Navbar — only visible after hero releases */}
+      {/* Navbar — hidden during hero, slides in after release */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         zIndex: 2000, height: '70px',
@@ -73,25 +74,24 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero — fixed, hidden after release */}
+      {/* Hero — fixed behind everything, fades when released */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 100,
         opacity: heroReleased ? 0 : 1,
         pointerEvents: heroReleased ? 'none' : 'auto',
-        transition: 'opacity 0.5s ease',
+        transition: 'opacity 0.6s ease',
       }}>
         <HeroCanvas onRelease={handleRelease} />
       </div>
 
-      {/* Spacer = first snap point (hero sits above it) */}
-      <div style={{
-        height: '100vh',
-        scrollSnapAlign: 'start',
-        flexShrink: 0,
-        pointerEvents: 'none',
-      }} aria-hidden="true" />
+      {/*
+        100vh spacer = first "page" in the snap flow.
+        The fixed hero sits visually above it.
+        After release, window scrolls past this into SnapCards.
+      */}
+      <div style={{ height: '100vh', scrollSnapAlign: 'start' }} aria-hidden="true" />
 
-      {/* Bottom snap content */}
+      {/* Snap sections */}
       <div style={{ position: 'relative', zIndex: 200 }}>
         <SnapCards isActive={heroReleased} />
       </div>
