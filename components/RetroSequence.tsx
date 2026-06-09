@@ -97,7 +97,7 @@ export default function RetroSequence({ isActive }: Props) {
             animation: mounted ? 'castleLivePulse 5s ease-in-out infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
-            <img src="/retro/castle.png" alt="Castle" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <img src="/retro/castle.png" alt="Castle" style={{ width: '100%', height: '100%', objectPosition: 'bottom center' }} />
           </div>
         </div>
 
@@ -128,7 +128,7 @@ export default function RetroSequence({ isActive }: Props) {
             animation: mounted ? 'characterBreathe 2s infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
-            <img src="/retro/character.png" alt="Character" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <img src="/retro/character.png" alt="Character" style={{ width: '100%', height: 'auto', objectPosition: 'bottom center' }} />
           </div>
         </div>
 
