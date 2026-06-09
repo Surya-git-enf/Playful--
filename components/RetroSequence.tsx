@@ -8,7 +8,6 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ── THIS IS THE FIX: Telling TypeScript to expect the isActive prop ──
 interface RetroProps {
   isActive?: boolean;
 }
@@ -23,7 +22,6 @@ export default function RetroSequence({ isActive }: RetroProps) {
 
   useGSAP(() => {
     // ── 1. CONTINUOUS ARCADE MOTIONS ─────────────────────────────────────────
-    
     gsap.to(".retro-character", {
       y: -15, 
       duration: 0.3,
@@ -33,16 +31,15 @@ export default function RetroSequence({ isActive }: RetroProps) {
     });
 
     gsap.to(".retro-coin", {
-      y: -20,
+      y: -15,
       rotationY: 360,
-      duration: 1.5,
+      duration: 1.2,
       yoyo: true,
       repeat: -1,
       ease: "sine.inOut"
     });
 
     // ── 2. THE MASTER PARALLAX & SNAP SCROLL ─────────────────────────────────
-    
     const getScrollAmount = (el: HTMLDivElement | null) => {
       if (!el) return 0;
       return -(el.scrollWidth - window.innerWidth);
@@ -73,12 +70,13 @@ export default function RetroSequence({ isActive }: RetroProps) {
   return (
     <section 
       ref={containerRef} 
-      className="relative w-full h-screen overflow-hidden bg-[#87CEEB]" 
+      className="relative w-full h-screen overflow-hidden bg-[#4CA0FF]" // Vivid retro sky blue
     >
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
       `}} />
 
+      {/* TYPOGRAPHY */}
       <div className="absolute top-12 left-0 w-full text-center z-50 pointer-events-none">
         <h1 
           className="text-white text-3xl md:text-5xl uppercase leading-snug tracking-widest"
@@ -91,44 +89,71 @@ export default function RetroSequence({ isActive }: RetroProps) {
         </h1>
       </div>
 
+      {/* 1. SKY */}
       <div ref={skyRef} className="absolute bottom-0 h-full w-[150vw] z-0">
         <Image src="/retro/sky.png" alt="Sky" fill className="object-cover object-bottom" priority />
       </div>
 
+      {/* 2. CLOUDS */}
       <div ref={cloudsRef} className="absolute bottom-0 h-full w-[200vw] z-10">
         <Image src="/retro/clouds.png" alt="Clouds" fill className="object-cover object-bottom" priority />
       </div>
 
+      {/* 3. HILLS */}
       <div ref={hillsRef} className="absolute bottom-0 h-full w-[250vw] z-20">
         <Image src="/retro/hills.png" alt="Hills" fill className="object-cover object-bottom" />
       </div>
 
-      <div ref={castleRef} className="absolute bottom-0 h-full w-[250vw] z-30">
-        <Image src="/retro/castle.png" alt="Castle" fill className="object-cover object-bottom" />
-      </div>
-
-      <div ref={terrainRef} className="absolute bottom-0 h-full w-[300vw] z-40 flex items-end">
+      {/* 4. CASTLE (Positioned in the middle background) */}
+      <div ref={castleRef} className="absolute bottom-[20vh] h-[40vh] w-[250vw] z-30">
         <div className="relative w-full h-full">
-          <Image src="/retro/terrain.png" alt="Terrain" fill className="object-cover object-bottom" />
-          
-          <div className="retro-coin absolute bottom-[25vh] left-[50vw] w-12 h-12 md:w-16 md:h-16 z-50">
-            <Image src="/retro/coin.png" alt="Coin" fill className="object-contain" />
-          </div>
-          <div className="retro-coin absolute bottom-[35vh] left-[150vw] w-12 h-12 md:w-16 md:h-16 z-50">
-            <Image src="/retro/coin.png" alt="Coin" fill className="object-contain" />
-          </div>
-          <div className="retro-coin absolute bottom-[25vh] left-[250vw] w-12 h-12 md:w-16 md:h-16 z-50">
-            <Image src="/retro/coin.png" alt="Coin" fill className="object-contain" />
+          <div className="absolute left-[40vw] bottom-0 w-[150px] h-[150px] md:w-[250px] md:h-[250px] opacity-80">
+            <Image src="/retro/castle.png" alt="Castle" fill className="object-contain object-bottom" />
           </div>
         </div>
       </div>
 
-      <div className="absolute bottom-[18vh] md:bottom-[20vh] left-[15vw] z-50 pointer-events-none">
-        <div className="retro-character relative w-[80px] h-[100px] md:w-[120px] md:h-[150px]" style={{ filter: "drop-shadow(10px 10px 0px rgba(0,0,0,0.3))" }}>
+      {/* 5. TERRAIN & EXACT COIN PLACEMENTS */}
+      <div ref={terrainRef} className="absolute bottom-0 h-full w-[300vw] z-40">
+        <div className="relative w-full h-full">
+          
+          {/* Main Floor */}
+          <div className="absolute bottom-0 w-full h-[20vh]">
+            <Image src="/retro/terrain.png" alt="Terrain" fill className="object-cover object-bottom" />
+          </div>
+
+          {/* ── COIN CLUSTERS (Matching your image layout) ── */}
+          
+          {/* Cluster 1: Three coins low on the left */}
+          <div className="retro-coin absolute bottom-[35vh] left-[20vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[35vh] left-[25vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[35vh] left-[30vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+
+          {/* Cluster 2: Three coins high up above the middle */}
+          <div className="retro-coin absolute bottom-[65vh] left-[45vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[65vh] left-[50vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[65vh] left-[55vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+
+          {/* Cluster 3: Four coins lined up on the upper right platform area */}
+          <div className="retro-coin absolute bottom-[55vh] left-[110vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[55vh] left-[115vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[55vh] left-[120vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[55vh] left-[125vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+
+          {/* Cluster 4: A few more scattered towards the end of the scroll */}
+          <div className="retro-coin absolute bottom-[40vh] left-[180vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[45vh] left-[220vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+          <div className="retro-coin absolute bottom-[60vh] left-[260vw] w-10 h-10 md:w-14 md:h-14"><Image src="/retro/coin.png" alt="Coin" fill className="object-contain" /></div>
+        </div>
+      </div>
+
+      {/* THE PLAYER CHARACTER */}
+      <div className="absolute bottom-[18vh] left-[15vw] z-50 pointer-events-none">
+        <div className="retro-character relative w-[90px] h-[110px] md:w-[130px] md:h-[160px]" style={{ filter: "drop-shadow(8px 8px 0px rgba(0,0,0,0.4))" }}>
           <Image src="/retro/character.png" alt="Main Character" fill className="object-contain object-bottom" />
         </div>
       </div>
 
     </section>
   );
-}
+            }
