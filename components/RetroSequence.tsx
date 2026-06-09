@@ -16,11 +16,10 @@ export default function RetroSequence({ isActive }: RetroProps) {
   const skyRef = useRef<HTMLDivElement>(null);
   const cloudsRef = useRef<HTMLDivElement>(null);
   const hillsRef = useRef<HTMLDivElement>(null);
-  const castleRef = useRef<HTMLDivElement>(null);
   const terrainRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    // ── 1. ARCADE MOTIONS ────────────────────────────────────────────────────
+    // ── 1. ARCADE JUMP & SPIN MOTIONS ────────────────────────────────────────
     gsap.to(".retro-character", {
       y: -15, duration: 0.3, yoyo: true, repeat: -1, ease: "power1.inOut"
     });
@@ -29,53 +28,47 @@ export default function RetroSequence({ isActive }: RetroProps) {
       y: -15, rotationY: 360, duration: 1.2, yoyo: true, repeat: -1, ease: "sine.inOut"
     });
 
-    // ── 2. RESPONSIVE PARALLAX ───────────────────────────────────────────────
-    const getScrollAmount = (el: HTMLDivElement | null) => {
-      if (!el) return 0;
-      return -(el.scrollWidth - window.innerWidth);
-    };
-
+    // ── 2. THE TRUE SNAPSCROLL SKILL & PARALLAX ──────────────────────────────
+    // By using xPercent, we don't need complex pixel math. It just works.
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
         pin: true,
         scrub: 1, 
-        end: "+=400%", 
-        invalidateOnRefresh: true, 
+        end: "+=400%", // 4 full screens of scrolling
         snap: {
-          snapTo: 1 / 3, 
+          snapTo: [0, 0.33, 0.66, 1], // THE SKILL: Locks exactly to 4 precise checkpoints!
           duration: { min: 0.4, max: 0.8 },
           ease: "power2.inOut" 
         }
       }
     });
 
-    tl.to(skyRef.current, { x: () => getScrollAmount(skyRef.current), ease: "none" }, 0);
-    tl.to(cloudsRef.current, { x: () => getScrollAmount(cloudsRef.current), ease: "none" }, 0);
-    tl.to(hillsRef.current, { x: () => getScrollAmount(hillsRef.current), ease: "none" }, 0);
-    tl.to(castleRef.current, { x: () => getScrollAmount(castleRef.current), ease: "none" }, 0);
-    tl.to(terrainRef.current, { x: () => getScrollAmount(terrainRef.current), ease: "none" }, 0);
+    // 400vw total width. To reach the end, we slide left by 75% of the container's width.
+    tl.to(skyRef.current, { xPercent: -15, ease: "none" }, 0);      // Slowest
+    tl.to(cloudsRef.current, { xPercent: -30, ease: "none" }, 0);   // Slow
+    tl.to(hillsRef.current, { xPercent: -50, ease: "none" }, 0);    // Medium
+    tl.to(terrainRef.current, { xPercent: -75, ease: "none" }, 0);  // Fastest (Ground level)
 
   }, { scope: containerRef });
 
   return (
     <section 
       ref={containerRef} 
-      className="relative w-full h-[100dvh] overflow-hidden" 
-      style={{ backgroundColor: "#4CA0FF" }} 
+      className="relative w-full h-[100dvh] overflow-hidden bg-[#4CA0FF]" 
     >
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
       `}} />
 
-      {/* ── RESPONSIVE TYPOGRAPHY (Fixed Mobile Stacking) ── */}
+      {/* ── MISTRAL CODE TYPOGRAPHY ── */}
       <div className="absolute top-12 md:top-16 left-0 w-full flex justify-center z-50 pointer-events-none px-4">
         <h1 
           className="uppercase leading-tight tracking-widest flex flex-col md:flex-row gap-3 md:gap-6 items-center text-center"
           style={{ 
             fontFamily: "'Press Start 2P', cursive",
             textShadow: "4px 4px 0px #000, -4px -4px 0px #000, 4px -4px 0px #000, -4px 4px 0px #000",
-            fontSize: "clamp(1.2rem, 4vw, 3rem)" // Safely scales text down
+            fontSize: "clamp(1.2rem, 4vw, 3rem)" 
           }}
         >
           <span style={{ color: "#FACC15" }}>pixels</span>
@@ -83,96 +76,74 @@ export default function RetroSequence({ isActive }: RetroProps) {
         </h1>
       </div>
 
-      {/* ── CSS TILING BACKGROUND LAYERS (FOOLPROOF FIX) ── */}
+      {/* ── FOOLPROOF PHYSICAL LAYERS (No more CSS background bugs) ── */}
       
       {/* 1. SKY */}
-      <div 
-        ref={skyRef} 
-        className="absolute bottom-0 h-full w-[300vw] z-0"
-        style={{ 
-          backgroundImage: "url('/retro/sky.png')", 
-          backgroundSize: "auto 100%", // Forces image to fit height natively
-          backgroundRepeat: "repeat-x", // Tiles it horizontally forever
-          backgroundPosition: "bottom left" 
-        }} 
-      />
+      <div ref={skyRef} className="absolute inset-0 w-[400vw] h-full flex z-0">
+        <img src="/retro/sky.png" className="w-[100vw] h-full object-cover" alt="Sky" />
+        <img src="/retro/sky.png" className="w-[100vw] h-full object-cover" alt="Sky" />
+        <img src="/retro/sky.png" className="w-[100vw] h-full object-cover" alt="Sky" />
+        <img src="/retro/sky.png" className="w-[100vw] h-full object-cover" alt="Sky" />
+      </div>
 
       {/* 2. CLOUDS */}
-      <div 
-        ref={cloudsRef} 
-        className="absolute bottom-0 h-full w-[400vw] z-10"
-        style={{ 
-          backgroundImage: "url('/retro/clouds.png')", 
-          backgroundSize: "auto 100%", 
-          backgroundRepeat: "repeat-x", 
-          backgroundPosition: "bottom left" 
-        }} 
-      />
+      <div ref={cloudsRef} className="absolute inset-0 w-[400vw] h-full flex z-10 pointer-events-none">
+        <img src="/retro/clouds.png" className="w-[100vw] h-[60vh] object-cover" alt="Clouds" />
+        <img src="/retro/clouds.png" className="w-[100vw] h-[60vh] object-cover" alt="Clouds" />
+        <img src="/retro/clouds.png" className="w-[100vw] h-[60vh] object-cover" alt="Clouds" />
+        <img src="/retro/clouds.png" className="w-[100vw] h-[60vh] object-cover" alt="Clouds" />
+      </div>
 
-      {/* 3. HILLS */}
-      <div 
-        ref={hillsRef} 
-        className="absolute bottom-0 h-full w-[500vw] z-20"
-        style={{ 
-          backgroundImage: "url('/retro/hills.png')", 
-          backgroundSize: "auto 100%", 
-          backgroundRepeat: "repeat-x", 
-          backgroundPosition: "bottom left" 
-        }} 
-      />
-
-      {/* 4. CASTLE (Placed once, not tiled) */}
-      <div ref={castleRef} className="absolute bottom-[20vh] h-[40vh] w-[500vw] z-30 flex items-end">
-        <div className="relative left-[40vw] w-[150px] md:w-[250px] opacity-80">
-          <img src="/retro/castle.png" alt="Castle" className="w-full h-auto object-contain object-bottom" />
+      {/* 3. HILLS & CASTLE */}
+      <div ref={hillsRef} className="absolute bottom-[20vh] w-[400vw] h-[40vh] flex z-20 pointer-events-none">
+        <div className="relative w-[100vw] h-full"><img src="/retro/hills.png" className="absolute bottom-0 w-full h-full object-cover" alt="Hills" /></div>
+        <div className="relative w-[100vw] h-full">
+          <img src="/retro/hills.png" className="absolute bottom-0 w-full h-full object-cover" alt="Hills" />
+          {/* Castle perfectly nested in the second hill section */}
+          <img src="/retro/castle.png" className="absolute bottom-[10vh] left-[30vw] w-[150px] md:w-[250px] object-contain" alt="Castle" />
         </div>
+        <div className="relative w-[100vw] h-full"><img src="/retro/hills.png" className="absolute bottom-0 w-full h-full object-cover" alt="Hills" /></div>
+        <div className="relative w-[100vw] h-full"><img src="/retro/hills.png" className="absolute bottom-0 w-full h-full object-cover" alt="Hills" /></div>
       </div>
 
-      {/* 5. TERRAIN & COINS */}
-      <div ref={terrainRef} className="absolute bottom-0 h-full w-[600vw] z-40">
+      {/* 4. TERRAIN & COINS (The Ground Level) */}
+      <div ref={terrainRef} className="absolute bottom-0 w-[400vw] h-full z-40 pointer-events-none">
         
-        {/* Repeating Floor Background */}
-        <div 
-          className="absolute bottom-0 w-full h-[22vh] md:h-[20vh]"
-          style={{ 
-            backgroundImage: "url('/retro/terrain.png')", 
-            backgroundSize: "auto 100%", // Fits exactly into the 20vh height
-            backgroundRepeat: "repeat-x", 
-            backgroundPosition: "top left" 
-          }} 
-        />
+        {/* The repeating ground blocks */}
+        <div className="absolute bottom-0 w-full h-[25vh] md:h-[20vh] flex">
+          <img src="/retro/terrain.png" className="w-[100vw] h-full object-cover" alt="Terrain" />
+          <img src="/retro/terrain.png" className="w-[100vw] h-full object-cover" alt="Terrain" />
+          <img src="/retro/terrain.png" className="w-[100vw] h-full object-cover" alt="Terrain" />
+          <img src="/retro/terrain.png" className="w-[100vw] h-full object-cover" alt="Terrain" />
+        </div>
 
-        {/* ── EXACT COIN CLUSTERS ── */}
-        {/* Cluster 1 */}
-        <div className="retro-coin absolute bottom-[35vh] left-[10%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[35vh] left-[12%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[35vh] left-[14%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
+        {/* ── COIN JUMP ARCS (Proper Platformer Layout) ── */}
+        
+        {/* Arc 1: First Jump */}
+        <div className="retro-coin absolute bottom-[35vh] left-[40vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
+        <div className="retro-coin absolute bottom-[45vh] left-[50vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
+        <div className="retro-coin absolute bottom-[35vh] left-[60vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
 
-        {/* Cluster 2 */}
-        <div className="retro-coin absolute bottom-[60vh] left-[35%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[60vh] left-[37%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[60vh] left-[39%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
+        {/* Arc 2: High Jump near Castle */}
+        <div className="retro-coin absolute bottom-[55vh] left-[130vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
+        <div className="retro-coin absolute bottom-[60vh] left-[140vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
+        <div className="retro-coin absolute bottom-[55vh] left-[150vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
 
-        {/* Cluster 3 */}
-        <div className="retro-coin absolute bottom-[50vh] left-[65%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[50vh] left-[67%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[50vh] left-[69%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[50vh] left-[71%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-
-        {/* Cluster 4 */}
-        <div className="retro-coin absolute bottom-[40vh] left-[85%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[45vh] left-[90%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
-        <div className="retro-coin absolute bottom-[60vh] left-[95%] w-8 h-8 md:w-14 md:h-14"><img src="/retro/coin.png" alt="Coin" className="w-full h-full object-contain" /></div>
+        {/* Arc 3: Straight line run */}
+        <div className="retro-coin absolute bottom-[30vh] left-[220vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
+        <div className="retro-coin absolute bottom-[30vh] left-[230vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
+        <div className="retro-coin absolute bottom-[30vh] left-[240vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
+        <div className="retro-coin absolute bottom-[30vh] left-[250vw] w-8 h-8 md:w-12 md:h-12"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="Coin" /></div>
 
       </div>
 
-      {/* ── THE PLAYER CHARACTER ── */}
-      <div className="absolute bottom-[20vh] md:bottom-[18vh] left-[10vw] md:left-[15vw] z-50 pointer-events-none">
-        <div className="retro-character relative w-[80px] h-[100px] md:w-[130px] md:h-[160px]" style={{ filter: "drop-shadow(8px 8px 0px rgba(0,0,0,0.4))" }}>
+      {/* ── THE PLAYER CHARACTER (Fixed position) ── */}
+      <div className="absolute bottom-[22vh] md:bottom-[18vh] left-[15vw] z-50 pointer-events-none">
+        <div className="retro-character relative w-[70px] h-[90px] md:w-[110px] md:h-[140px]" style={{ filter: "drop-shadow(6px 6px 0px rgba(0,0,0,0.4))" }}>
           <img src="/retro/character.png" alt="Main Character" className="w-full h-full object-contain object-bottom" />
         </div>
       </div>
 
     </section>
   );
-}
+      }
