@@ -10,7 +10,7 @@ const TOTAL_SCENES = 4   // scenes 0-4, scene 4 = Space
 const TOTAL_FRAMES = 144
 const SNAP_LOCK_MS = 900
 const TEXT_FADE_START = 100
-const FRICTION = 0.10
+const FRICTION = 0.80
 const FRAMES_PER_DELTA = 0.16
 
 const pad = (n: number) => String(n).padStart(4, '0')
