@@ -55,6 +55,8 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     if (releasedRef.current) return
     releasedRef.current = true
     setIsReleased(true)
+    // Unlock page scroll so SnapCards section is reachable
+    document.body.style.overflow = 'auto'
     onRelease?.()
   }, [onRelease])
 
@@ -145,13 +147,14 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-  // Header visibility — hide while in hero, show once released
+  // Header visibility — hide during hero, show after release
   useEffect(() => {
     onHeaderVisibilityChange(!isReleased)
   }, [isReleased, onHeaderVisibilityChange])
 
-  // Scroll lock + wheel + touch
+  // Scroll lock + wheel + touch — only active while not released
   useEffect(() => {
+    if (isReleased) return
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)
 
@@ -211,13 +214,12 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
     return () => {
-      document.body.style.overflow = 'auto'
       window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('touchmove', handleTouchMove)
       window.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [snapTo])
+  }, [snapTo, isReleased])
 
   const gs = (i: number): React.CSSProperties => ({
     position: 'absolute', inset: 0,
@@ -227,9 +229,16 @@ export default function HeroCanvas({ onRelease, onHeaderVisibilityChange }: Prop
     zIndex: scene === i ? 10 : 0,
   })
 
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020202' }}>
+  // After release: fade out and stop intercepting
+  if (isReleased) {
+    return null
+  }
 
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100,
+      overflow: 'hidden', background: '#020202',
+    }}>
       {/* Scene 0 — Palace */}
       <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block' }} />
