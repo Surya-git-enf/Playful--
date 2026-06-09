@@ -36,17 +36,28 @@
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { height: 100%; }
+/* 
+  PATCH: replace the html + body rules in your globals.css with these
+*/
+
+html {
+  height: 100%;
+  /* Window-level snap — activates once hero releases */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-mono);
-  overflow-x: hidden; /* controlled by useSnapScroll */
+  /* DO NOT set overflow:hidden here — page.tsx controls it via JS */
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
 }
+
 
 /* Film grain */
 body::after {
