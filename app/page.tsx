@@ -10,7 +10,6 @@ export default function Home() {
   const [heroReleased, setHeroReleased] = useState(false)
   const heroReleasedRef = useRef(false)
 
-  // Lock body on mount
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)
@@ -20,15 +19,12 @@ export default function Home() {
     if (heroReleasedRef.current) return
     heroReleasedRef.current = true
     setHeroReleased(true)
-    // Unlock body — snap scroll takes over
     document.body.style.overflow = 'auto'
-    // Jump window scroll to the bottom content start
     setTimeout(() => {
       window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
     }, 60)
   }, [])
 
-  // Re-lock when user scrolls window back to top
   useEffect(() => {
     if (!heroReleased) return
     const onScroll = () => {
@@ -45,7 +41,7 @@ export default function Home() {
 
   return (
     <>
-      {/* Navbar — always visible */}
+      {/* Navbar — only visible after hero releases */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         zIndex: 2000, height: '70px',
@@ -53,6 +49,10 @@ export default function Home() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         background: 'linear-gradient(to bottom,rgba(2,5,16,.95) 0%,transparent 100%)',
         backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        opacity: heroReleased ? 1 : 0,
+        transform: heroReleased ? 'translateY(0)' : 'translateY(-100%)',
+        pointerEvents: heroReleased ? 'auto' : 'none',
+        transition: 'opacity 0.5s ease, transform 0.5s ease',
       }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
           <img src="/logo.png" alt="Playful" style={{
@@ -73,7 +73,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero — fixed, fades out when released */}
+      {/* Hero — fixed, hidden after release */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 100,
         opacity: heroReleased ? 0 : 1,
@@ -83,18 +83,16 @@ export default function Home() {
         <HeroCanvas onRelease={handleRelease} onHeaderVisibilityChange={() => {}} />
       </div>
 
-      {/* 
-        Document flow:
-        - First 100vh = spacer (hero sits fixed above it)
-        - Then snap sections follow naturally in window scroll
-      */}
-      <div style={{ height: "100vh", scrollSnapAlign: "start", flexShrink: 0 }} aria-hidden="true" />
-
-      {/* Snap sections — window-level scroll-snap */}
+      {/* Spacer = first snap point (hero sits above it) */}
       <div style={{
-        /* snap context on the sections themselves */
-        position: 'relative', zIndex: 200,
-      }}>
+        height: '100vh',
+        scrollSnapAlign: 'start',
+        flexShrink: 0,
+        pointerEvents: 'none',
+      }} aria-hidden="true" />
+
+      {/* Bottom snap content */}
+      <div style={{ position: 'relative', zIndex: 200 }}>
         <SnapCards isActive={heroReleased} />
       </div>
     </>
