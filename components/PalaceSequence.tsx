@@ -51,7 +51,7 @@ export default function PalaceSequence({ isActive, onExitForward, onExitBackward
     let loaded = 0
     const imgs: (HTMLImageElement | null)[] = Array(TOTAL_FRAMES).fill(null)
 
-    for (let i = 0; i < TOTAL_FRAMES; i++) {
+    for (let i = 1; i < TOTAL_FRAMES; i++) {
       const img = new Image()
       img.src = FRAME_URL(i)
       img.onload = () => {
