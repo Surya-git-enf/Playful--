@@ -6,9 +6,9 @@ import RacingSequence from './RacingSequence'
 import OpenWorldSequence from './OpenWorldSequence'
 import SpaceSequence from './SpaceSequence'
 
-const TOTAL_SCENES = 4
+const TOTAL_SCENES = 4   // scenes 0-4, scene 4 = Space
 const TOTAL_FRAMES = 144
-const SNAP_LOCK_MS = 1000
+const SNAP_LOCK_MS = 900
 const TEXT_FADE_START = 100
 const FRICTION = 0.80
 const FRAMES_PER_DELTA = 0.16
@@ -32,36 +32,32 @@ export default function HeroCanvas({ onRelease }: Props) {
   const [scene, setSceneState] = useState(0)
   const [textProgress, setTextProgress] = useState(0)
 
-  const sceneRef = useRef(0)
-  const frameFloat = useRef(0)
-  const frameDisplayed = useRef(-1)
-  const velocity = useRef(0)
-  const snapLocked = useRef(false)
+  const sceneRef    = useRef(0)
+  const frameFloat  = useRef(0)
+  const frameDrawn  = useRef(-1)
+  const velocity    = useRef(0)
+  const snapLocked  = useRef(false)
   const wheelActive = useRef(false)
-  const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const releasedRef = useRef(false)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const imagesRef = useRef<(HTMLImageElement | null)[]>([])
-  const rafRef = useRef<number>(0)
+  const wheelTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasReleased = useRef(false)
+
+  const canvasRef   = useRef<HTMLCanvasElement>(null)
+  const imagesRef   = useRef<(HTMLImageElement | null)[]>([])
+  const rafRef      = useRef<number>(0)
 
   const setScene = useCallback((n: number) => {
     sceneRef.current = n
     setSceneState(n)
   }, [])
 
-  const doRelease = useCallback(() => {
-    if (releasedRef.current) return
-    releasedRef.current = true
-    onRelease()
-  }, [onRelease])
-
+  // canvas setup
   const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    canvas.width = window.innerWidth * dpr
+    canvas.width  = window.innerWidth * dpr
     canvas.height = window.innerHeight * dpr
-    canvas.style.width = `${window.innerWidth}px`
+    canvas.style.width  = `${window.innerWidth}px`
     canvas.style.height = `${window.innerHeight}px`
     const ctx = canvas.getContext('2d')
     if (ctx) ctx.scale(dpr, dpr)
@@ -69,51 +65,57 @@ export default function HeroCanvas({ onRelease }: Props) {
 
   const drawFrame = useCallback((idx: number) => {
     const canvas = canvasRef.current
-    const ctx = canvas?.getContext('2d')
-    const img = imagesRef.current[idx]
+    const ctx    = canvas?.getContext('2d')
+    const img    = imagesRef.current[idx]
     if (!canvas || !ctx || !img?.complete || img.naturalWidth === 0) return
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     drawCover(ctx, img, canvas.width / dpr, canvas.height / dpr)
-    frameDisplayed.current = idx
+    frameDrawn.current = idx
   }, [])
 
-  // Preload — frame 0 drawn immediately on load
+  // preload — frame 0 drawn immediately
   useEffect(() => {
     setupCanvas()
     window.addEventListener('resize', setupCanvas)
-
     const imgs: (HTMLImageElement | null)[] = Array(TOTAL_FRAMES + 1).fill(null)
     imagesRef.current = imgs
-
-    const frame0 = new Image()
-    frame0.src = `/palace/palace-frame_${pad(0)}.webp`
-    frame0.onload = () => drawFrame(0)
-    imgs[0] = frame0
-
+    const f0 = new Image()
+    f0.src = `/palace/palace-frame_${pad(0)}.webp`
+    f0.onload = () => drawFrame(0)
+    imgs[0] = f0
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      const img = new Image()
-      img.src = `/palace/palace-frame_${pad(i)}.webp`
-      imgs[i] = img
+      const img = new Image(); img.src = `/palace/palace-frame_${pad(i)}.webp`; imgs[i] = img
     }
-
     return () => window.removeEventListener('resize', setupCanvas)
   }, [setupCanvas, drawFrame])
 
+  // release — unlock body so window can scroll, then call parent
+  const doRelease = useCallback(() => {
+    if (hasReleased.current) return
+    hasReleased.current = true
+    // Unlock body FIRST so scroll-back detection works
+    document.body.style.overflow = 'auto'
+    onRelease()
+  }, [onRelease])
+
+  // snap helper
   const snapTo = useCallback((next: number) => {
-    if (snapLocked.current || next < 0) return
+    if (snapLocked.current) return
     velocity.current = 0
+    // Scrolling down from Space (scene 4) → release
     if (next > TOTAL_SCENES) {
       snapLocked.current = true
       doRelease()
       setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
       return
     }
+    if (next < 0) return
     snapLocked.current = true
     setScene(next)
     setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
   }, [doRelease, setScene])
 
-  // RAF momentum + draw loop
+  // RAF momentum + draw
   useEffect(() => {
     const loop = () => {
       if (sceneRef.current === 0) {
@@ -125,15 +127,11 @@ export default function HeroCanvas({ onRelease }: Props) {
         }
         frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current))
         const idx = Math.round(frameFloat.current)
-        if (idx !== frameDisplayed.current) {
+        if (idx !== frameDrawn.current) {
           drawFrame(idx)
-          const tp = idx < TEXT_FADE_START
-            ? 0
-            : Math.min(1, (idx - TEXT_FADE_START) / (TOTAL_FRAMES - TEXT_FADE_START))
+          const tp = idx < TEXT_FADE_START ? 0 : Math.min(1, (idx - TEXT_FADE_START) / (TOTAL_FRAMES - TEXT_FADE_START))
           setTextProgress(tp)
-          if (idx >= TOTAL_FRAMES && !wheelActive.current && Math.abs(velocity.current) < 0.1) {
-            snapTo(1)
-          }
+          if (idx >= TOTAL_FRAMES && !wheelActive.current && Math.abs(velocity.current) < 0.1) snapTo(1)
         }
       }
       rafRef.current = requestAnimationFrame(loop)
@@ -142,15 +140,17 @@ export default function HeroCanvas({ onRelease }: Props) {
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-  // Scroll lock + wheel + touch
+  // wheel + touch — lock body on mount, do NOT touch overflow after release
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)
 
     const handleWheel = (e: WheelEvent) => {
-      if (releasedRef.current) return
+      // After release, stop intercepting — let window scroll work
+      if (hasReleased.current) return
       e.preventDefault()
       if (snapLocked.current) return
+      const down = e.deltaY > 0
 
       if (sceneRef.current === 0) {
         velocity.current += e.deltaY * FRAMES_PER_DELTA
@@ -163,18 +163,15 @@ export default function HeroCanvas({ onRelease }: Props) {
         }, 150)
         return
       }
-      if (Math.abs(e.deltaY) > 15) {
-        snapTo(sceneRef.current + (e.deltaY > 0 ? 1 : -1))
-      }
+      if (Math.abs(e.deltaY) > 15) snapTo(sceneRef.current + (down ? 1 : -1))
     }
 
     let ty0 = 0, tyLast = 0, tvY = 0, ttLast = 0
-    const handleTouchStart = (e: TouchEvent) => {
-      ty0 = e.touches[0].clientY
-      tyLast = ty0; tvY = 0; ttLast = Date.now()
+    const onTouchStart = (e: TouchEvent) => {
+      ty0 = e.touches[0].clientY; tyLast = ty0; tvY = 0; ttLast = Date.now()
     }
-    const handleTouchMove = (e: TouchEvent) => {
-      if (releasedRef.current) return
+    const onTouchMove = (e: TouchEvent) => {
+      if (hasReleased.current) return
       e.preventDefault()
       const now = Date.now()
       const dy = tyLast - e.touches[0].clientY
@@ -184,8 +181,8 @@ export default function HeroCanvas({ onRelease }: Props) {
         frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current + dy * 0.55))
       }
     }
-    const handleTouchEnd = () => {
-      if (releasedRef.current || snapLocked.current) return
+    const onTouchEnd = () => {
+      if (hasReleased.current || snapLocked.current) return
       if (sceneRef.current === 0) {
         velocity.current = tvY * 16.67 * 0.55
         wheelActive.current = false
@@ -193,21 +190,19 @@ export default function HeroCanvas({ onRelease }: Props) {
         if (frameFloat.current <= 3 && velocity.current < -3) { frameFloat.current = 0; velocity.current = 0 }
         return
       }
-      const totalDy = ty0 - tyLast
-      if (Math.abs(totalDy) > 40) snapTo(sceneRef.current + (totalDy > 0 ? 1 : -1))
+      const dy = ty0 - tyLast
+      if (Math.abs(dy) > 40) snapTo(sceneRef.current + (dy > 0 ? 1 : -1))
     }
 
-    window.addEventListener('wheel', handleWheel, { passive: false })
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-    window.addEventListener('touchmove', handleTouchMove, { passive: false })
-    window.addEventListener('touchend', handleTouchEnd, { passive: true })
-
+    window.addEventListener('wheel',      handleWheel,  { passive: false })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove',  onTouchMove,  { passive: false })
+    window.addEventListener('touchend',   onTouchEnd,   { passive: true })
     return () => {
-      document.body.style.overflow = 'auto'
-      window.removeEventListener('wheel', handleWheel)
-      window.removeEventListener('touchstart', handleTouchStart)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchend', handleTouchEnd)
+      window.removeEventListener('wheel',      handleWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove',  onTouchMove)
+      window.removeEventListener('touchend',   onTouchEnd)
     }
   }, [snapTo])
 
@@ -232,22 +227,21 @@ export default function HeroCanvas({ onRelease }: Props) {
           pointerEvents: 'none', zIndex: 20, willChange: 'opacity, transform',
         }}>
           <h2 style={{
-            fontFamily: 'var(--font-serif), "Instrument Serif", serif',
+            fontFamily: 'var(--font-serif,"Instrument Serif",serif)',
             fontStyle: 'italic', fontWeight: 400,
             fontSize: 'clamp(2.2rem,6vw,5.5rem)',
             color: '#fff', margin: 0,
             textShadow: '0 4px 40px rgba(0,0,0,0.8)',
             whiteSpace: 'nowrap',
-          }}>Kingdoms Never Sleep</h2>
+          }}>Step into the Kingdom</h2>
         </div>
       </div>
 
-      <div style={gs(1)}><RetroSequence isActive={scene === 1} /></div>
-      <div style={gs(2)}><RacingSequence isActive={scene === 2} /></div>
+      <div style={gs(1)}><RetroSequence   isActive={scene === 1} /></div>
+      <div style={gs(2)}><RacingSequence  isActive={scene === 2} /></div>
       <div style={gs(3)}><OpenWorldSequence isActive={scene === 3} /></div>
-      <div style={gs(4)}><SpaceSequence isActive={scene === 4} /></div>
-
-
+      <div style={gs(4)}><SpaceSequence   isActive={scene === 4} /></div>
     </div>
   )
-}
+        }
+        
