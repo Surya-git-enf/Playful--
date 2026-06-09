@@ -229,7 +229,8 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
 
       {/* Scene 0 — Palace */}
       <div style={gs(0)}>
-        <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block' }} />
+        <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block', width: '100vw', height: '100dvh' }} />
+        
         <div style={{
           position: 'absolute', bottom: '12%', left: '50%',
           transform: `translateX(-50%) translateY(${(1 - textProgress) * 30}px)`,
