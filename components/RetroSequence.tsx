@@ -87,7 +87,7 @@ export default function RetroSequence({ isActive }: Props) {
             Sits dynamically on top of the hills line 
         */}
         <div style={{ 
-          position: 'absolute', bottom: '60dvh', left: '50%', zIndex: 4,
+          position: 'absolute', bottom: '15dvh', left: '50%', zIndex: 4,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(-50%) scale(1)' : 'translateX(-50%) scale(0.8)',
           transition: `all 1.5s ${premiumEase} 0.2s`
@@ -97,7 +97,7 @@ export default function RetroSequence({ isActive }: Props) {
             animation: mounted ? 'castleLivePulse 5s ease-in-out infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
-            <img src="/retro/castle.png" alt="Castle" style={{ width: '100%', height: '100%', objectPosition: 'bottom center' }} />
+            <img src="/retro/castle.png" alt="Castle" style={{ width: '100%', height: '100%',objectFit: 'cover', objectPosition: 'bottom center' }} />
           </div>
         </div>
 
@@ -105,7 +105,7 @@ export default function RetroSequence({ isActive }: Props) {
             Firmly anchored to the bottom 0. 
         */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '22dvh', zIndex: 5,
+          position: 'absolute', bottom: '15dvh', left: 0, right: 0, height: '22dvh', zIndex: 5,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(100px)',
           transition: `all 1s ${aggressiveEase} 0.25s`
