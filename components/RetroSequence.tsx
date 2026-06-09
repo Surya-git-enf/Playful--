@@ -1,172 +1,220 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
-
-gsap.registerPlugin(ScrollTrigger);
+import React, { useEffect, useState } from 'react';
 
 interface Props {
-  isActive?: boolean;
+  isActive: boolean;
 }
 
 export default function RetroSequence({ isActive }: Props) {
   const [mounted, setMounted] = useState(false);
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-  const skyRef = useRef<HTMLDivElement>(null);
-  const cloudsRef = useRef<HTMLDivElement>(null);
-  const castleRef = useRef<HTMLDivElement>(null);
-  const hillsRef = useRef<HTMLDivElement>(null);
-  const terrainRef = useRef<HTMLDivElement>(null);
 
-  // ─── 1. MOUNTING LOGIC (RacingSequence Sync) ───
   useEffect(() => {
     let mountTimer: NodeJS.Timeout;
+
     if (isActive) {
+      // Mount the static parallax layers immediately after step snap
       mountTimer = setTimeout(() => setMounted(true), 50);
     } else {
       setMounted(false);
     }
-    return () => clearTimeout(mountTimer);
+
+    return () => {
+      clearTimeout(mountTimer);
+    };
   }, [isActive]);
 
-  useGSAP(() => {
-    if (!mounted) return;
-
-    // ─── 2. CONTINUOUS RETRO MOTIONS ───
-    gsap.to(".retro-character", {
-      y: -8, duration: 0.25, yoyo: true, repeat: -1, ease: "power1.inOut"
-    });
-
-    gsap.to(".retro-coin", {
-      y: -10, rotationY: 360, duration: 1.2, yoyo: true, repeat: -1, ease: "sine.inOut"
-    });
-
-    // ─── 3. THE SNAPSCROLL SKILL DEPLOYMENT ───
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        pin: true,
-        scrub: 1, 
-        end: "+=400%", 
-        snap: {
-          snapTo: [0, 0.333, 0.666, 1], // Perfect segment snapping loops
-          duration: { min: 0.4, max: 0.8 },
-          ease: "power2.inOut" 
-        }
-      }
-    });
-
-    // Precise Parallax ratios based on depth
-    tl.to(skyRef.current, { xPercent: -12, ease: "none" }, 0);      
-    tl.to(cloudsRef.current, { xPercent: -24, ease: "none" }, 0);   
-    tl.to(castleRef.current, { xPercent: -40, ease: "none" }, 0);   
-    tl.to(hillsRef.current, { xPercent: -55, ease: "none" }, 0);    
-    tl.to(terrainRef.current, { xPercent: -75, ease: "none" }, 0);  
-
-  }, { scope: containerRef, dependencies: [mounted] });
-
   const premiumEase = 'cubic-bezier(0.16, 1, 0.3, 1)';
-  const panels = [0, 1, 2, 3];
+  const aggressiveEase = 'cubic-bezier(0.19, 1, 0.22, 1)';
 
   return (
-    <section 
-      ref={containerRef} 
-      className="relative w-full h-[100dvh] overflow-hidden bg-[#4CA0FF] flex items-center justify-center" 
-    >
-      <style dangerouslySetInnerHTML={{__html: `
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-      `}} />
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#4CA0FF' }}>
+      
+      <style>{`
+        @keyframes panSky {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes panClouds {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes panCastle {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes panHills {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes panTerrain {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes panCoins {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes characterBob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes coinSpin {
+          0% { transform: rotateY(0deg); }
+          100% { transform: rotateY(360deg); }
+        }
+      `}</style>
 
-      <div 
-        className="absolute inset-0 w-full h-full flex items-center justify-center"
-        style={{
-          opacity: mounted ? 1 : 0,
-          transition: `opacity 1s ${premiumEase}`,
-          willChange: 'opacity'
-        }}
-      >
-        {/* ─── TYPOGRAPHY LAYER ─── */}
-        <div className="absolute top-[6vh] left-0 right-0 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 z-50 pointer-events-none">
-          <span 
-            className="text-[1.2rem] md:text-[2.5rem] text-[#FACC15] uppercase tracking-widest"
-            style={{ fontFamily: "'Press Start 2P', cursive", textShadow: "3px 3px 0px #000, -3px -3px 0px #000, 3px -3px 0px #000, -3px 3px 0px #000" }}
-          >
-            pixels
-          </span>
-          <span 
-            className="text-[1.2rem] md:text-[2.5rem] text-white uppercase tracking-widest"
-            style={{ fontFamily: "'Press Start 2P', cursive", textShadow: "3px 3px 0px #000, -3px -3px 0px #000, 3px -3px 0px #000, -3px 3px 0px #000" }}
-          >
-            never died
-          </span>
-        </div>
-
-        {/* ─── EXACT LAYER ORDER STACKING ─── */}
+      {/* ─── MASTER CONTAINER FADE IN ─── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        opacity: mounted ? 1 : 0,
+        transition: 'opacity 1s cubic-bezier(0.25, 1, 0.5, 1)',
+        willChange: 'opacity'
+      }}>
         
-        {/* Layer 1: sky.png */}
-        <div ref={skyRef} className="absolute inset-0 w-[400vw] h-full flex z-0">
-          {panels.map(i => (
-            <img key={`sky-${i}`} src="/retro/sky.png" className="w-[100vw] h-full object-cover" alt="" />
-          ))}
-        </div>
-
-        {/* Layer 2: clouds.png */}
-        <div ref={cloudsRef} className="absolute inset-0 w-[400vw] h-full flex items-start pt-[18vh] z-10 pointer-events-none">
-          {panels.map(i => (
-            <img key={`clouds-${i}`} src="/retro/clouds.png" className="w-[100vw] h-[30vh] object-contain object-top" alt="" />
-          ))}
-        </div>
-
-        {/* Layer 3: castle.png */}
-        <div ref={castleRef} className="absolute inset-0 w-[400vw] h-full z-20 pointer-events-none">
-          <img src="/retro/castle.png" className="absolute bottom-[24vh] left-[135vw] w-[160px] md:w-[250px] object-contain" alt="Castle" />
-        </div>
-
-        {/* Layer 4: hills.png */}
-        <div ref={hillsRef} className="absolute bottom-[16vh] w-[400vw] h-[35vh] flex z-30 pointer-events-none">
-          {panels.map(i => (
-            <img key={`hills-${i}`} src="/retro/hills.png" className="w-[100vw] h-full object-cover" alt="" />
-          ))}
-        </div>
-
-        {/* Layer 5: terrain.png + Layer 7: coins */}
-        <div ref={terrainRef} className="absolute bottom-0 w-[400vw] h-full z-40 pointer-events-none">
-          
-          {/* Ground Platform */}
-          <div className="absolute bottom-0 w-full flex h-[18vh]">
-            {panels.map(i => (
-              <img key={`terrain-${i}`} src="/retro/terrain.png" className="w-[100vw] h-full object-cover" alt="" />
-            ))}
+        {/* ─── LAYER 1: SKY (Infinite Slow Pan) ─── */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+          <div style={{ width: '200%', height: '100%', display: 'flex', animation: 'panSky 60s linear infinite' }}>
+            <img src="/retro/sky.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+            <img src="/retro/sky.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
           </div>
-
-          {/* Multiple Multi-Row Coin Positions (Perfect Platformer Layout) */}
-          {/* Section 1 Jumps */}
-          <div className="retro-coin absolute bottom-[32vh] left-[45vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
-          <div className="retro-coin absolute bottom-[42vh] left-[52vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
-          <div className="retro-coin absolute bottom-[32vh] left-[59vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
-
-          {/* Section 2 Castle Ascent */}
-          <div className="retro-coin absolute bottom-[48vh] left-[125vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
-          <div className="retro-coin absolute bottom-[54vh] left-[135vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
-          <div className="retro-coin absolute bottom-[48vh] left-[145vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
-
-          {/* Section 3 Straight Run */}
-          <div className="retro-coin absolute bottom-[28vh] left-[230vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
-          <div className="retro-coin absolute bottom-[28vh] left-[240vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
-          <div className="retro-coin absolute bottom-[28vh] left-[250vw] w-8 h-8 md:w-10 md:h-10"><img src="/retro/coin.png" className="w-full h-full object-contain" alt="" /></div>
         </div>
 
-        {/* Layer 6: character.png (Perfectly balanced bounding container) */}
-        <div className="absolute bottom-[14vh] left-[16vw] z-50 pointer-events-none">
-          <div className="retro-character relative w-[65px] h-[85px] md:w-[100px] md:h-[130px]" style={{ filter: "drop-shadow(5px 5px 0px rgba(0,0,0,0.35))" }}>
-            <img src="/retro/character.png" alt="Main Character" className="w-full h-full object-contain object-bottom" />
+        {/* ─── LAYER 2: CLOUDS (Infinite Moderate Pan) ─── */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
+          <div style={{ width: '200%', height: '100%', display: 'flex', animation: 'panClouds 40s linear infinite' }}>
+            <img src="/retro/clouds.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+            <img src="/retro/clouds.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        </div>
+
+        {/* ─── LAYER 3: CASTLE (Mid-Ground Layer) ─── */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 3 }}>
+          <div style={{ width: '200%', height: '100%', display: 'flex', animation: 'panCastle 25s linear infinite' }}>
+            <img src="/retro/castle.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+            <img src="/retro/castle.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        </div>
+
+        {/* ─── LAYER 4: HILLS (Parallax Depth Layer) ─── */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 4 }}>
+          <div style={{ width: '200%', height: '100%', display: 'flex', animation: 'panHills 18s linear infinite' }}>
+            <img src="/retro/hills.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+            <img src="/retro/hills.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        </div>
+
+        {/* ─── LAYER 5: TERRAIN GROUND (Fast Run Loop) ─── */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '24%',
+          transform: mounted ? 'translateY(0)' : 'translateY(80px)',
+          transition: `all 0.8s ${aggressiveEase} 0.1s`,
+          zIndex: 5
+        }}>
+          <div style={{ width: '200%', height: '100%', display: 'flex', animation: 'panTerrain 3.5s linear infinite' }}>
+            <img src="/retro/terrain.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+            <img src="/retro/terrain.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        </div>
+
+        {/* ─── LAYER 6: CHARACTER (Fixed position, bobs vertically) ─── */}
+        <div style={{
+          position: 'absolute', bottom: '16%', left: '16%', 
+          width: 'clamp(70px, 12vw, 130px)',
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
+          transition: `all 1s ${aggressiveEase} 0.2s`,
+          zIndex: 6
+        }}>
+          <div style={{
+            animation: 'characterBob 0.35s ease-in-out infinite',
+            filter: 'drop-shadow(4px 6px 0px rgba(0,0,0,0.3))'
+          }}>
+            <img src="/retro/character.png" alt="Character" style={{ width: '100%', height: 'auto', display: 'block' }} />
+          </div>
+        </div>
+
+        {/* ─── LAYER 7: COINS (Fast Multi-Cluster Layer Passing Over Player) ─── */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          opacity: mounted ? 1 : 0,
+          transition: `opacity 0.8s ${premiumEase} 0.3s`,
+          zIndex: 7
+        }}>
+          <div style={{ 
+            width: '200%', 
+            height: '100%', 
+            position: 'relative',
+            animation: 'panCoins 3.5s linear infinite' // Perfectly locked to terrain speed
+          }}>
+            
+            {/* Cluster Panel A */}
+            <div style={{ position: 'absolute', left: '25%', bottom: '38%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+            <div style={{ position: 'absolute', left: '28%', bottom: '46%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+            <div style={{ position: 'absolute', left: '31%', bottom: '38%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+
+            <div style={{ position: 'absolute', left: '60%', bottom: '52%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+            <div style={{ position: 'absolute', left: '63%', bottom: '52%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+            
+            {/* Cluster Panel B (Mirrored for seamless reset loop tracking) */}
+            <div style={{ position: 'absolute', left: '125%', bottom: '38%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+            <div style={{ position: 'absolute', left: '128%', bottom: '46%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+            <div style={{ position: 'absolute', left: '131%', bottom: '38%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+
+            <div style={{ position: 'absolute', left: '160%', bottom: '52%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+            <div style={{ position: 'absolute', left: '163%', bottom: '52%', width: '32px', animation: 'coinSpin 1.2s linear infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+            
           </div>
         </div>
 
       </div>
-    </section>
+
+      {/* ─── OBSIDIAN GRADIENT MASK ─── */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'linear-gradient(to bottom, rgba(2,2,2,0.8) 0%, rgba(2,2,2,0.2) 15%, transparent 35%)',
+        opacity: mounted ? 1 : 0,
+        transition: `opacity 1s ${premiumEase}`,
+        zIndex: 10
+      }} />
+
+      {/* ─── MISTRAL-STYLE TYPOGRAPHY LAYER ─── */}
+      <div style={{
+        position: 'absolute', top: '10vh', left: 0, right: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        opacity: mounted ? 1 : 0,
+        transform: mounted ? 'translateY(0) skewX(0deg)' : 'translateY(-30px) skewX(-6deg)',
+        filter: mounted ? 'blur(0px)' : 'blur(12px)',
+        transition: `all 1.2s ${aggressiveEase} 0.25s`,
+        willChange: 'opacity, transform, filter',
+        zIndex: 20
+      }}>
+        <style dangerouslySetInnerHTML={{__html: `
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        `}} />
+        
+        <span style={{ 
+          fontFamily: "'Inter', sans-serif", fontSize: '0.7rem', letterSpacing: '0.4em', 
+          color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '14px' 
+        }}>
+          Stage 2 · Retro
+        </span>
+        
+        <h2 style={{ 
+          fontFamily: "'Press Start 2P', cursive", 
+          fontSize: 'clamp(1.4rem, 4.5vw, 3.2rem)', margin: 0,
+          fontWeight: 400, lineHeight: 1.2, textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+          textShadow: '0 8px 0px #000',
+          display: 'flex',
+          gap: '16px'
+        }}>
+          <span style={{ color: '#FACC15' }}>pixels</span>
+          <span style={{ color: '#FFFFFF' }}>never died</span>
+        </h2>
+      </div>
+
+    </div>
   );
-}
+      }
