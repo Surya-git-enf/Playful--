@@ -80,7 +80,7 @@ export default function Home() {
         pointerEvents: heroReleased ? 'none' : 'auto',
         transition: 'opacity 0.5s ease',
       }}>
-        <HeroCanvas onRelease={handleRelease} onHeaderVisibilityChange={() => {}} />
+        <HeroCanvas onRelease={handleRelease} />
       </div>
 
       {/* Spacer = first snap point (hero sits above it) */}
