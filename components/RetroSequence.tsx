@@ -63,7 +63,7 @@ export default function RetroSequence({ isActive }: Props) {
 
         {/* ─── LAYER 2: CLOUDS ─── */}
         <div style={{ 
-          position: 'absolute', top: '5dvh', left: 0, right: 0, height: '35dvh', zIndex: 2,
+          position: 'absolute', top: '15dvh', left: 0, right: 0, height: '35dvh', zIndex: 2,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(-40px)',
           transition: `all 1.4s ${premiumEase} 0.1s`
@@ -75,7 +75,7 @@ export default function RetroSequence({ isActive }: Props) {
             Locked exactly to 15dvh from the bottom so it sits flawlessly behind the terrain 
         */}
         <div style={{ 
-          position: 'absolute', bottom: '15dvh', left: 0, right: 0, height: '55dvh', zIndex: 3,
+          position: 'absolute', bottom: '0dvh', left: 0, right: 0, height: '55dvh', zIndex: 3,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(80px)',
           transition: `all 1.2s ${premiumEase} 0.15s`
@@ -87,13 +87,13 @@ export default function RetroSequence({ isActive }: Props) {
             Sits dynamically on top of the hills line 
         */}
         <div style={{ 
-          position: 'absolute', bottom: '15dvh', left: '50%', zIndex: 4,
+          position: 'absolute', bottom: '0dvh', left: '50%', zIndex: 4,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(-50%) scale(1)' : 'translateX(-50%) scale(0.8)',
           transition: `all 1.5s ${premiumEase} 0.2s`
         }}>
           <div style={{
-            width: 'clamp(120px, 20vw, 220px)', 
+            width: 'clamp(250px, 40vw, 450px)', 
             animation: mounted ? 'castleLivePulse 5s ease-in-out infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
@@ -105,7 +105,7 @@ export default function RetroSequence({ isActive }: Props) {
             Firmly anchored to the bottom 0. 
         */}
         <div style={{
-          position: 'absolute', bottom: '15dvh', left: 0, right: 0, height: '22dvh', zIndex: 5,
+          position: 'absolute', bottom: '0dvh', left: 0, right: 0, height: '22dvh', zIndex: 5,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(100px)',
           transition: `all 1s ${aggressiveEase} 0.25s`
@@ -117,7 +117,7 @@ export default function RetroSequence({ isActive }: Props) {
             Stands precisely on top of the terrain (20dvh up) 
         */}
         <div style={{
-          position: 'absolute', bottom: '20dvh', left: '15vw', zIndex: 6,
+          position: 'absolute', bottom: '10dvh', left: '15vw', zIndex: 6,
           width: 'clamp(80px, 14vw, 150px)',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
