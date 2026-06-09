@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
-import RetroSequence, { RetroHandle } from './RetroSequence'
+import RetroSequence from './RetroSequence'
 import RacingSequence from './RacingSequence'
 import OpenWorldSequence from './OpenWorldSequence'
 import SpaceSequence from './SpaceSequence'
