@@ -118,8 +118,8 @@ export default function RetroSequence({ isActive }: Props) {
             Dropped down to stand exactly on the 30dvh terrain 
         */}
         <div style={{
-          position: 'absolute', bottom: '25dvh', left: '15vw', zIndex: 6,
-          width: 'clamp(70px, 12vw, 130px)',
+          position: 'absolute', bottom: '5dvh', left: '15vw', zIndex: 6,
+          width: 'clamp(170px, 70vw, 230px)',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
           transition: `all 1.1s ${aggressiveEase} 0.35s`
@@ -147,7 +147,7 @@ export default function RetroSequence({ isActive }: Props) {
           <div style={{ position: 'absolute', left: '65%', bottom: '5dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.4s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
           
           <div style={{ position: 'absolute', left: '76%', bottom: '8dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinGlowSpin 1.8s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
-          <div style={{ position: 'absolute', left: '84%', bottom: '8dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinGlowSpin 1.8s ease-in-out infinite 0.3s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '81%', bottom: '8dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinGlowSpin 1.8s ease-in-out infinite 0.3s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
         </div>
 
       </div>
