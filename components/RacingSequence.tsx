@@ -18,92 +18,72 @@ export default function RacingSequence({ isActive }: Props) {
     }
   }, [isActive])
 
-  const ease = 'cubic-bezier(0.19, 1, 0.22, 1)'
+  const ease  = 'cubic-bezier(0.19, 1, 0.22, 1)'
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#0a0608' }}>
-      <style>{`
-        @keyframes engineVibrate {
-          0%,100% { transform: translateY(0)     rotate(0deg);   }
-          25%      { transform: translateY(1.5px)  rotate(0.4deg);  }
-          75%      { transform: translateY(-1px)   rotate(-0.4deg); }
-        }
-      `}</style>
 
-      {/* ── Background — rises up from below like a curtain lift ── */}
+      {/* Background — rises with 3D tilt */}
       <div style={{
-        position: 'absolute', inset: 0,
+        position: 'absolute', inset: 0, zIndex: 1,
         opacity: mounted ? 1 : 0,
         transform: mounted
-          ? 'perspective(900px) rotateX(0deg) translateY(0) scale(1)'
-          : 'perspective(900px) rotateX(8deg) translateY(60px) scale(1.06)',
-        transition: `opacity 0.9s ${ease}, transform 1.1s ${ease}`,
+          ? 'perspective(1000px) rotateX(0deg) translateY(0) scale(1)'
+          : 'perspective(1000px) rotateX(6deg) translateY(50px) scale(1.05)',
+        transition: `opacity 1s ${ease}, transform 1.2s ${ease}`,
         transformOrigin: 'bottom center',
       }}>
-        <img
-          src="/racing/bg.png" alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
+        <img src="/racing/bg.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       </div>
 
-      {/* ── Road — slams up from below with 3D tilt ── */}
+      {/* Road — slams up from below */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
-        height: 'clamp(160px, 35vh, 320px)',
+        height: 'clamp(140px, 32vh, 300px)',
+        zIndex: 2,
         opacity: mounted ? 1 : 0,
         transform: mounted
           ? 'perspective(600px) rotateX(0deg) translateY(0)'
-          : 'perspective(600px) rotateX(25deg) translateY(180px)',
-        transition: `opacity 0.7s ${ease} 0.15s, transform 1s ${ease} 0.15s`,
+          : 'perspective(600px) rotateX(22deg) translateY(160px)',
+        transition: `opacity 0.8s ${ease} 0.1s, transform 1s ${ease} 0.1s`,
         transformOrigin: 'bottom center',
       }}>
-        <img
-          src="/racing/road.png" alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
-        />
+        <img src="/racing/road.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
       </div>
 
-      {/* ── Car — blasts in from left with 3D depth ── */}
+      {/* Car — blasts in from RIGHT with 3D turn */}
       <div style={{
         position: 'absolute',
-        bottom: 'clamp(120px, 26vh, 260px)',
+        bottom: 'clamp(110px, 28vh, 270px)',
         left: '50%',
-        width: 'clamp(260px, 44vw, 620px)',
         transform: 'translateX(-50%)',
+        width: 'clamp(240px, 46vw, 640px)',
         zIndex: 10,
       }}>
         <div style={{
           opacity: mounted ? 1 : 0,
           transform: mounted
-            ? 'perspective(800px) rotateY(0deg) translateX(0) scale(1)'
-            : 'perspective(800px) rotateY(-35deg) translateX(-140%) scale(0.7)',
-          transition: `opacity 0.6s ${ease} 0.25s, transform 1s ${ease} 0.25s`,
-          filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.9))',
+            ? 'perspective(900px) rotateY(0deg) translateX(0) scale(1)'
+            : 'perspective(900px) rotateY(28deg) translateX(160%) scale(0.72)',
+          transition: `opacity 0.5s ${ease} 0.2s, transform 1.1s ${ease} 0.2s`,
+          filter: 'drop-shadow(0 20px 44px rgba(0,0,0,0.9))',
         }}>
-          <div style={{
-            
-            transformOrigin: 'bottom center',
-          }}>
-            <img
-              src="/racing/car.png" alt="Racing Car"
-              style={{ width: '100%', height: 'auto', display: 'block' }}
-            />
-          </div>
+          <img src="/racing/car.png" alt="Racing Car" style={{ width: '100%', height: 'auto', display: 'block' }} />
         </div>
       </div>
 
-      {/* ── Top gradient mask ── */}
+      {/* Top gradient mask */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5,
         background: 'linear-gradient(to bottom, rgba(2,2,2,0.88) 0%, rgba(2,2,2,0.2) 22%, transparent 42%)',
         opacity: mounted ? 1 : 0,
-        transition: `opacity 0.8s ${ease}`,
+        transition: `opacity 0.9s ${ease}`,
       }} />
 
-      {/* ── Typography ── */}
+      {/* Typography */}
       <div style={{
         position: 'absolute',
-        top: 'clamp(60px, 12vh, 110px)',
+        top: 'clamp(55px, 11vh, 105px)',
         left: 0, right: 0,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         opacity: mounted ? 1 : 0,
@@ -116,17 +96,16 @@ export default function RacingSequence({ isActive }: Props) {
       }}>
         <span style={{
           fontFamily: "'Space Mono', monospace",
-          fontSize: 'clamp(0.55rem, 1.2vw, 0.75rem)',
+          fontSize: 'clamp(0.5rem, 1.1vw, 0.72rem)',
           letterSpacing: '0.28em',
           color: 'rgba(255,255,255,0.5)',
-          textTransform: 'none' as const,
           marginBottom: '10px',
         }}>
           Stage 3 · Racing
         </span>
         <h2 style={{
           fontFamily: "var(--font-bebas, 'Bebas Neue', sans-serif)",
-          fontSize: 'clamp(4rem, 10vw, 8.5rem)',
+          fontSize: 'clamp(3.8rem, 10vw, 8.5rem)',
           margin: 0, color: '#FFFFFF',
           fontWeight: 800, lineHeight: 0.9,
           textTransform: 'uppercase' as const,
@@ -139,4 +118,5 @@ export default function RacingSequence({ isActive }: Props) {
 
     </div>
   )
-}
+      }
+
