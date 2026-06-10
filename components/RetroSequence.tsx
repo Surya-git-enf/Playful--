@@ -118,7 +118,7 @@ export default function RetroSequence({ isActive }: Props) {
             Dropped down to stand exactly on the 30dvh terrain 
         */}
         <div style={{
-          position: 'absolute', bottom: '10dvh', left: '15vw', zIndex: 6,
+          position: 'absolute', bottom: '25dvh', left: '15vw', zIndex: 6,
           width: 'clamp(70px, 12vw, 130px)',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
@@ -129,7 +129,7 @@ export default function RetroSequence({ isActive }: Props) {
             animation: mounted ? 'characterBreathe 2s infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
-            <img src="/retro/character.png" alt="Character" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <img src="/retro/character.png" alt="Character" style={{ width: '100%', height: '100%', display: 'block' }} />
           </div>
         </div>
 
@@ -142,8 +142,8 @@ export default function RetroSequence({ isActive }: Props) {
           transform: mounted ? 'translateY(0)' : 'translateY(50px)',
           transition: `all 1.3s ${premiumEase} 0.4s`
         }}>
-          <div style={{ position: 'absolute', left: '38%', bottom: '42dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
-          <div style={{ position: 'absolute', left: '46%', bottom: '52dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.2s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '18%', bottom: '20dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '26%', bottom: '12dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.2s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
           <div style={{ position: 'absolute', left: '54%', bottom: '42dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.4s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
           
           <div style={{ position: 'absolute', left: '76%', bottom: '38dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.8s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
