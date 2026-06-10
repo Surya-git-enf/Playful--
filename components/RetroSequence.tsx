@@ -21,27 +21,27 @@ type CharacterLayout = {
 
 const CHARACTER_LAYOUT = {
   desktop: {
-    left: "45vw",
-    bottom: "calc(env(safe-area-inset-bottom, 0px) + 6dvh)", // bottom +2 from your earlier 4dvh
-    width: "clamp(86px, 7.5vw, 120px)",
-    scale: 0.75,
+    left: "69%",
+    bottom: "58px",
+    width: "clamp(100px, 8vw, 130px)",
+    scale: 0.72,
   },
   tablet: {
-    left: "58vw",
-    bottom: "calc(env(safe-area-inset-bottom, 0px) + 4dvh)",
-    width: "clamp(110px, 14vw, 160px)",
+    left: "71%",
+    bottom: "56px",
+    width: "clamp(120px, 12vw, 155px)",
     scale: 0.88,
   },
   mobile: {
-    left: "45%",
-    bottom: "calc(env(safe-area-inset-bottom, 0px) + 1px)",
-    width: "clamp(118px, 31vw, 150px)",
+    left: "73%",
+    bottom: "54px",
+    width: "clamp(135px, 32vw, 170px)",
     scale: 1.02,
   },
   smallMobile: {
-    left: "68%",
-    bottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
-    width: "clamp(105px, 34vw, 135px)",
+    left: "74%",
+    bottom: "50px",
+    width: "clamp(125px, 36vw, 155px)",
     scale: 1.0,
   },
 } as const;
@@ -156,6 +156,7 @@ export default function RetroSequence({ isActive }: Props) {
         .retro-character {
           position: absolute;
           z-index: 6;
+          pointer-events: none;
           opacity: 0;
           transition: all 1.1s ${aggressiveEase} 0.35s;
           will-change: transform, opacity, left, bottom, width;
@@ -440,4 +441,4 @@ export default function RetroSequence({ isActive }: Props) {
       </div>
     </div>
   );
-}
+            }
