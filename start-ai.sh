@@ -19,8 +19,8 @@ npm install -g @anthropic-ai/claude-code
 # ==========================================
 echo "⚙️ Installing AI engine..."
 
-uv python install 3.12
-uv tool install --force --python 3.12 \
+uv python install 3.14
+uv tool install --force --python 3.14 \
   git+https://github.com/Alishahryar1/free-claude-code.git
 
 # ==========================================
