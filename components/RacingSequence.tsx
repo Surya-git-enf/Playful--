@@ -61,16 +61,17 @@ export default function RacingSequence({ isActive }: Props) {
           </div>
         </div>
 
-        {/* LAYER 2: ROAD — slams up from below */}
+                {/* LAYER 2: ROAD — slams up from below */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
-          /* Adjusted height slightly to ensure it looks like a ground layer */
-          height: 'clamp(100px, 20dvh, 200px)', 
+          /* Restored original height to fit the trees */
+          height: 'clamp(130px, 30dvh, 290px)', 
           zIndex: 2,
           opacity: mounted ? 1 : 0,
           transform: mounted
             ? 'perspective(700px) rotateX(0deg) translateY(0)'
             : 'perspective(700px) rotateX(24deg) translateY(170px)',
+          /* The 0.12s delay here ensures it animates AFTER the background */
           transition: `opacity 0.8s ${aggressiveEase} 0.12s, transform 1.05s ${aggressiveEase} 0.12s`,
           transformOrigin: 'bottom center',
         }}>
@@ -78,16 +79,17 @@ export default function RacingSequence({ isActive }: Props) {
             width: '100%', height: '100%',
             animation: mounted ? 'roadPulse 8s ease-in-out infinite' : 'none',
           }}>
-            {/* Changed objectPosition to 'bottom' so the actual road texture isn't cropped out */}
-            <img src="/racing/road.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom', display: 'block' }} />
+            {/* Restored objectPosition to 'top' to reveal the trees correctly */}
+            <img src="/racing/road.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
           </div>
         </div>
+        
 
-        {/* LAYER 3: CAR — blasts in from RIGHT with 3D rotation */}
+                {/* LAYER 3: CAR — blasts in from RIGHT with 3D rotation */}
         <div style={{
           position: 'absolute',
-          /* Lowered the bottom value significantly to ground the car */
-          bottom: 'clamp(20px, 8dvh, 80px)', 
+          /* Adjusted bottom to sit exactly on the new road horizon */
+          bottom: 'clamp(70px, 15dvh, 160px)', 
           left: '50%',
           transform: 'translateX(-50%)',
           width: 'clamp(240px, 72vw, 680px)',
@@ -98,12 +100,14 @@ export default function RacingSequence({ isActive }: Props) {
             transform: mounted
               ? 'perspective(900px) rotateY(0deg) translateX(0) scale(1)'
               : 'perspective(900px) rotateY(32deg) translateX(180%) scale(0.65)',
+            /* The 0.22s delay here ensures it animates AFTER the road */
             transition: `opacity 0.5s ${aggressiveEase} 0.22s, transform 1.15s ${aggressiveEase} 0.22s`,
             filter: 'drop-shadow(0 22px 48px rgba(0,0,0,0.92))',
           }}>
             <img src="/racing/car.png" alt="Racing Car" style={{ width: '100%', height: 'auto', display: 'block' }} />
           </div>
         </div>
+        
 
       </div>
 
