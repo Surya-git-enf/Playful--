@@ -1,64 +1,116 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 interface Props {
   isActive: boolean;
 }
 
+type Viewport = {
+  width: number;
+  height: number;
+  coarse: boolean;
+};
+
 export default function RetroSequence({ isActive }: Props) {
   const [mounted, setMounted] = useState(false);
+  const [viewport, setViewport] = useState<Viewport>({
+    width: 0,
+    height: 0,
+    coarse: false,
+  });
 
   useEffect(() => {
-    let mountTimer: NodeJS.Timeout;
+    let mountTimer: ReturnType<typeof setTimeout>;
+
+    const updateViewport = () => {
+      const coarse = window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        coarse,
+      });
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    window.addEventListener("orientationchange", updateViewport);
+
     if (isActive) {
       mountTimer = setTimeout(() => setMounted(true), 50);
     } else {
       setMounted(false);
     }
-    return () => clearTimeout(mountTimer);
+
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+      window.removeEventListener("orientationchange", updateViewport);
+      clearTimeout(mountTimer);
+    };
   }, [isActive]);
 
   const premiumEase = "cubic-bezier(0.16, 1, 0.3, 1)";
   const aggressiveEase = "cubic-bezier(0.19, 1, 0.22, 1)";
 
+  const characterConfig = useMemo(() => {
+    const isTouch = viewport.coarse;
+    const isSmallPhone = viewport.width > 0 && viewport.width <= 480;
+
+    if (isTouch) {
+      return {
+        left: isSmallPhone ? "66%" : "64%",
+        bottom: isSmallPhone ? "calc(env(safe-area-inset-bottom) + 10px)" : "calc(env(safe-area-inset-bottom) + 14px)",
+        width: isSmallPhone ? "clamp(150px, 36dvh, 225px)" : "clamp(165px, 34dvh, 250px)",
+        translateX: "-50%",
+        extraScale: isSmallPhone ? 1.12 : 1.08,
+      };
+    }
+
+    return {
+      left: "67%",
+      bottom: "calc(env(safe-area-inset-bottom) + 3.8dvh)",
+      width: "clamp(180px, 18vw, 280px)",
+      translateX: "-50%",
+      extraScale: 1,
+    };
+  }, [viewport]);
+
   return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#59b0ff" }}>
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        overflow: "hidden",
+        background: "#59b0ff",
+      }}
+    >
       <style>{`
-        @keyframes castleLivePulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        @keyframes coinGlowSpin {
-          0% { transform: rotateY(0deg) translateY(0); }
-          50% { transform: rotateY(180deg) translateY(-8px); }
-          100% { transform: rotateY(360deg) translateY(0); }
-        }
-        @keyframes characterBreathe {
-          0%, 100% { transform: scaleY(1); }
-          50% { transform: scaleY(0.96) translateY(2px); }
-        }
         @keyframes skyDrift {
           0%,100% { transform: perspective(1400px) rotateX(0deg) scale(1.03) translateY(0px); }
           50%     { transform: perspective(1400px) rotateX(1.2deg) scale(1.06) translateY(-6px); }
         }
+
         @keyframes cloudPan3D {
           0%,100% { transform: perspective(900px) rotateY(0deg) translateX(0px) translateY(0px); }
           33%     { transform: perspective(900px) rotateY(-2deg) translateX(16px) translateY(-6px); }
           66%     { transform: perspective(900px) rotateY(1.5deg) translateX(-6px) translateY(-3px); }
         }
+
         @keyframes castleBreathe {
           0%,100% { transform: scaleX(1) scaleY(1) translateY(0px); filter: brightness(1); }
           40%,60% { transform: scaleX(1.03) scaleY(1.02) translateY(-5px); filter: brightness(1.07); }
         }
+
         @keyframes hillsFloat {
           0%,100% { transform: translateY(0px); }
           50%     { transform: translateY(-4px); }
         }
+
         @keyframes terrainPulse {
           0%,100% { transform: scale(1); }
           50%     { transform: scale(1.005); }
         }
+
         @keyframes coinSpin3D {
           0%   { transform: perspective(260px) rotateY(0deg) translateY(0px); }
           25%  { transform: perspective(260px) rotateY(90deg) translateY(-10px); }
@@ -66,58 +118,35 @@ export default function RetroSequence({ isActive }: Props) {
           75%  { transform: perspective(260px) rotateY(270deg) translateY(-8px); }
           100% { transform: perspective(260px) rotateY(360deg) translateY(0px); }
         }
+
         @keyframes charTilt3D {
           0%,100% { transform: perspective(600px) rotateY(-4deg) rotateX(1.5deg); }
           50%     { transform: perspective(600px) rotateY(4deg) rotateX(-1deg); }
         }
 
-        /* Desktop default */
         .retro-character {
           position: absolute;
-          bottom: 4dvh;
-          left: 45%;
           z-index: 6;
-          width: clamp(170px, 18vw, 270px);
-          transform: translateX(-50%);
           opacity: 0;
           transition: all 1.1s ${aggressiveEase} 0.35s;
+          will-change: transform, opacity, left, bottom, width;
         }
 
         .retro-character.mounted {
           opacity: 1;
-          transform: translateX(-50%) translateY(0);
         }
 
         .retro-character-inner {
+          width: 100%;
+          height: 100%;
           filter: drop-shadow(6px 8px 0px rgba(0,0,0,0.4));
           animation: ${mounted ? "charTilt3D 4s ease-in-out infinite" : "none"};
           transform-origin: bottom center;
         }
 
-        /* Tablet */
-        @media (max-width: 1024px) {
-          .retro-character {
-            left: 68%;
-            bottom: 3dvh;
-            width: clamp(150px, 22vw, 220px);
-          }
-        }
-
-        /* Mobile */
         @media (max-width: 768px) {
-          .retro-character {
-            left: 72%;
-            bottom: 2dvh;
-            width: clamp(95px, 30vw, 150px);
-          }
-        }
-
-        /* Small phones */
-        @media (max-width: 480px) {
-          .retro-character {
-            left: 75%;
-            bottom: 1.2dvh;
-            width: clamp(85px, 34vw, 130px);
+          .stage-title {
+            top: 6.5dvh !important;
           }
         }
       `}</style>
@@ -143,7 +172,11 @@ export default function RetroSequence({ isActive }: Props) {
           }}
         >
           <div style={{ width: "100%", height: "100%", animation: mounted ? "skyDrift 20s ease-in-out infinite" : "none" }}>
-            <img src="/retro/sky.png" alt="Sky" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }} />
+            <img
+              src="/retro/sky.png"
+              alt="Sky"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+            />
           </div>
         </div>
 
@@ -162,7 +195,11 @@ export default function RetroSequence({ isActive }: Props) {
           }}
         >
           <div style={{ width: "100%", height: "100%", animation: mounted ? "cloudPan3D 13s ease-in-out infinite" : "none" }}>
-            <img src="/retro/clouds.png" alt="Clouds" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "top" }} />
+            <img
+              src="/retro/clouds.png"
+              alt="Clouds"
+              style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "top" }}
+            />
           </div>
         </div>
 
@@ -201,7 +238,11 @@ export default function RetroSequence({ isActive }: Props) {
           }}
         >
           <div style={{ width: "100%", height: "100%", animation: mounted ? "hillsFloat 14s ease-in-out infinite" : "none" }}>
-            <img src="/retro/hills.png" alt="Hills" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom center" }} />
+            <img
+              src="/retro/hills.png"
+              alt="Hills"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom center" }}
+            />
           </div>
         </div>
 
@@ -220,14 +261,30 @@ export default function RetroSequence({ isActive }: Props) {
           }}
         >
           <div style={{ width: "100%", height: "100%", animation: mounted ? "terrainPulse 10s ease-in-out infinite" : "none" }}>
-            <img src="/retro/terrain.png" alt="Terrain" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }} />
+            <img
+              src="/retro/terrain.png"
+              alt="Terrain"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }}
+            />
           </div>
         </div>
 
         {/* CHARACTER */}
-        <div className={`retro-character ${mounted ? "mounted" : ""}`}>
+        <div
+          className={`retro-character ${mounted ? "mounted" : ""}`}
+          style={{
+            left: characterConfig.left,
+            bottom: characterConfig.bottom,
+            width: characterConfig.width,
+            transform: `translateX(${characterConfig.translateX}) scale(${characterConfig.extraScale})`,
+          }}
+        >
           <div className="retro-character-inner">
-            <img src="/retro/character.png" alt="Character" style={{ width: "100%", height: "100%", display: "block" }} />
+            <img
+              src="/retro/character.png"
+              alt="Character"
+              style={{ width: "100%", height: "100%", display: "block" }}
+            />
           </div>
         </div>
 
@@ -260,7 +317,7 @@ export default function RetroSequence({ isActive }: Props) {
         </div>
       </div>
 
-      {/* GRADIENT */}
+      {/* DARK TOP GRADIENT */}
       <div
         style={{
           position: "absolute",
@@ -273,8 +330,9 @@ export default function RetroSequence({ isActive }: Props) {
         }}
       />
 
-      {/* TYPOGRAPHY */}
+      {/* TITLE */}
       <div
+        className="stage-title"
         style={{
           position: "absolute",
           top: "8dvh",
@@ -303,6 +361,7 @@ export default function RetroSequence({ isActive }: Props) {
         >
           Stage 2 · Retro
         </span>
+
         <h2
           style={{
             fontFamily: "'Press Start 2P', cursive",
@@ -325,4 +384,4 @@ export default function RetroSequence({ isActive }: Props) {
       </div>
     </div>
   );
-}
+                      }
