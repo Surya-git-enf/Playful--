@@ -12,6 +12,40 @@ type Viewport = {
   coarse: boolean;
 };
 
+type CharacterLayout = {
+  left: string;
+  bottom: string;
+  width: string;
+  scale: number;
+};
+
+const CHARACTER_LAYOUT = {
+  desktop: {
+    left: "45vw",
+    bottom: "calc(env(safe-area-inset-bottom, 0px) + 6dvh)", // bottom +2 from your earlier 4dvh
+    width: "clamp(86px, 7.5vw, 120px)",
+    scale: 0.75,
+  },
+  tablet: {
+    left: "58vw",
+    bottom: "calc(env(safe-area-inset-bottom, 0px) + 4dvh)",
+    width: "clamp(110px, 14vw, 160px)",
+    scale: 0.88,
+  },
+  mobile: {
+    left: "67%",
+    bottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
+    width: "clamp(118px, 31vw, 150px)",
+    scale: 1.02,
+  },
+  smallMobile: {
+    left: "68%",
+    bottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
+    width: "clamp(105px, 34vw, 135px)",
+    scale: 1.0,
+  },
+} as const;
+
 export default function RetroSequence({ isActive }: Props) {
   const [mounted, setMounted] = useState(false);
   const [viewport, setViewport] = useState<Viewport>({
@@ -55,29 +89,19 @@ export default function RetroSequence({ isActive }: Props) {
   const premiumEase = "cubic-bezier(0.16, 1, 0.3, 1)";
   const aggressiveEase = "cubic-bezier(0.19, 1, 0.22, 1)";
 
-  const characterConfig = useMemo(() => {
+  const characterConfig: CharacterLayout = useMemo(() => {
     const isTouch = viewport.coarse;
     const isSmallPhone = viewport.width > 0 && viewport.width <= 480;
+    const isTablet = viewport.width > 480 && viewport.width <= 1024;
 
     if (isTouch) {
-      return {
-        left: isSmallPhone ? "67%" : "65%",
-        bottom: isSmallPhone
-          ? "calc(env(safe-area-inset-bottom, 0px) + 10px)"
-          : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
-        width: isSmallPhone
-          ? "clamp(118px, 31vw, 150px)"
-          : "clamp(140px, 34vw, 185px)",
-        scale: 1.02,
-      };
+      if (isSmallPhone) return CHARACTER_LAYOUT.smallMobile;
+      return CHARACTER_LAYOUT.mobile;
     }
 
-    return {
-      left: "40vw",
-      bottom: "calc(env(safe-area-inset-bottom, 0px))", // bottom +2 from 4dvh
-      width: "clamp(96px, 8.8vw, 132px)", // smaller on desktop
-      scale: 0.78,
-    };
+    if (isTablet) return CHARACTER_LAYOUT.tablet;
+
+    return CHARACTER_LAYOUT.desktop;
   }, [viewport]);
 
   return (
@@ -133,7 +157,7 @@ export default function RetroSequence({ isActive }: Props) {
           position: absolute;
           z-index: 6;
           opacity: 0;
-          transition: all 1.1s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
+          transition: all 1.1s ${aggressiveEase} 0.35s;
           will-change: transform, opacity, left, bottom, width;
         }
 
@@ -147,6 +171,22 @@ export default function RetroSequence({ isActive }: Props) {
           filter: drop-shadow(6px 8px 0px rgba(0,0,0,0.4));
           animation: ${mounted ? "charTilt3D 4s ease-in-out infinite" : "none"};
           transform-origin: bottom center;
+        }
+
+        .stage-title {
+          position: absolute;
+          top: 8dvh;
+          left: 0;
+          right: 0;
+          z-index: 20;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          opacity: ${mounted ? 1 : 0};
+          transform: ${mounted ? "translateY(0) skewX(0deg)" : "translateY(-20px) skewX(-4deg)"};
+          filter: ${mounted ? "blur(0px)" : "blur(8px)"};
+          transition: all 1.2s ${aggressiveEase} 0.3s;
+          will-change: opacity, transform, filter;
         }
 
         @media (max-width: 768px) {
@@ -332,76 +372,31 @@ export default function RetroSequence({ isActive }: Props) {
             transition: `all 1.3s ${premiumEase} 0.4s`,
           }}
         >
-          <div
-            style={{
-              position: "absolute",
-              left: "10%",
-              bottom: "10dvh",
-              width: "clamp(40px, 10vw, 65px)",
-              animation: "coinSpin3D 1.6s ease-in-out infinite",
-            }}
-          >
+          <div style={{ position: "absolute", left: "10%", bottom: "10dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite" }}>
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
-
-          <div
-            style={{
-              position: "absolute",
-              left: "60%",
-              bottom: "5dvh",
-              width: "clamp(40px, 10vw, 65px)",
-              animation: "coinSpin3D 1.6s ease-in-out infinite 0.2s",
-            }}
-          >
+          <div style={{ position: "absolute", left: "60%", bottom: "5dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite 0.2s" }}>
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
-
-          <div
-            style={{
-              position: "absolute",
-              left: "65%",
-              bottom: "5dvh",
-              width: "clamp(40px, 10vw, 65px)",
-              animation: "coinSpin3D 1.6s ease-in-out infinite 0.4s",
-            }}
-          >
+          <div style={{ position: "absolute", left: "65%", bottom: "5dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite 0.4s" }}>
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
-
-          <div
-            style={{
-              position: "absolute",
-              left: "76%",
-              bottom: "8dvh",
-              width: "clamp(40px, 10vw, 65px)",
-              animation: "coinSpin3D 1.8s ease-in-out infinite",
-            }}
-          >
+          <div style={{ position: "absolute", left: "76%", bottom: "8dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.8s ease-in-out infinite" }}>
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
-
-          <div
-            style={{
-              position: "absolute",
-              left: "81%",
-              bottom: "8dvh",
-              width: "clamp(40px, 10vw, 65px)",
-              animation: "coinSpin3D 1.8s ease-in-out infinite 0.3s",
-            }}
-          >
+          <div style={{ position: "absolute", left: "81%", bottom: "8dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.8s ease-in-out infinite 0.3s" }}>
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
         </div>
       </div>
 
-      {/* TOP DARK GRADIENT */}
+      {/* TOP GRADIENT */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
-          background:
-            "linear-gradient(to bottom, rgba(2,2,2,0.85) 0%, rgba(2,2,2,0.1) 25%, transparent 45%)",
+          background: "linear-gradient(to bottom, rgba(2,2,2,0.85) 0%, rgba(2,2,2,0.1) 25%, transparent 45%)",
           opacity: mounted ? 1 : 0,
           transition: `opacity 1s ${premiumEase}`,
           zIndex: 10,
@@ -409,24 +404,7 @@ export default function RetroSequence({ isActive }: Props) {
       />
 
       {/* TITLE */}
-      <div
-        className="stage-title"
-        style={{
-          position: "absolute",
-          top: "8dvh",
-          left: 0,
-          right: 0,
-          zIndex: 20,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? "translateY(0) skewX(0deg)" : "translateY(-20px) skewX(-4deg)",
-          filter: mounted ? "blur(0px)" : "blur(8px)",
-          transition: `all 1.2s ${aggressiveEase} 0.3s`,
-          willChange: "opacity, transform, filter",
-        }}
-      >
+      <div className="stage-title">
         <span
           style={{
             fontFamily: "'Inter', sans-serif",
@@ -462,4 +440,4 @@ export default function RetroSequence({ isActive }: Props) {
       </div>
     </div>
   );
-            }
+}
