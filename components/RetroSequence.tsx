@@ -12,7 +12,6 @@ export default function RetroSequence({ isActive }: Props) {
   useEffect(() => {
     let mountTimer: NodeJS.Timeout;
     if (isActive) {
-      // Triggers the staggered cinematic arrival
       mountTimer = setTimeout(() => setMounted(true), 50);
     } else {
       setMounted(false);
@@ -22,24 +21,24 @@ export default function RetroSequence({ isActive }: Props) {
 
   const premiumEase = 'cubic-bezier(0.16, 1, 0.3, 1)';
   const aggressiveEase = 'cubic-bezier(0.19, 1, 0.22, 1)';
-  const backOut = 'cubic-bezier(0.34, 1.56, 0.64, 1)'; // Creates a nice pop/bounce effect
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#59b0ff' }}>
       
       {/* ─── LIVE ANIMATIONS ─── */}
       <style>{`
-        @keyframes castleBreathe {
+        @keyframes castleLivePulse {
           0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.15); }
+          50% { transform: scale(1.05); }
         }
-        @keyframes coinSpin {
-          0% { transform: rotateY(0deg); }
-          100% { transform: rotateY(360deg); }
+        @keyframes coinGlowSpin {
+          0% { transform: rotateY(0deg) translateY(0); }
+          50% { transform: rotateY(180deg) translateY(-8px); }
+          100% { transform: rotateY(360deg) translateY(0); }
         }
-        @keyframes characterIdle {
+        @keyframes characterBreathe {
           0%, 100% { transform: scaleY(1); }
-          50% { transform: scaleY(0.95) translateY(2px); }
+          50% { transform: scaleY(0.96) translateY(2px); }
         }
       `}</style>
 
@@ -55,36 +54,36 @@ export default function RetroSequence({ isActive }: Props) {
         <div style={{ 
           position: 'absolute', inset: 0, zIndex: 1,
           opacity: mounted ? 1 : 0,
-          transition: `opacity 2s ${premiumEase}`
+          transform: mounted ? 'translateY(0) scale(1)' : 'translateY(-20px) scale(1.05)',
+          transition: `all 1.5s ${premiumEase}`
         }}>
           <img src="/retro/sky.png" alt="Sky" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} />
         </div>
 
-        {/* ─── LAYER 2: CLOUDS (z-index 2) ─── 
-            ARRIVAL: Drops down gently from the top
-        */}
+        {/* ─── LAYER 2: CLOUDS (z-index 2) ─── */}
         <div style={{ 
-          position: 'absolute', top: '10%', left: 0, right: 0, height: '30%', zIndex: 2,
+          position: 'absolute', top: '5dvh', left: 0, right: 0, height: '25dvh', zIndex: 2,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(-40px)',
-          transition: `all 1.5s ${premiumEase} 0.2s`
+          transition: `all 1.4s ${premiumEase} 0.1s`
         }}>
           <img src="/retro/clouds.png" alt="Clouds" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'top' }} />
         </div>
 
-        {/* ─── LAYER 3: CASTLE (z-index 3) ─── 
-            ARRIVAL: Rises up slowly.
-            POSITION: 50% up. Centered. Overlapped by hills to hide bottom edge.
+        {/* ─── LAYER 3: MASSIVE CASTLE (z-index 3) ─── 
+            Tucked BEHIND the hills, massive size!
         */}
         <div style={{ 
-          position: 'absolute', bottom: '50%', left: '50%', zIndex: 3,
+          position: 'absolute', bottom: '10dvh', left: 0, right: 0, zIndex: 3,
+          display: 'flex', justifyContent: 'center',
           opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(50px)',
-          transition: `all 1.5s ${premiumEase} 0.4s`
+          transform: mounted ? 'translateY(0)' : 'translateY(40px)',
+          transition: `all 1.5s ${premiumEase} 0.2s`
         }}>
           <div style={{
-            width: 'clamp(180px, 35vw, 400px)', 
-            animation: mounted ? 'castleBreathe 6s ease-in-out infinite' : 'none',
+            /* MASSIVE SIZE SETTING HERE */
+            width: 'clamp(250px, 60vw, 800px)', 
+            animation: mounted ? 'castleLivePulse 6s ease-in-out infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
             <img src="/retro/castle.png" alt="Castle" style={{ width: '100%', height: 'auto', display: 'block' }} />
@@ -92,45 +91,42 @@ export default function RetroSequence({ isActive }: Props) {
         </div>
 
         {/* ─── LAYER 4: HILLS (z-index 4) ─── 
-            ARRIVAL: Rises up from the ground.
-            POSITION: 20% from bottom. Overlapped perfectly by Terrain.
+            In FRONT of the castle to hide its bottom edge 
         */}
         <div style={{ 
-          position: 'absolute', bottom: '20%', left: 0, right: 0, height: '40%', zIndex: 4,
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '45dvh', zIndex: 4,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(80px)',
-          transition: `all 1.2s ${premiumEase} 0.6s`
+          transition: `all 1.2s ${premiumEase} 0.15s`
         }}>
           <img src="/retro/hills.png" alt="Hills" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom center' }} />
         </div>
 
         {/* ─── LAYER 5: TERRAIN FLOOR (z-index 5) ─── 
-            ARRIVAL: Snaps up fast and hard from the absolute bottom.
-            POSITION: Exactly bottom: 0. Hides the bottom 20% of the hills.
+            Hard anchored to bottom: 0, objectPosition: bottom ensures no floating!
         */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%', zIndex: 5,
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '30dvh', zIndex: 5,
           opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(120px)',
-          transition: `all 1s ${aggressiveEase} 0.8s`
+          transform: mounted ? 'translateY(0)' : 'translateY(100px)',
+          transition: `all 1s ${aggressiveEase} 0.25s`
         }}>
-          <img src="/retro/terrain.png" alt="Terrain" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} />
+          <img src="/retro/terrain.png" alt="Terrain" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom' }} />
         </div>
 
         {/* ─── LAYER 6: CHARACTER (z-index 6) ─── 
-            ARRIVAL: Drops in from slightly above with a heavy bounce.
-            POSITION: Dead center.
+            Dropped down to stand exactly on the 30dvh terrain 
         */}
         <div style={{
-          position: 'absolute', bottom: '25%', left: '50%', zIndex: 6,
-          width: 'clamp(80px, 15vw, 150px)',
+          position: 'absolute', bottom: '10dvh', left: '15vw', zIndex: 6,
+          width: 'clamp(70px, 12vw, 130px)',
           opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(-60px)',
-          transition: `all 1.2s ${backOut} 1s`
+          transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
+          transition: `all 1.1s ${aggressiveEase} 0.35s`
         }}>
           <div style={{ 
             filter: 'drop-shadow(6px 8px 0px rgba(0,0,0,0.4))',
-            animation: mounted ? 'characterIdle 2s infinite' : 'none',
+            animation: mounted ? 'characterBreathe 2s infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
             <img src="/retro/character.png" alt="Character" style={{ width: '100%', height: 'auto', display: 'block' }} />
@@ -138,27 +134,20 @@ export default function RetroSequence({ isActive }: Props) {
         </div>
 
         {/* ─── LAYER 7: COINS (z-index 7) ─── 
-            ARRIVAL: Pops up and expands dynamically.
-            POSITION: Grouped perfectly above the center character.
+            Dropped down to hover directly above the terrain/character 
         */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 7,
           opacity: mounted ? 1 : 0,
-          transform: mounted ? 'scale(1)' : 'scale(0.5)',
-          transition: `all 1s ${backOut} 1.2s`
+          transform: mounted ? 'translateY(0)' : 'translateY(50px)',
+          transition: `all 1.3s ${premiumEase} 0.4s`
         }}>
-          {/* Top Center Coin */}
-          <div style={{ position: 'absolute', left: '50%', bottom: '48%', transform: 'translateX(-50%)', width: 'clamp(28px, 5vw, 45px)' }}>
-            <img src="/retro/coin.png" style={{ width: '100%', animation: 'coinSpin 1.6s linear infinite' }} alt="" />
-          </div>
-          {/* Left Coin */}
-          <div style={{ position: 'absolute', left: '35%', bottom: '40%', transform: 'translateX(-50%)', width: 'clamp(28px, 5vw, 45px)' }}>
-            <img src="/retro/coin.png" style={{ width: '100%', animation: 'coinSpin 1.6s linear infinite 0.2s' }} alt="" />
-          </div>
-          {/* Right Coin */}
-          <div style={{ position: 'absolute', left: '65%', bottom: '40%', transform: 'translateX(-50%)', width: 'clamp(28px, 5vw, 45px)' }}>
-            <img src="/retro/coin.png" style={{ width: '100%', animation: 'coinSpin 1.6s linear infinite 0.4s' }} alt="" />
-          </div>
+          <div style={{ position: 'absolute', left: '38%', bottom: '42dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '46%', bottom: '52dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.2s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '54%', bottom: '42dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.4s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          
+          <div style={{ position: 'absolute', left: '76%', bottom: '38dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.8s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '84%', bottom: '38dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.8s ease-in-out infinite 0.3s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
         </div>
 
       </div>
@@ -174,7 +163,7 @@ export default function RetroSequence({ isActive }: Props) {
 
       {/* ─── TYPOGRAPHY LAYER ─── */}
       <div style={{
-        position: 'absolute', top: '8%', left: 0, right: 0, zIndex: 20,
+        position: 'absolute', top: '8dvh', left: 0, right: 0, zIndex: 20,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         opacity: mounted ? 1 : 0,
         transform: mounted ? 'translateY(0) skewX(0deg)' : 'translateY(-20px) skewX(-4deg)',
