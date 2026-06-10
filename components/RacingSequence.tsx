@@ -10,146 +10,291 @@ export default function RacingSequence({ isActive }: Props) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    let mountTimer: NodeJS.Timeout
+    let mountTimer: ReturnType<typeof setTimeout> | undefined
+
     if (isActive) {
       mountTimer = setTimeout(() => setMounted(true), 50)
     } else {
       setMounted(false)
     }
-    return () => clearTimeout(mountTimer)
+
+    return () => {
+      if (mountTimer) clearTimeout(mountTimer)
+    }
   }, [isActive])
 
-  const premiumEase    = 'cubic-bezier(0.16, 1, 0.3, 1)'
+  const premiumEase = 'cubic-bezier(0.16, 1, 0.3, 1)'
   const aggressiveEase = 'cubic-bezier(0.19, 1, 0.22, 1)'
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#0a0608' }}>
+    <div className="racing-sequence">
       <style>{`
-        @keyframes bgBreath {
-          0%,100% { transform: perspective(1200px) rotateX(0deg)   scale(1.02) translateY(0px);  }
-          50%      { transform: perspective(1200px) rotateX(1.5deg) scale(1.05) translateY(-8px); }
+        .racing-sequence {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: #0a0608;
         }
+
+        @keyframes bgBreath {
+          0%,100% { transform: perspective(1200px) rotateX(0deg) scale(1.02) translateY(0%); }
+          50%     { transform: perspective(1200px) rotateX(1.5deg) scale(1.05) translateY(-1%); }
+        }
+
         @keyframes roadPulse {
-          0%,100% { transform: scale(1);     }
-          50%      { transform: scale(1.008); }
+          0%,100% { transform: scale(1); }
+          50%     { transform: scale(1.008); }
+        }
+
+        @keyframes carFloat {
+          0%,100% { transform: translateY(0%) scale(1); }
+          50%     { transform: translateY(-1%) scale(1.01); }
+        }
+
+        .master-wrapper {
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+          will-change: opacity;
+        }
+
+        .master-wrapper.mounted {
+          opacity: 1;
+        }
+
+        .bg-layer {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          opacity: 0;
+          transform: perspective(1200px) rotateX(7deg) translateY(5%) scale(1.06);
+          transform-origin: bottom center;
+          transition: opacity 1s ${premiumEase}, transform 1.3s ${premiumEase};
+        }
+
+        .bg-layer.mounted {
+          opacity: 1;
+          transform: perspective(1200px) rotateX(0deg) translateY(0%) scale(1);
+        }
+
+        .bg-layer-inner {
+          width: 100%;
+          height: 100%;
+          animation: ${mounted ? 'bgBreath 18s ease-in-out infinite' : 'none'};
+        }
+
+        .road-layer {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 10%;
+          height: 30%;
+          z-index: 2;
+          opacity: 0;
+          transform: perspective(700px) rotateX(24deg) translateY(18%);
+          transform-origin: bottom center;
+          transition: opacity 0.8s ${aggressiveEase} 0.12s, transform 1.05s ${aggressiveEase} 0.12s;
+        }
+
+        .road-layer.mounted {
+          opacity: 1;
+          transform: perspective(700px) rotateX(0deg) translateY(0%);
+        }
+
+        .road-layer-inner {
+          width: 100%;
+          height: 100%;
+          animation: ${mounted ? 'roadPulse 8s ease-in-out infinite' : 'none'};
+        }
+
+        .car-layer {
+          position: absolute;
+          left: 50%;
+          bottom: 16%;
+          width: 62%;
+          z-index: 10;
+          transform: translateX(-50%);
+        }
+
+        .car-layer-inner {
+          opacity: 0;
+          transform: perspective(900px) rotateY(32deg) translateX(180%) scale(0.65);
+          transition: opacity 0.5s ${aggressiveEase} 0.22s, transform 1.15s ${aggressiveEase} 0.22s;
+          filter: drop-shadow(0 22px 48px rgba(0,0,0,0.92));
+          animation: ${mounted ? 'carFloat 7s ease-in-out infinite' : 'none'};
+        }
+
+        .car-layer-inner.mounted {
+          opacity: 1;
+          transform: perspective(900px) rotateY(0deg) translateX(0%) scale(1);
+        }
+
+        .mask {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: linear-gradient(to bottom, rgba(2,2,2,0.88) 0%, rgba(2,2,2,0.2) 22%, transparent 42%);
+          opacity: 0;
+          transition: opacity 1s ${premiumEase};
+          z-index: 15;
+        }
+
+        .mask.mounted {
+          opacity: 1;
+        }
+
+        .title {
+          position: absolute;
+          top: 8%;
+          left: 0;
+          right: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          z-index: 20;
+          opacity: 0;
+          transform: translateY(-4%) skewX(-10deg);
+          filter: blur(16px);
+          transition: all 1.2s ${aggressiveEase} 0.3s;
+          will-change: opacity, transform, filter;
+          pointer-events: none;
+        }
+
+        .title.mounted {
+          opacity: 1;
+          transform: translateY(0%) skewX(0deg);
+          filter: blur(0px);
+        }
+
+        .title h2 {
+          font-family: var(--font-bebas, 'Bebas Neue', sans-serif);
+          font-size: clamp(3.8rem, 10vw, 8.5rem);
+          margin: 0;
+          color: #ffffff;
+          font-weight: 800;
+          line-height: 0.9;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          text-shadow: 0 10px 40px rgba(0,0,0,0.9);
+          text-align: center;
+        }
+
+        @media (max-width: 1024px) {
+          .car-layer {
+            width: 70%;
+            bottom: 17%;
+          }
+
+          .road-layer {
+            bottom: 9%;
+            height: 29%;
+          }
+
+          .title {
+            top: 7.5%;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .car-layer {
+            width: 80%;
+            bottom: 18%;
+          }
+
+          .road-layer {
+            bottom: 8%;
+            height: 28%;
+          }
+
+          .title {
+            top: 7%;
+          }
+
+          .title h2 {
+            font-size: clamp(2.8rem, 13vw, 5.5rem);
+          }
+        }
+
+        @media (max-width: 480px) {
+          .car-layer {
+            width: 88%;
+            bottom: 19%;
+          }
+
+          .road-layer {
+            bottom: 7%;
+            height: 26%;
+          }
+
+          .title {
+            top: 6.5%;
+          }
+
+          .title h2 {
+            font-size: clamp(2.5rem, 15vw, 4.6rem);
+          }
         }
       `}</style>
 
       {/* MASTER WRAPPER */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        opacity: mounted ? 1 : 0,
-        transition: 'opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
-        willChange: 'opacity',
-      }}>
-
-        {/* LAYER 1: BACKGROUND — rises with 3D tilt */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 1,
-          opacity: mounted ? 1 : 0,
-          transform: mounted
-            ? 'perspective(1200px) rotateX(0deg) translateY(0) scale(1)'
-            : 'perspective(1200px) rotateX(7deg) translateY(55px) scale(1.06)',
-          transition: `opacity 1s ${premiumEase}, transform 1.3s ${premiumEase}`,
-          transformOrigin: 'bottom center',
-        }}>
-          <div style={{
-            width: '100%', height: '100%',
-            animation: mounted ? 'bgBreath 18s ease-in-out infinite' : 'none',
-          }}>
-            <img src="/racing/bg.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      <div className={`master-wrapper ${mounted ? 'mounted' : ''}`}>
+        {/* LAYER 1: BACKGROUND */}
+        <div className={`bg-layer ${mounted ? 'mounted' : ''}`}>
+          <div className="bg-layer-inner">
+            <img
+              src="/racing/bg.png"
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
           </div>
         </div>
 
-                {/* LAYER 2: ROAD — slams up from below */}
-        <div style={{
-          position: 'absolute', bottom: '10dvh', left: 0, right: 0,
-          /* Restored original height to fit the trees */
-          height: 'clamp(130px, 30dvh, 290px)', 
-          zIndex: 2,
-          opacity: mounted ? 1 : 0,
-          transform: mounted
-            ? 'perspective(700px) rotateX(0deg) translateY(0)'
-            : 'perspective(700px) rotateX(24deg) translateY(170px)',
-          /* The 0.12s delay here ensures it animates AFTER the background */
-          transition: `opacity 0.8s ${aggressiveEase} 0.12s, transform 1.05s ${aggressiveEase} 0.12s`,
-          transformOrigin: 'bottom center',
-        }}>
-          <div style={{
-            width: '100%', height: '100%',
-            animation: mounted ? 'roadPulse 8s ease-in-out infinite' : 'none',
-          }}>
-            {/* Restored objectPosition to 'top' to reveal the trees correctly */}
-            <img src="/racing/road.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+        {/* LAYER 2: ROAD */}
+        <div className={`road-layer ${mounted ? 'mounted' : ''}`}>
+          <div className="road-layer-inner">
+            <img
+              src="/racing/road.png"
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'top',
+                display: 'block',
+              }}
+            />
           </div>
         </div>
-        
 
-                {/* LAYER 3: CAR — blasts in from RIGHT with 3D rotation */}
-        <div style={{
-          position: 'absolute',
-          /* Adjusted bottom to sit exactly on the new road horizon */
-          bottom: 'clamp(70px, 15dvh, 160px)', 
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'clamp(240px, 72vw, 680px)',
-          zIndex: 10,
-        }}>
-          <div style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted
-              ? 'perspective(900px) rotateY(0deg) translateX(0) scale(1)'
-              : 'perspective(900px) rotateY(32deg) translateX(180%) scale(0.65)',
-            /* The 0.22s delay here ensures it animates AFTER the road */
-            transition: `opacity 0.5s ${aggressiveEase} 0.22s, transform 1.15s ${aggressiveEase} 0.22s`,
-            filter: 'drop-shadow(0 22px 48px rgba(0,0,0,0.92))',
-          }}>
-            <img src="/racing/car.png" alt="Racing Car" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        {/* LAYER 3: CAR */}
+        <div className="car-layer">
+          <div className={`car-layer-inner ${mounted ? 'mounted' : ''}`}>
+            <img
+              src="/racing/car.png"
+              alt="Racing Car"
+              style={{
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+              }}
+            />
           </div>
         </div>
-        
-
       </div>
 
       {/* OBSIDIAN GRADIENT MASK */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'linear-gradient(to bottom, rgba(2,2,2,0.88) 0%, rgba(2,2,2,0.2) 22%, transparent 42%)',
-        opacity: mounted ? 1 : 0,
-        transition: `opacity 1s ${premiumEase}`,
-        zIndex: 15,
-      }} />
+      <div className={`mask ${mounted ? 'mounted' : ''}`} />
 
       {/* TYPOGRAPHY */}
-      <div style={{
-        position: 'absolute',
-        top: '8dvh',
-        left: 0, right: 0,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        opacity: mounted ? 1 : 0,
-        transform: mounted
-          ? 'translateY(0) skewX(0deg)'
-          : 'translateY(-40px) skewX(-10deg)',
-        filter: mounted ? 'blur(0px)' : 'blur(16px)',
-        transition: `all 1.2s ${aggressiveEase} 0.3s`,
-        willChange: 'opacity, transform, filter',
-        zIndex: 20,
-        pointerEvents: 'none',
-      }}>
-        {/* Removed the 'Stage 3' span completely */}
-        <h2 style={{
-          fontFamily: "var(--font-bebas, 'Bebas Neue', sans-serif)",
-          fontSize: 'clamp(3.8rem, 10vw, 8.5rem)',
-          margin: 0, color: '#FFFFFF',
-          fontWeight: 800, lineHeight: 0.9,
-          textTransform: 'uppercase' as const,
-          letterSpacing: '0.04em',
-          textShadow: '0 10px 40px rgba(0,0,0,0.9)',
-        }}>
-          Heads Up, Gear
-        </h2>
+      <div className={`title ${mounted ? 'mounted' : ''}`}>
+        <h2>Heads Up, Gear</h2>
       </div>
-
     </div>
   )
 }
