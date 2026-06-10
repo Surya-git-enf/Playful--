@@ -10,80 +10,113 @@ export default function RacingSequence({ isActive }: Props) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    let mountTimer: NodeJS.Timeout
     if (isActive) {
-      const t = setTimeout(() => setMounted(true), 50)
-      return () => clearTimeout(t)
+      mountTimer = setTimeout(() => setMounted(true), 50)
     } else {
       setMounted(false)
     }
+    return () => clearTimeout(mountTimer)
   }, [isActive])
 
-  const ease  = 'cubic-bezier(0.19, 1, 0.22, 1)'
+  const premiumEase    = 'cubic-bezier(0.16, 1, 0.3, 1)'
+  const aggressiveEase = 'cubic-bezier(0.19, 1, 0.22, 1)'
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#0a0608' }}>
+      <style>{`
+        @keyframes bgBreath {
+          0%,100% { transform: perspective(1200px) rotateX(0deg)   scale(1.02) translateY(0px);  }
+          50%      { transform: perspective(1200px) rotateX(1.5deg) scale(1.05) translateY(-8px); }
+        }
+        @keyframes roadPulse {
+          0%,100% { transform: scale(1);     }
+          50%      { transform: scale(1.008); }
+        }
+      `}</style>
 
-      {/* Background — rises with 3D tilt */}
+      {/* MASTER WRAPPER */}
       <div style={{
-        position: 'absolute', inset: 0, zIndex: 1,
+        position: 'absolute', inset: 0,
         opacity: mounted ? 1 : 0,
-        transform: mounted
-          ? 'perspective(1000px) rotateX(0deg) translateY(0) scale(1)'
-          : 'perspective(1000px) rotateX(6deg) translateY(50px) scale(1.05)',
-        transition: `opacity 1s ${ease}, transform 1.2s ${ease}`,
-        transformOrigin: 'bottom center',
+        transition: 'opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
+        willChange: 'opacity',
       }}>
-        <img src="/racing/bg.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-      </div>
 
-      {/* Road — slams up from below */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        height: 'clamp(140px, 32vh, 300px)',
-        zIndex: 2,
-        opacity: mounted ? 1 : 0,
-        transform: mounted
-          ? 'perspective(600px) rotateX(0deg) translateY(0)'
-          : 'perspective(600px) rotateX(22deg) translateY(160px)',
-        transition: `opacity 0.8s ${ease} 0.1s, transform 1s ${ease} 0.1s`,
-        transformOrigin: 'bottom center',
-      }}>
-        <img src="/racing/road.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
-      </div>
-
-      {/* Car — blasts in from RIGHT with 3D turn */}
-      <div style={{
-        position: 'absolute',
-        bottom: 'clamp(110px, 28vh, 270px)',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 'clamp(240px, 46vw, 640px)',
-        zIndex: 10,
-      }}>
+        {/* LAYER 1: BACKGROUND — rises with 3D tilt */}
         <div style={{
+          position: 'absolute', inset: 0, zIndex: 1,
           opacity: mounted ? 1 : 0,
           transform: mounted
-            ? 'perspective(900px) rotateY(0deg) translateX(0) scale(1)'
-            : 'perspective(900px) rotateY(28deg) translateX(160%) scale(0.72)',
-          transition: `opacity 0.5s ${ease} 0.2s, transform 1.1s ${ease} 0.2s`,
-          filter: 'drop-shadow(0 20px 44px rgba(0,0,0,0.9))',
+            ? 'perspective(1200px) rotateX(0deg) translateY(0) scale(1)'
+            : 'perspective(1200px) rotateX(7deg) translateY(55px) scale(1.06)',
+          transition: `opacity 1s ${premiumEase}, transform 1.3s ${premiumEase}`,
+          transformOrigin: 'bottom center',
         }}>
-          <img src="/racing/car.png" alt="Racing Car" style={{ width: '100%', height: 'auto', display: 'block' }} />
+          <div style={{
+            width: '100%', height: '100%',
+            animation: mounted ? 'bgBreath 18s ease-in-out infinite' : 'none',
+          }}>
+            <img src="/racing/bg.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
         </div>
+
+        {/* LAYER 2: ROAD — slams up from below */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          height: 'clamp(130px, 30dvh, 290px)',
+          zIndex: 2,
+          opacity: mounted ? 1 : 0,
+          transform: mounted
+            ? 'perspective(700px) rotateX(0deg) translateY(0)'
+            : 'perspective(700px) rotateX(24deg) translateY(170px)',
+          transition: `opacity 0.8s ${aggressiveEase} 0.12s, transform 1.05s ${aggressiveEase} 0.12s`,
+          transformOrigin: 'bottom center',
+        }}>
+          <div style={{
+            width: '100%', height: '100%',
+            animation: mounted ? 'roadPulse 8s ease-in-out infinite' : 'none',
+          }}>
+            <img src="/racing/road.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+          </div>
+        </div>
+
+        {/* LAYER 3: CAR — blasts in from RIGHT with 3D rotation */}
+        <div style={{
+          position: 'absolute',
+          bottom: 'clamp(100px, 27dvh, 265px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'clamp(240px, 72vw, 680px)',
+          zIndex: 10,
+        }}>
+          <div style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted
+              ? 'perspective(900px) rotateY(0deg) translateX(0) scale(1)'
+              : 'perspective(900px) rotateY(32deg) translateX(180%) scale(0.65)',
+            transition: `opacity 0.5s ${aggressiveEase} 0.22s, transform 1.15s ${aggressiveEase} 0.22s`,
+            filter: 'drop-shadow(0 22px 48px rgba(0,0,0,0.92))',
+          }}>
+            <img src="/racing/car.png" alt="Racing Car" style={{ width: '100%', height: 'auto', display: 'block' }} />
+          </div>
+        </div>
+
       </div>
 
-      {/* Top gradient mask */}
+      {/* OBSIDIAN GRADIENT MASK */}
       <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5,
+        position: 'absolute', inset: 0, pointerEvents: 'none',
         background: 'linear-gradient(to bottom, rgba(2,2,2,0.88) 0%, rgba(2,2,2,0.2) 22%, transparent 42%)',
         opacity: mounted ? 1 : 0,
-        transition: `opacity 0.9s ${ease}`,
+        transition: `opacity 1s ${premiumEase}`,
+        zIndex: 15,
       }} />
 
-      {/* Typography */}
+      {/* TYPOGRAPHY */}
       <div style={{
         position: 'absolute',
-        top: 'clamp(55px, 11vh, 105px)',
+        top: '8dvh',
         left: 0, right: 0,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         opacity: mounted ? 1 : 0,
@@ -91,14 +124,16 @@ export default function RacingSequence({ isActive }: Props) {
           ? 'translateY(0) skewX(0deg)'
           : 'translateY(-40px) skewX(-10deg)',
         filter: mounted ? 'blur(0px)' : 'blur(16px)',
-        transition: `all 1.1s ${ease} 0.3s`,
-        zIndex: 20, pointerEvents: 'none',
+        transition: `all 1.2s ${aggressiveEase} 0.3s`,
+        willChange: 'opacity, transform, filter',
+        zIndex: 20,
+        pointerEvents: 'none',
       }}>
         <span style={{
           fontFamily: "'Space Mono', monospace",
-          fontSize: 'clamp(0.5rem, 1.1vw, 0.72rem)',
-          letterSpacing: '0.28em',
-          color: 'rgba(255,255,255,0.5)',
+          fontSize: 'clamp(0.5rem, 1.1vw, 0.68rem)',
+          letterSpacing: '0.35em',
+          color: 'rgba(255,255,255,0.6)',
           marginBottom: '10px',
         }}>
           Stage 3 · Racing
@@ -118,5 +153,4 @@ export default function RacingSequence({ isActive }: Props) {
 
     </div>
   )
-      }
-
+}
