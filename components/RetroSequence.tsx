@@ -118,7 +118,7 @@ export default function RetroSequence({ isActive }: Props) {
             Dropped down to stand exactly on the 30dvh terrain 
         */}
         <div style={{
-          position: 'absolute', bottom: '5dvh', left: '50vw', zIndex: 6,
+          position: 'absolute', bottom: '3dvh', left: '45vw', zIndex: 6,
           width: 'clamp(170px, 70vw, 230px)',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
