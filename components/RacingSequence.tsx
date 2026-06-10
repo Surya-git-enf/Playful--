@@ -64,7 +64,8 @@ export default function RacingSequence({ isActive }: Props) {
         {/* LAYER 2: ROAD — slams up from below */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: 'clamp(130px, 30dvh, 290px)',
+          /* Adjusted height slightly to ensure it looks like a ground layer */
+          height: 'clamp(100px, 20dvh, 200px)', 
           zIndex: 2,
           opacity: mounted ? 1 : 0,
           transform: mounted
@@ -77,14 +78,16 @@ export default function RacingSequence({ isActive }: Props) {
             width: '100%', height: '100%',
             animation: mounted ? 'roadPulse 8s ease-in-out infinite' : 'none',
           }}>
-            <img src="/racing/road.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+            {/* Changed objectPosition to 'bottom' so the actual road texture isn't cropped out */}
+            <img src="/racing/road.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom', display: 'block' }} />
           </div>
         </div>
 
         {/* LAYER 3: CAR — blasts in from RIGHT with 3D rotation */}
         <div style={{
           position: 'absolute',
-          bottom: 'clamp(100px, 27dvh, 265px)',
+          /* Lowered the bottom value significantly to ground the car */
+          bottom: 'clamp(20px, 8dvh, 80px)', 
           left: '50%',
           transform: 'translateX(-50%)',
           width: 'clamp(240px, 72vw, 680px)',
@@ -129,15 +132,7 @@ export default function RacingSequence({ isActive }: Props) {
         zIndex: 20,
         pointerEvents: 'none',
       }}>
-        <span style={{
-          fontFamily: "'Space Mono', monospace",
-          fontSize: 'clamp(0.5rem, 1.1vw, 0.68rem)',
-          letterSpacing: '0.35em',
-          color: 'rgba(255,255,255,0.6)',
-          marginBottom: '10px',
-        }}>
-          Stage 3 · Racing
-        </span>
+        {/* Removed the 'Stage 3' span completely */}
         <h2 style={{
           fontFamily: "var(--font-bebas, 'Bebas Neue', sans-serif)",
           fontSize: 'clamp(3.8rem, 10vw, 8.5rem)',
