@@ -224,7 +224,7 @@ export default function RacingSequence({ isActive }: Props) {
           }
 
           .road-layer {
-            bottom: 7%;
+            bottom: 0%;
             height: 26%;
           }
 
