@@ -197,4 +197,4 @@ export default function RetroSequence({ isActive }: Props) {
 
     </div>
   );
-          }
+}
