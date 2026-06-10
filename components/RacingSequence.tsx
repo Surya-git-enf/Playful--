@@ -111,7 +111,7 @@ export default function RacingSequence({ isActive }: Props) {
         .car-layer {
           position: absolute;
           left: 50%;
-          bottom: 1%;
+          bottom: 0%;
           width: 62%;
           z-index: 10;
           transform: translateX(-50%);
