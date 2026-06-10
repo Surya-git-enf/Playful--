@@ -174,7 +174,7 @@ export default function RetroSequence({ isActive }: Props) {
         <div style={{
           position: 'absolute',
           bottom: GROUND,          /* ← feet ON terrain surface, never floating */
-          left: 'calc(45vw - 5px)',
+          left: 'calc(50vw - 5px)',
           zIndex: 6,
           width: 'clamp(170px, 12vw, 230px)',
           opacity: mounted ? 1 : 0,
@@ -266,5 +266,5 @@ export default function RetroSequence({ isActive }: Props) {
 
     </div>
   );
-}
-
+        }
+             
