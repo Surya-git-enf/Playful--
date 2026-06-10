@@ -114,8 +114,9 @@ export default function RetroSequence({ isActive }: Props) {
             <img src="/retro/clouds.png" alt="Clouds" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'top' }} />
           </div>
         </div>
-
-        {/* ─── LAYER 3: MASSIVE CASTLE (z-index 3) ─── */}
+        {/* ─── LAYER 3: CASTLE (z-index 3) ─── */}
+        {/* POSITION: unchanged — bottom 10dvh, left 0, right 0 */}
+        {/* ONLY CHANGE: width 100% (was clamp(250px,60vw,800px)) */}
         <div style={{ 
           position: 'absolute', bottom: '10dvh', left: 0, right: 0, zIndex: 3,
           display: 'flex', justifyContent: 'center',
@@ -124,13 +125,15 @@ export default function RetroSequence({ isActive }: Props) {
           transition: `all 1.5s ${premiumEase} 0.2s`
         }}>
           <div style={{
-            width: 'clamp(250px, 60vw, 800px)', 
+            width: '100%',
             animation: mounted ? 'castleBreathe 5s ease-in-out infinite' : 'none',
             transformOrigin: 'bottom center'
           }}>
             <img src="/retro/castle.png" alt="Castle" style={{ width: '100%', height: 'auto', display: 'block' }} />
           </div>
         </div>
+
+        
 
         {/* ─── LAYER 4: HILLS (z-index 4) ─── */}
         <div style={{ 
