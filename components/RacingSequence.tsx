@@ -23,83 +23,72 @@ export default function RacingSequence({ isActive }: Props) {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#0a0608' }}>
       <style>{`
-        @keyframes panBgRight {
-          0%   { transform: translateX(-50%); }
-          100% { transform: translateX(0%); }
-        }
-        @keyframes panRoadUp {
-          0%   { background-position-y: 100%; }
-          100% { background-position-y: 0%; }
-        }
         @keyframes engineVibrate {
-          0%,100% { transform: translateY(0)    rotate(0deg);   }
-          25%      { transform: translateY(1.5px) rotate(0.4deg);  }
-          75%      { transform: translateY(-1px)  rotate(-0.4deg); }
-        }
-        @keyframes roadSlideUp {
-          from { transform: translateY(120px); opacity: 0; }
-          to   { transform: translateY(0);     opacity: 1; }
-        }
-        @keyframes bgRise {
-          from { transform: translateX(-50%) translateY(40px); opacity: 0; }
-          to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+          0%,100% { transform: translateY(0)     rotate(0deg);   }
+          25%      { transform: translateY(1.5px)  rotate(0.4deg);  }
+          75%      { transform: translateY(-1px)   rotate(-0.4deg); }
         }
       `}</style>
 
-      {/* ── Background — rises in, then pans RIGHT (backward = retro continuity) ── */}
+      {/* ── Background — rises up from below like a curtain lift ── */}
       <div style={{
         position: 'absolute', inset: 0,
         opacity: mounted ? 1 : 0,
-        transition: `opacity 0.7s ${ease}`,
+        transform: mounted
+          ? 'perspective(900px) rotateX(0deg) translateY(0) scale(1)'
+          : 'perspective(900px) rotateX(8deg) translateY(60px) scale(1.06)',
+        transition: `opacity 0.9s ${ease}, transform 1.1s ${ease}`,
+        transformOrigin: 'bottom center',
       }}>
-        <div style={{
-          width: '200%', height: '100%',
-          display: 'flex',
-          animation: mounted ? 'panBgRight 38s linear infinite' : 'none',
-        }}>
-          <img src="/racing/bg.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          <img src="/racing/bg.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        </div>
+        <img
+          src="/racing/bg.png" alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
       </div>
 
-      {/* ── Road — slides up from bottom, then scrolls upward ── */}
+      {/* ── Road — slams up from below with 3D tilt ── */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         height: 'clamp(160px, 35vh, 320px)',
-        animation: mounted ? `roadSlideUp 0.9s ${ease} 0.1s both` : 'none',
-        overflow: 'hidden',
+        opacity: mounted ? 1 : 0,
+        transform: mounted
+          ? 'perspective(600px) rotateX(0deg) translateY(0)'
+          : 'perspective(600px) rotateX(25deg) translateY(180px)',
+        transition: `opacity 0.7s ${ease} 0.15s, transform 1s ${ease} 0.15s`,
+        transformOrigin: 'bottom center',
       }}>
-        <div style={{
-          width: '200%', height: '100%',
-          backgroundImage: 'url(/racing/road.png)',
-          backgroundRepeat: 'repeat-x',
-          backgroundSize: 'auto 100%',
-          animation: mounted ? 'panBgRight 1.4s linear infinite' : 'none',
-        }} />
+        <img
+          src="/racing/road.png" alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+        />
       </div>
 
-      {/* ── Car — slams in from LEFT ── */}
+      {/* ── Car — blasts in from left with 3D depth ── */}
       <div style={{
         position: 'absolute',
         bottom: 'clamp(120px, 26vh, 260px)',
         left: '50%',
         width: 'clamp(260px, 44vw, 620px)',
         transform: 'translateX(-50%)',
-        opacity: mounted ? 1 : 0,
-        marginLeft: mounted ? '0px' : '-120vw',
-        transition: `opacity 0.01s, margin-left 0.95s ${ease} 0.2s`,
         zIndex: 10,
-        filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.85))',
       }}>
         <div style={{
-          animation: mounted ? 'engineVibrate 0.09s linear infinite' : 'none',
-          transformOrigin: 'bottom center',
+          opacity: mounted ? 1 : 0,
+          transform: mounted
+            ? 'perspective(800px) rotateY(0deg) translateX(0) scale(1)'
+            : 'perspective(800px) rotateY(-35deg) translateX(-140%) scale(0.7)',
+          transition: `opacity 0.6s ${ease} 0.25s, transform 1s ${ease} 0.25s`,
+          filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.9))',
         }}>
-          <img
-            src="/racing/car.png"
-            alt="Racing Car"
-            style={{ width: '100%', height: 'auto', display: 'block' }}
-          />
+          <div style={{
+            animation: mounted ? 'engineVibrate 0.09s linear infinite' : 'none',
+            transformOrigin: 'bottom center',
+          }}>
+            <img
+              src="/racing/car.png" alt="Racing Car"
+              style={{ width: '100%', height: 'auto', display: 'block' }}
+            />
+          </div>
         </div>
       </div>
 
@@ -118,11 +107,12 @@ export default function RacingSequence({ isActive }: Props) {
         left: 0, right: 0,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0) skewX(0deg)' : 'translateY(-40px) skewX(-10deg)',
+        transform: mounted
+          ? 'translateY(0) skewX(0deg)'
+          : 'translateY(-40px) skewX(-10deg)',
         filter: mounted ? 'blur(0px)' : 'blur(16px)',
         transition: `all 1.1s ${ease} 0.3s`,
-        zIndex: 20,
-        pointerEvents: 'none',
+        zIndex: 20, pointerEvents: 'none',
       }}>
         <span style={{
           fontFamily: "'Space Mono', monospace",
@@ -150,4 +140,3 @@ export default function RacingSequence({ isActive }: Props) {
     </div>
   )
 }
-
