@@ -75,7 +75,7 @@ export default function RetroSequence({ isActive }: Props) {
         .retro-character {
           position: absolute;
           bottom: 4dvh;
-          left: 66%;
+          left: 45%;
           z-index: 6;
           width: clamp(170px, 18vw, 270px);
           transform: translateX(-50%);
