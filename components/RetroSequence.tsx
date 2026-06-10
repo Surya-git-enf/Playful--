@@ -19,84 +19,78 @@ export default function RetroSequence({ isActive }: Props) {
     return () => clearTimeout(mountTimer);
   }, [isActive]);
 
-  const premiumEase   = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  const premiumEase    = 'cubic-bezier(0.16, 1, 0.3, 1)';
   const aggressiveEase = 'cubic-bezier(0.19, 1, 0.22, 1)';
+
+  /*
+    GROUND SYSTEM — single source of truth
+    ───────────────────────────────────────
+    terrain image  = bottom 28vh of the screen
+    terrain surface (top edge) = 28vh from bottom
+
+    Character stands ON that surface:
+      bottom: 28vh   (feet at terrain top edge)
+      no vertical animation — locked to ground
+
+    Coins hover just above ground with arc float only (no ground contact)
+  */
+  const TERRAIN_H  = '28vh';   // height of terrain layer
+  const GROUND     = '28vh';   // bottom value for anything standing on ground
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#59b0ff' }}>
 
-      {/* ─── KEYFRAMES ─── */}
       <style>{`
-        /* ── Castle: full inhale / exhale breathing ── */
-        @keyframes castleBreathe {
-          0%, 100% {
-            transform: scaleX(1) scaleY(1) translateY(0px);
-            filter: brightness(1);
-          }
-          40% {
-            transform: scaleX(1.04) scaleY(1.025) translateY(-6px);
-            filter: brightness(1.06);
-          }
-          60% {
-            transform: scaleX(1.04) scaleY(1.025) translateY(-6px);
-            filter: brightness(1.06);
-          }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-        /* ── Sky: very slow 3-D parallax drift ── */
+        /* Sky slow 3-D parallax */
         @keyframes skyDrift {
-          0%, 100% { transform: perspective(1200px) rotateX(0deg)   scale(1.04) translateY(0px); }
-          50%       { transform: perspective(1200px) rotateX(1.5deg) scale(1.07) translateY(-8px); }
+          0%,100% { transform: perspective(1400px) rotateX(0deg)    scale(1.03) translateY(0px);  }
+          50%      { transform: perspective(1400px) rotateX(1.2deg)  scale(1.06) translateY(-6px); }
         }
 
-        /* ── Clouds: 3-D depth pan left→right + gentle rise ── */
+        /* Clouds 3-D side pan + rise */
         @keyframes cloudPan3D {
-          0%   { transform: perspective(800px) rotateY(0deg)    translateX(0px)   translateY(0px); }
-          33%  { transform: perspective(800px) rotateY(-2deg)   translateX(18px)  translateY(-7px); }
-          66%  { transform: perspective(800px) rotateY(1.5deg)  translateX(-8px)  translateY(-4px); }
-          100% { transform: perspective(800px) rotateY(0deg)    translateX(0px)   translateY(0px); }
+          0%,100% { transform: perspective(900px) rotateY(0deg)   translateX(0px)  translateY(0px); }
+          33%     { transform: perspective(900px) rotateY(-2deg)  translateX(16px) translateY(-6px); }
+          66%     { transform: perspective(900px) rotateY(1.5deg) translateX(-6px) translateY(-3px); }
         }
 
-        /* ── Hills: slow 3-D tilt rise ── */
+        /* Castle breathe in / out */
+        @keyframes castleBreathe {
+          0%,100% { transform: scaleX(1)    scaleY(1)     translateY(0px);  filter: brightness(1);    }
+          40%,60% { transform: scaleX(1.03) scaleY(1.02)  translateY(-5px); filter: brightness(1.07); }
+        }
+
+        /* Hills slow 3-D tilt */
         @keyframes hillsRise3D {
-          0%, 100% { transform: perspective(900px) rotateX(0deg)    translateY(0px); }
-          50%       { transform: perspective(900px) rotateX(-1.2deg) translateY(-5px); }
+          0%,100% { transform: perspective(1000px) rotateX(0deg)     translateY(0px); }
+          50%     { transform: perspective(1000px) rotateX(-1deg)     translateY(-4px); }
         }
 
-        /* ── Terrain: subtle forward push (parallax depth) ── */
+        /* Terrain forward depth push */
         @keyframes terrainPush {
-          0%, 100% { transform: perspective(600px) rotateX(0deg)  scale(1); }
-          50%       { transform: perspective(600px) rotateX(0.6deg) scale(1.008); }
+          0%,100% { transform: perspective(700px) rotateX(0deg)   scale(1);     }
+          50%     { transform: perspective(700px) rotateX(0.5deg) scale(1.006); }
         }
 
-        /* ── Coins: 3-D Y-spin + arc float ── */
+        /* Coins 3-D spin + arc float (never touch ground) */
         @keyframes coinSpin3D {
-          0%   { transform: perspective(300px) rotateY(0deg)   translateY(0px)   scale(1); }
-          25%  { transform: perspective(300px) rotateY(90deg)  translateY(-12px) scale(1.05); }
-          50%  { transform: perspective(300px) rotateY(180deg) translateY(-18px) scale(1.1); }
-          75%  { transform: perspective(300px) rotateY(270deg) translateY(-10px) scale(1.05); }
-          100% { transform: perspective(300px) rotateY(360deg) translateY(0px)   scale(1); }
+          0%   { transform: perspective(260px) rotateY(0deg)   translateY(0px);  }
+          25%  { transform: perspective(260px) rotateY(90deg)  translateY(-10px); }
+          50%  { transform: perspective(260px) rotateY(180deg) translateY(-16px); }
+          75%  { transform: perspective(260px) rotateY(270deg) translateY(-8px);  }
+          100% { transform: perspective(260px) rotateY(360deg) translateY(0px);  }
         }
 
-        /* ── Character: 3-D tilt + float + side pan ── */
-        @keyframes charFloat3D {
-          0%   { transform: perspective(600px) rotateY(-6deg) rotateX(2deg)  translateY(0px)   translateX(0px); }
-          25%  { transform: perspective(600px) rotateY(-1deg) rotateX(-1deg) translateY(-9px)  translateX(3px); }
-          50%  { transform: perspective(600px) rotateY(5deg)  rotateX(1.5deg) translateY(-14px) translateX(6px); }
-          75%  { transform: perspective(600px) rotateY(1deg)  rotateX(-0.5deg) translateY(-7px)  translateX(2px); }
-          100% { transform: perspective(600px) rotateY(-6deg) rotateX(2deg)  translateY(0px)   translateX(0px); }
-        }
-
-        /* ── Character shadow syncs with float ── */
-        @keyframes shadowSync {
-          0%, 100% { transform: translateX(-50%) scaleX(1);    opacity: 0.4; }
-          50%       { transform: translateX(-50%) scaleX(0.6);  opacity: 0.15; }
+        /* Character: ONLY side 3-D tilt pan — NO vertical movement */
+        @keyframes charTilt3D {
+          0%,100% { transform: perspective(600px) rotateY(-4deg) rotateX(1.5deg);  }
+          50%     { transform: perspective(600px) rotateY( 4deg) rotateX(-1deg);   }
         }
       `}</style>
 
-      {/* ════════════════════════════════
-          MASTER VIEWPORT
-      ════════════════════════════════ */}
+      {/* ══════════ MASTER VIEWPORT ══════════ */}
       <div style={{
         position: 'absolute', inset: 0,
         opacity: mounted ? 1 : 0,
@@ -104,123 +98,108 @@ export default function RetroSequence({ isActive }: Props) {
         willChange: 'opacity',
       }}>
 
-        {/* ── LAYER 1: SKY — 3-D drift ── */}
+        {/* ── z1 SKY ── */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 1,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0) scale(1)' : 'translateY(-20px) scale(1.05)',
           transition: `all 1.5s ${premiumEase}`,
         }}>
-          <div style={{
-            width: '100%', height: '100%',
-            animation: mounted ? 'skyDrift 18s ease-in-out infinite' : 'none',
-          }}>
+          <div style={{ width: '100%', height: '100%', animation: mounted ? 'skyDrift 20s ease-in-out infinite' : 'none' }}>
             <img src="/retro/sky.png" alt="Sky"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} />
           </div>
         </div>
 
-        {/* ── LAYER 2: CLOUDS — 3-D pan ── */}
+        {/* ── z2 CLOUDS ── */}
         <div style={{
-          position: 'absolute', top: '5dvh', left: 0, right: 0, height: '25dvh', zIndex: 2,
+          position: 'absolute', top: '5vh', left: 0, right: 0, height: '22vh', zIndex: 2,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(-40px)',
           transition: `all 1.4s ${premiumEase} 0.1s`,
         }}>
-          <div style={{
-            width: '100%', height: '100%',
-            animation: mounted ? 'cloudPan3D 12s ease-in-out infinite' : 'none',
-          }}>
+          <div style={{ width: '100%', height: '100%', animation: mounted ? 'cloudPan3D 13s ease-in-out infinite' : 'none' }}>
             <img src="/retro/clouds.png" alt="Clouds"
               style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'top' }} />
           </div>
         </div>
 
-        {/* ── LAYER 3: CASTLE — FULL WIDTH + breathe ── */}
+        {/* ── z3 CASTLE — full width, breathe ── */}
         <div style={{
-          position: 'absolute', bottom: '10dvh', left: 0, right: 0, zIndex: 3,
+          position: 'absolute', bottom: `calc(${TERRAIN_H} + 8vh)`, left: 0, right: 0, zIndex: 3,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(40px)',
           transition: `all 1.5s ${premiumEase} 0.2s`,
         }}>
           <div style={{
-            /* Full viewport width — fills edge to edge */
             width: '100%',
             animation: mounted ? 'castleBreathe 5s ease-in-out infinite' : 'none',
             transformOrigin: 'bottom center',
           }}>
-            <img src="/retro/castle.png" alt="Castle"
-              style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <img src="/retro/castle.png" alt="Castle" style={{ width: '100%', height: 'auto', display: 'block' }} />
           </div>
         </div>
 
-        {/* ── LAYER 4: HILLS — 3-D rise tilt ── */}
+        {/* ── z4 HILLS ── */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '45dvh', zIndex: 4,
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '42vh', zIndex: 4,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(80px)',
           transition: `all 1.2s ${premiumEase} 0.15s`,
         }}>
-          <div style={{
-            width: '100%', height: '100%',
-            animation: mounted ? 'hillsRise3D 14s ease-in-out infinite' : 'none',
-          }}>
+          <div style={{ width: '100%', height: '100%', animation: mounted ? 'hillsRise3D 16s ease-in-out infinite' : 'none' }}>
             <img src="/retro/hills.png" alt="Hills"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom center' }} />
           </div>
         </div>
 
-        {/* ── LAYER 5: TERRAIN FLOOR — depth push ── */}
+        {/* ── z5 TERRAIN FLOOR ── */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '30dvh', zIndex: 5,
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: TERRAIN_H, zIndex: 5,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(100px)',
           transition: `all 1s ${aggressiveEase} 0.25s`,
         }}>
-          <div style={{
-            width: '100%', height: '100%',
-            animation: mounted ? 'terrainPush 10s ease-in-out infinite' : 'none',
-          }}>
+          <div style={{ width: '100%', height: '100%', animation: mounted ? 'terrainPush 12s ease-in-out infinite' : 'none' }}>
             <img src="/retro/terrain.png" alt="Terrain"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom' }} />
           </div>
         </div>
 
-        {/* ── LAYER 6: CHARACTER ──
-            Original: bottom '5dvh', left '50vw'
-            Adjusted: left = 50vw - 5px  →  left: 'calc(50vw - 5px)'
-                       bottom = 5dvh - 1dvh → bottom: '4dvh'
+        {/* ── z6 CHARACTER ──
+            bottom: GROUND → feet locked exactly at terrain top surface
+            NO vertical animation — only 3-D side tilt
+            left adjusted: calc(50vw - 5px) per your request
         ── */}
         <div style={{
           position: 'absolute',
-          bottom: '4dvh',
+          bottom: GROUND,          /* ← feet ON terrain surface, never floating */
           left: 'calc(50vw - 5px)',
           zIndex: 6,
-          width: 'clamp(170px, 70vw, 230px)',
+          width: 'clamp(170px, 12vw, 230px)',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
-          transition: `all 1.1s ${aggressiveEase} 0.35s`,
+          transition: `opacity 1s ${aggressiveEase} 0.35s, transform 1.1s ${aggressiveEase} 0.35s`,
         }}>
-          {/* Ground shadow */}
+          {/* Static pixel shadow — no animation, stays under feet */}
           <div style={{
-            position: 'absolute', bottom: '-6px', left: '50%',
-            width: '55%', height: '10px',
-            background: 'radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 70%)',
-            transformOrigin: 'center',
-            animation: mounted ? 'shadowSync 3s ease-in-out infinite' : 'none',
+            position: 'absolute', bottom: '-4px', left: '50%',
+            width: '60%', height: '8px',
+            background: 'radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, transparent 70%)',
+            transform: 'translateX(-50%)',
           }} />
-          {/* Character 3-D float */}
+          {/* Only 3-D tilt — no Y movement */}
           <div style={{
             filter: 'drop-shadow(6px 8px 0px rgba(0,0,0,0.4))',
-            animation: mounted ? 'charFloat3D 3s ease-in-out infinite' : 'none',
+            animation: mounted ? 'charTilt3D 4s ease-in-out infinite' : 'none',
             transformOrigin: 'bottom center',
           }}>
             <img src="/retro/character.png" alt="Character"
-              style={{ width: '100%', height: '100%', display: 'block' }} />
+              style={{ width: '100%', height: 'auto', display: 'block' }} />
           </div>
         </div>
 
-        {/* ── LAYER 7: COINS — 3-D spin float ── */}
+        {/* ── z7 COINS — hover above terrain, 3-D spin ── */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 7,
           opacity: mounted ? 1 : 0,
@@ -228,26 +207,27 @@ export default function RetroSequence({ isActive }: Props) {
           transition: `all 1.3s ${premiumEase} 0.4s`,
         }}>
           {[
-            { left: '10%',  bottom: '10dvh', delay: '0s'   },
-            { left: '60%',  bottom: '5dvh',  delay: '0.2s' },
-            { left: '65%',  bottom: '5dvh',  delay: '0.4s' },
-            { left: '76%',  bottom: '8dvh',  delay: '0s'   },
-            { left: '81%',  bottom: '8dvh',  delay: '0.3s' },
+            { left: '10%',  bottom: `calc(${GROUND} + 2vh)`, delay: '0s'    },
+            { left: '60%',  bottom: `calc(${GROUND} + 0vh)`, delay: '0.2s'  },
+            { left: '65%',  bottom: `calc(${GROUND} + 0vh)`, delay: '0.4s'  },
+            { left: '76%',  bottom: `calc(${GROUND} + 1vh)`, delay: '0s'    },
+            { left: '81%',  bottom: `calc(${GROUND} + 1vh)`, delay: '0.3s'  },
           ].map((c, i) => (
             <div key={i} style={{
               position: 'absolute',
-              left: c.left, bottom: c.bottom,
-              width: 'clamp(40px, 10vw, 65px)',
+              left: c.left,
+              bottom: c.bottom,
+              width: 'clamp(40px, 3.5vw, 60px)',
               animation: mounted ? `coinSpin3D 1.7s ease-in-out infinite ${c.delay}` : 'none',
             }}>
-              <img src="/retro/coin.png" style={{ width: '100%' }} alt="" />
+              <img src="/retro/coin.png" style={{ width: '100%', display: 'block' }} alt="" />
             </div>
           ))}
         </div>
 
       </div>
 
-      {/* ─── OBSIDIAN TEXT GRADIENT ─── */}
+      {/* ── TOP SCRIM ── */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: 'linear-gradient(to bottom, rgba(2,2,2,0.85) 0%, rgba(2,2,2,0.1) 25%, transparent 45%)',
@@ -256,9 +236,9 @@ export default function RetroSequence({ isActive }: Props) {
         zIndex: 10,
       }} />
 
-      {/* ─── TYPOGRAPHY LAYER ─── */}
+      {/* ── TYPOGRAPHY ── */}
       <div style={{
-        position: 'absolute', top: '8dvh', left: 0, right: 0, zIndex: 20,
+        position: 'absolute', top: '8vh', left: 0, right: 0, zIndex: 20,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         opacity: mounted ? 1 : 0,
         transform: mounted ? 'translateY(0) skewX(0deg)' : 'translateY(-20px) skewX(-4deg)',
@@ -266,23 +246,17 @@ export default function RetroSequence({ isActive }: Props) {
         transition: `all 1.2s ${aggressiveEase} 0.3s`,
         willChange: 'opacity, transform, filter',
       }}>
-        <style dangerouslySetInnerHTML={{__html: `
-          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        `}} />
-
         <span style={{
           fontFamily: "'Inter', sans-serif", fontSize: '0.65rem', letterSpacing: '0.4em',
           color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', marginBottom: '12px',
         }}>
           Stage 2 · Retro
         </span>
-
         <h2 style={{
           fontFamily: "'Press Start 2P', cursive",
           fontSize: 'clamp(1.2rem, 5vw, 3.5rem)', margin: 0,
           fontWeight: 400, lineHeight: 1.2, textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          textShadow: '0 6px 0px #000',
+          letterSpacing: '0.04em', textShadow: '0 6px 0px #000',
           display: 'flex', gap: '16px',
         }}>
           <span style={{ color: '#FACC15' }}>pixels</span>
@@ -292,4 +266,5 @@ export default function RetroSequence({ isActive }: Props) {
 
     </div>
   );
-}
+                }
+              
