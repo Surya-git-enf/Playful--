@@ -106,4 +106,4 @@ chmod +x "$(which claude 2>/dev/null)" 2>/dev/null || true
 npx -y @anthropic-ai/claude-code \
   --continue \
   --dangerously-skip-permissions
-
+claude
