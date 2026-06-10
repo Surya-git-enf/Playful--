@@ -142,9 +142,9 @@ export default function RetroSequence({ isActive }: Props) {
           transform: mounted ? 'translateY(0)' : 'translateY(50px)',
           transition: `all 1.3s ${premiumEase} 0.4s`
         }}>
-          <div style={{ position: 'absolute', left: '10%', bottom: '10dvh', width: 'clamp(24px, 4vw, 60px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
-          <div style={{ position: 'absolute', left: '56%', bottom: '7dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.2s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
-          <div style={{ position: 'absolute', left: '54%', bottom: '42dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.4s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '10%', bottom: '10dvh', width: 'clamp(34px, 8vw, 60px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '60%', bottom: '5dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.2s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '65%', bottom: '5dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.4s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
           
           <div style={{ position: 'absolute', left: '76%', bottom: '38dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.8s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
           <div style={{ position: 'absolute', left: '84%', bottom: '38dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.8s ease-in-out infinite 0.3s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
