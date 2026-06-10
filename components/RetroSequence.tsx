@@ -257,7 +257,7 @@ export default function RetroSequence({ isActive }: Props) {
           style={{
             position: "absolute",
             left: "45%",
-            bottom: "4%",
+            bottom: "3.8%",
             width: "30%",
             zIndex: 6,
             opacity: mounted ? 1 : 0,
