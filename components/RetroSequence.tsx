@@ -33,8 +33,8 @@ const CHARACTER_LAYOUT = {
     scale: 0.88,
   },
   mobile: {
-    left: "67%",
-    bottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
+    left: "45%",
+    bottom: "calc(env(safe-area-inset-bottom, 0px) + 1px)",
     width: "clamp(118px, 31vw, 150px)",
     scale: 1.02,
   },
