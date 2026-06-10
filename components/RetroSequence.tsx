@@ -142,7 +142,7 @@ export default function RetroSequence({ isActive }: Props) {
           transform: mounted ? 'translateY(0)' : 'translateY(50px)',
           transition: `all 1.3s ${premiumEase} 0.4s`
         }}>
-          <div style={{ position: 'absolute', left: '18%', bottom: '20dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+          <div style={{ position: 'absolute', left: '10%', bottom: '10dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
           <div style={{ position: 'absolute', left: '26%', bottom: '12dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.2s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
           <div style={{ position: 'absolute', left: '54%', bottom: '42dvh', width: 'clamp(24px, 4vw, 40px)', animation: 'coinGlowSpin 1.6s ease-in-out infinite 0.4s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
           
