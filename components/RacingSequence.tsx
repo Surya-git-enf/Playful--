@@ -63,7 +63,7 @@ export default function RacingSequence({ isActive }: Props) {
 
                 {/* LAYER 2: ROAD — slams up from below */}
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
+          position: 'absolute', bottom: '10dvh', left: 0, right: 0,
           /* Restored original height to fit the trees */
           height: 'clamp(130px, 30dvh, 290px)', 
           zIndex: 2,
