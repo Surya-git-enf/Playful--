@@ -21,16 +21,19 @@ export default function RetroSequence({ isActive }: Props) {
   });
 
   useEffect(() => {
-    let mountTimer: ReturnType<typeof setTimeout>;
-
     const updateViewport = () => {
-      const coarse = window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+      const coarse =
+        window.matchMedia("(pointer: coarse)").matches ||
+        navigator.maxTouchPoints > 0;
+
       setViewport({
         width: window.innerWidth,
         height: window.innerHeight,
         coarse,
       });
     };
+
+    let mountTimer: ReturnType<typeof setTimeout> | undefined;
 
     updateViewport();
     window.addEventListener("resize", updateViewport);
@@ -45,7 +48,7 @@ export default function RetroSequence({ isActive }: Props) {
     return () => {
       window.removeEventListener("resize", updateViewport);
       window.removeEventListener("orientationchange", updateViewport);
-      clearTimeout(mountTimer);
+      if (mountTimer) clearTimeout(mountTimer);
     };
   }, [isActive]);
 
@@ -58,20 +61,22 @@ export default function RetroSequence({ isActive }: Props) {
 
     if (isTouch) {
       return {
-        left: isSmallPhone ? "66%" : "64%",
-        bottom: isSmallPhone ? "calc(env(safe-area-inset-bottom) + 10px)" : "calc(env(safe-area-inset-bottom) + 14px)",
-        width: isSmallPhone ? "clamp(150px, 36dvh, 225px)" : "clamp(165px, 34dvh, 250px)",
-        translateX: "-50%",
-        extraScale: isSmallPhone ? 1.12 : 1.08,
+        left: isSmallPhone ? "67%" : "65%",
+        bottom: isSmallPhone
+          ? "calc(env(safe-area-inset-bottom, 0px) + 10px)"
+          : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+        width: isSmallPhone
+          ? "clamp(118px, 31vw, 150px)"
+          : "clamp(140px, 34vw, 185px)",
+        scale: 1.02,
       };
     }
 
     return {
-      left: "67%",
-      bottom: "calc(env(safe-area-inset-bottom) + 3.8dvh)",
-      width: "clamp(180px, 18vw, 280px)",
-      translateX: "-50%",
-      extraScale: 1,
+      left: "45vw",
+      bottom: "calc(env(safe-area-inset-bottom, 0px) + 6dvh)", // bottom +2 from 4dvh
+      width: "clamp(96px, 8.8vw, 132px)", // smaller on desktop
+      scale: 0.78,
     };
   }, [viewport]);
 
@@ -128,7 +133,7 @@ export default function RetroSequence({ isActive }: Props) {
           position: absolute;
           z-index: 6;
           opacity: 0;
-          transition: all 1.1s ${aggressiveEase} 0.35s;
+          transition: all 1.1s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
           will-change: transform, opacity, left, bottom, width;
         }
 
@@ -175,7 +180,12 @@ export default function RetroSequence({ isActive }: Props) {
             <img
               src="/retro/sky.png"
               alt="Sky"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "top center",
+              }}
             />
           </div>
         </div>
@@ -198,7 +208,12 @@ export default function RetroSequence({ isActive }: Props) {
             <img
               src="/retro/clouds.png"
               alt="Clouds"
-              style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "top" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                objectPosition: "top",
+              }}
             />
           </div>
         </div>
@@ -219,7 +234,11 @@ export default function RetroSequence({ isActive }: Props) {
           }}
         >
           <div style={{ width: "100%", animation: mounted ? "castleBreathe 5s ease-in-out infinite" : "none", transformOrigin: "bottom center" }}>
-            <img src="/retro/castle.png" alt="Castle" style={{ width: "100%", height: "auto", display: "block" }} />
+            <img
+              src="/retro/castle.png"
+              alt="Castle"
+              style={{ width: "100%", height: "auto", display: "block" }}
+            />
           </div>
         </div>
 
@@ -241,7 +260,12 @@ export default function RetroSequence({ isActive }: Props) {
             <img
               src="/retro/hills.png"
               alt="Hills"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom center" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "bottom center",
+              }}
             />
           </div>
         </div>
@@ -264,7 +288,12 @@ export default function RetroSequence({ isActive }: Props) {
             <img
               src="/retro/terrain.png"
               alt="Terrain"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "bottom",
+              }}
             />
           </div>
         </div>
@@ -276,14 +305,18 @@ export default function RetroSequence({ isActive }: Props) {
             left: characterConfig.left,
             bottom: characterConfig.bottom,
             width: characterConfig.width,
-            transform: `translateX(${characterConfig.translateX}) scale(${characterConfig.extraScale})`,
+            transform: `translateX(-50%) scale(${characterConfig.scale})`,
           }}
         >
           <div className="retro-character-inner">
             <img
               src="/retro/character.png"
               alt="Character"
-              style={{ width: "100%", height: "100%", display: "block" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "block",
+              }}
             />
           </div>
         </div>
@@ -299,31 +332,76 @@ export default function RetroSequence({ isActive }: Props) {
             transition: `all 1.3s ${premiumEase} 0.4s`,
           }}
         >
-          <div style={{ position: "absolute", left: "10%", bottom: "10dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite" }}>
+          <div
+            style={{
+              position: "absolute",
+              left: "10%",
+              bottom: "10dvh",
+              width: "clamp(40px, 10vw, 65px)",
+              animation: "coinSpin3D 1.6s ease-in-out infinite",
+            }}
+          >
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
-          <div style={{ position: "absolute", left: "60%", bottom: "5dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite 0.2s" }}>
+
+          <div
+            style={{
+              position: "absolute",
+              left: "60%",
+              bottom: "5dvh",
+              width: "clamp(40px, 10vw, 65px)",
+              animation: "coinSpin3D 1.6s ease-in-out infinite 0.2s",
+            }}
+          >
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
-          <div style={{ position: "absolute", left: "65%", bottom: "5dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite 0.4s" }}>
+
+          <div
+            style={{
+              position: "absolute",
+              left: "65%",
+              bottom: "5dvh",
+              width: "clamp(40px, 10vw, 65px)",
+              animation: "coinSpin3D 1.6s ease-in-out infinite 0.4s",
+            }}
+          >
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
-          <div style={{ position: "absolute", left: "76%", bottom: "8dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.8s ease-in-out infinite" }}>
+
+          <div
+            style={{
+              position: "absolute",
+              left: "76%",
+              bottom: "8dvh",
+              width: "clamp(40px, 10vw, 65px)",
+              animation: "coinSpin3D 1.8s ease-in-out infinite",
+            }}
+          >
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
-          <div style={{ position: "absolute", left: "81%", bottom: "8dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.8s ease-in-out infinite 0.3s" }}>
+
+          <div
+            style={{
+              position: "absolute",
+              left: "81%",
+              bottom: "8dvh",
+              width: "clamp(40px, 10vw, 65px)",
+              animation: "coinSpin3D 1.8s ease-in-out infinite 0.3s",
+            }}
+          >
             <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
           </div>
         </div>
       </div>
 
-      {/* DARK TOP GRADIENT */}
+      {/* TOP DARK GRADIENT */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
-          background: "linear-gradient(to bottom, rgba(2,2,2,0.85) 0%, rgba(2,2,2,0.1) 25%, transparent 45%)",
+          background:
+            "linear-gradient(to bottom, rgba(2,2,2,0.85) 0%, rgba(2,2,2,0.1) 25%, transparent 45%)",
           opacity: mounted ? 1 : 0,
           transition: `opacity 1s ${premiumEase}`,
           zIndex: 10,
@@ -384,4 +462,4 @@ export default function RetroSequence({ isActive }: Props) {
       </div>
     </div>
   );
-                      }
+            }
