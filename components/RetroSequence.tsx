@@ -118,7 +118,7 @@ export default function RetroSequence({ isActive }: Props) {
             Dropped down to stand exactly on the 30dvh terrain 
         */}
         <div style={{
-          position: 'absolute', bottom: '50dvh', left: '50vw', zIndex: 6,
+          position: 'absolute', bottom: '5dvh', left: '50vw', zIndex: 7,
           width: 'clamp(170px, 70vw, 230px)',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
@@ -137,7 +137,7 @@ export default function RetroSequence({ isActive }: Props) {
             Dropped down to hover directly above the terrain/character 
         */}
         <div style={{
-          position: 'absolute', inset: 0, zIndex: 7,
+          position: 'absolute', inset: 0, zIndex: 6,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(50px)',
           transition: `all 1.3s ${premiumEase} 0.4s`
