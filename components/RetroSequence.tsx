@@ -256,9 +256,9 @@ export default function RetroSequence({ isActive }: Props) {
         <div
           style={{
             position: "absolute",
-            left: "72%",
-            bottom: "8%",
-            width: "18%",
+            left: "45%",
+            bottom: "5%",
+            width: "20%",
             zIndex: 6,
             opacity: mounted ? 1 : 0,
             transform: mounted
@@ -404,7 +404,7 @@ export default function RetroSequence({ isActive }: Props) {
             marginBottom: "12px",
           }}
         >
-          Stage 2 · Retro
+          
         </span>
 
         <h2
