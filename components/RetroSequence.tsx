@@ -126,7 +126,7 @@ export default function RetroSequence({ isActive }: Props) {
 
         {/* ── z3 CASTLE — full width, breathe ── */}
         <div style={{
-          position: 'absolute', bottom: `calc(${TERRAIN_H} + 8vh)`, left: 0, right: 0, zIndex: 3,
+          position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 3,
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateY(0)' : 'translateY(40px)',
           transition: `all 1.5s ${premiumEase} 0.2s`,
