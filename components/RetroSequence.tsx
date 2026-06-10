@@ -85,8 +85,8 @@ export default function RetroSequence({ isActive }: Props) {
 
         /* Character: ONLY side 3-D tilt pan — NO vertical movement */
         @keyframes charTilt3D {
-          0%,100% { transform: perspective(600px) rotateY(-4deg) rotateX(1.5deg);  }
-          50%     { transform: perspective(600px) rotateY( 4deg) rotateX(-1deg);   }
+          0%,100% { transform: perspective(600px) rotateY(-4deg);  }
+          50%     { transform: perspective(600px) rotateY( 4deg);  }
         }
       `}</style>
 
@@ -169,12 +169,11 @@ export default function RetroSequence({ isActive }: Props) {
         {/* ── z6 CHARACTER ──
             bottom: GROUND → feet locked exactly at terrain top surface
             NO vertical animation — only 3-D side tilt
-            left adjusted: calc(50vw - 5px) per your request
         ── */}
         <div style={{
           position: 'absolute',
           bottom: GROUND,          /* ← feet ON terrain surface, never floating */
-          left: 'calc(50vw - 5px)',
+          left: '45dvh',
           zIndex: 6,
           width: 'clamp(170px, 12vw, 230px)',
           opacity: mounted ? 1 : 0,
@@ -266,5 +265,4 @@ export default function RetroSequence({ isActive }: Props) {
 
     </div>
   );
-                }
-              
+}
