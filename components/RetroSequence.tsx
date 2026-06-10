@@ -158,8 +158,8 @@ export default function RetroSequence({ isActive }: Props) {
 
         {/* ─── LAYER 6: CHARACTER (z-index 6) ─── */}
         <div style={{
-          position: 'absolute', bottom: '4dvh', left: '45vw', zIndex: 6,
-          width: 'clamp(170px, 70vw, 230px)',
+          position: 'absolute', bottom: '4dvh', left: '40vw', zIndex: 6,
+          width: 'clamp(190px, 80vw, 270px)',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
           transition: `all 1.1s ${aggressiveEase} 0.35s`
