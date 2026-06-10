@@ -73,8 +73,8 @@ export default function RetroSequence({ isActive }: Props) {
     }
 
     return {
-      left: "45vw",
-      bottom: "calc(env(safe-area-inset-bottom, 0px) + 13dvh)", // bottom +2 from 4dvh
+      left: "40vw",
+      bottom: "calc(env(safe-area-inset-bottom, 0px))", // bottom +2 from 4dvh
       width: "clamp(96px, 8.8vw, 132px)", // smaller on desktop
       scale: 0.78,
     };
