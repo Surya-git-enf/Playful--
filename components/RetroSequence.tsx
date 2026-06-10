@@ -158,7 +158,7 @@ export default function RetroSequence({ isActive }: Props) {
 
         {/* ─── LAYER 6: CHARACTER (z-index 6) ─── */}
         <div style={{
-          position: 'absolute', bottom: '5dvh', left: '50vw', zIndex: 6,
+          position: 'absolute', bottom: '4dvh', left: '45vw', zIndex: 6,
           width: 'clamp(170px, 70vw, 230px)',
           opacity: mounted ? 1 : 0,
           transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
