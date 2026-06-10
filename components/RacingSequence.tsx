@@ -88,8 +88,8 @@ export default function RacingSequence({ isActive }: Props) {
           position: absolute;
           left: 0;
           right: 0;
-          bottom: 10%;
-          height: 30%;
+          bottom: 0%;
+          height: 32%;
           z-index: 2;
           opacity: 0;
           transform: perspective(700px) rotateX(24deg) translateY(18%);
@@ -108,11 +108,10 @@ export default function RacingSequence({ isActive }: Props) {
           animation: ${mounted ? 'roadPulse 8s ease-in-out infinite' : 'none'};
         }
 
-        /* CAR — percentage-based placement */
         .car-layer {
           position: absolute;
           left: 50%;
-          bottom: 14%;
+          bottom: 3%;
           width: 62%;
           z-index: 10;
           transform: translateX(-50%);
@@ -184,12 +183,12 @@ export default function RacingSequence({ isActive }: Props) {
         @media (max-width: 1024px) {
           .car-layer {
             width: 70%;
-            bottom: 15%;
+            bottom: 3%;
           }
 
           .road-layer {
-            bottom: 9%;
-            height: 29%;
+            bottom: 0%;
+            height: 31%;
           }
 
           .title {
@@ -200,12 +199,12 @@ export default function RacingSequence({ isActive }: Props) {
         @media (max-width: 768px) {
           .car-layer {
             width: 80%;
-            bottom: 16%;
+            bottom: 3%;
           }
 
           .road-layer {
-            bottom: 8%;
-            height: 28%;
+            bottom: 0%;
+            height: 30%;
           }
 
           .title {
@@ -220,12 +219,12 @@ export default function RacingSequence({ isActive }: Props) {
         @media (max-width: 480px) {
           .car-layer {
             width: 88%;
-            bottom: 17%;
+            bottom: 3%;
           }
 
           .road-layer {
             bottom: 0%;
-            height: 26%;
+            height: 28%;
           }
 
           .title {
@@ -238,9 +237,8 @@ export default function RacingSequence({ isActive }: Props) {
         }
       `}</style>
 
-      {/* MASTER WRAPPER */}
       <div className={`master-wrapper ${mounted ? 'mounted' : ''}`}>
-        {/* LAYER 1: BACKGROUND */}
+        {/* BACKGROUND */}
         <div className={`bg-layer ${mounted ? 'mounted' : ''}`}>
           <div className="bg-layer-inner">
             <img
@@ -256,7 +254,7 @@ export default function RacingSequence({ isActive }: Props) {
           </div>
         </div>
 
-        {/* LAYER 2: ROAD */}
+        {/* ROAD */}
         <div className={`road-layer ${mounted ? 'mounted' : ''}`}>
           <div className="road-layer-inner">
             <img
@@ -273,7 +271,7 @@ export default function RacingSequence({ isActive }: Props) {
           </div>
         </div>
 
-        {/* LAYER 3: CAR */}
+        {/* CAR */}
         <div className="car-layer">
           <div className={`car-layer-inner ${mounted ? 'mounted' : ''}`}>
             <img
@@ -289,10 +287,10 @@ export default function RacingSequence({ isActive }: Props) {
         </div>
       </div>
 
-      {/* OBSIDIAN GRADIENT MASK */}
+      {/* MASK */}
       <div className={`mask ${mounted ? 'mounted' : ''}`} />
 
-      {/* TYPOGRAPHY */}
+      {/* TITLE */}
       <div className={`title ${mounted ? 'mounted' : ''}`}>
         <h2>Heads Up, Gear</h2>
       </div>
