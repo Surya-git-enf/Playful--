@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 interface Props {
   isActive: boolean;
@@ -19,12 +19,11 @@ export default function RetroSequence({ isActive }: Props) {
     return () => clearTimeout(mountTimer);
   }, [isActive]);
 
-  const premiumEase = 'cubic-bezier(0.16, 1, 0.3, 1)';
-  const aggressiveEase = 'cubic-bezier(0.19, 1, 0.22, 1)';
+  const premiumEase = "cubic-bezier(0.16, 1, 0.3, 1)";
+  const aggressiveEase = "cubic-bezier(0.19, 1, 0.22, 1)";
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#59b0ff' }}>
-      
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#59b0ff" }}>
       <style>{`
         @keyframes castleLivePulse {
           0%, 100% { transform: scale(1); }
@@ -44,12 +43,12 @@ export default function RetroSequence({ isActive }: Props) {
           50%     { transform: perspective(1400px) rotateX(1.2deg) scale(1.06) translateY(-6px); }
         }
         @keyframes cloudPan3D {
-          0%,100% { transform: perspective(900px) rotateY(0deg)   translateX(0px)  translateY(0px); }
-          33%     { transform: perspective(900px) rotateY(-2deg)  translateX(16px) translateY(-6px); }
+          0%,100% { transform: perspective(900px) rotateY(0deg) translateX(0px) translateY(0px); }
+          33%     { transform: perspective(900px) rotateY(-2deg) translateX(16px) translateY(-6px); }
           66%     { transform: perspective(900px) rotateY(1.5deg) translateX(-6px) translateY(-3px); }
         }
         @keyframes castleBreathe {
-          0%,100% { transform: scaleX(1)    scaleY(1)    translateY(0px);  filter: brightness(1);    }
+          0%,100% { transform: scaleX(1) scaleY(1) translateY(0px); filter: brightness(1); }
           40%,60% { transform: scaleX(1.03) scaleY(1.02) translateY(-5px); filter: brightness(1.07); }
         }
         @keyframes hillsFloat {
@@ -61,163 +60,269 @@ export default function RetroSequence({ isActive }: Props) {
           50%     { transform: scale(1.005); }
         }
         @keyframes coinSpin3D {
-          0%   { transform: perspective(260px) rotateY(0deg)   translateY(0px);  }
-          25%  { transform: perspective(260px) rotateY(90deg)  translateY(-10px); }
+          0%   { transform: perspective(260px) rotateY(0deg) translateY(0px); }
+          25%  { transform: perspective(260px) rotateY(90deg) translateY(-10px); }
           50%  { transform: perspective(260px) rotateY(180deg) translateY(-16px); }
-          75%  { transform: perspective(260px) rotateY(270deg) translateY(-8px);  }
-          100% { transform: perspective(260px) rotateY(360deg) translateY(0px);  }
+          75%  { transform: perspective(260px) rotateY(270deg) translateY(-8px); }
+          100% { transform: perspective(260px) rotateY(360deg) translateY(0px); }
         }
         @keyframes charTilt3D {
           0%,100% { transform: perspective(600px) rotateY(-4deg) rotateX(1.5deg); }
-          50%     { transform: perspective(600px) rotateY( 4deg) rotateX(-1deg);  }
+          50%     { transform: perspective(600px) rotateY(4deg) rotateX(-1deg); }
+        }
+
+        /* Desktop default */
+        .retro-character {
+          position: absolute;
+          bottom: 4dvh;
+          left: 66%;
+          z-index: 6;
+          width: clamp(170px, 18vw, 270px);
+          transform: translateX(-50%);
+          opacity: 0;
+          transition: all 1.1s ${aggressiveEase} 0.35s;
+        }
+
+        .retro-character.mounted {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+
+        .retro-character-inner {
+          filter: drop-shadow(6px 8px 0px rgba(0,0,0,0.4));
+          animation: ${mounted ? "charTilt3D 4s ease-in-out infinite" : "none"};
+          transform-origin: bottom center;
+        }
+
+        /* Tablet */
+        @media (max-width: 1024px) {
+          .retro-character {
+            left: 68%;
+            bottom: 3dvh;
+            width: clamp(150px, 22vw, 220px);
+          }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+          .retro-character {
+            left: 72%;
+            bottom: 2dvh;
+            width: clamp(95px, 30vw, 150px);
+          }
+        }
+
+        /* Small phones */
+        @media (max-width: 480px) {
+          .retro-character {
+            left: 75%;
+            bottom: 1.2dvh;
+            width: clamp(85px, 34vw, 130px);
+          }
         }
       `}</style>
 
-      <div style={{
-        position: 'absolute', inset: 0,
-        opacity: mounted ? 1 : 0,
-        transition: 'opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
-        willChange: 'opacity'
-      }}>
-        
-        {/* LAYER 1: SKY */}
-        <div style={{ 
-          position: 'absolute', inset: 0, zIndex: 1,
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
           opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0) scale(1)' : 'translateY(-20px) scale(1.05)',
-          transition: `all 1.5s ${premiumEase}`
-        }}>
-          <div style={{ width: '100%', height: '100%', animation: mounted ? 'skyDrift 20s ease-in-out infinite' : 'none' }}>
-            <img src="/retro/sky.png" alt="Sky" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} />
+          transition: "opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+          willChange: "opacity",
+        }}
+      >
+        {/* SKY */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0) scale(1)" : "translateY(-20px) scale(1.05)",
+            transition: `all 1.5s ${premiumEase}`,
+          }}
+        >
+          <div style={{ width: "100%", height: "100%", animation: mounted ? "skyDrift 20s ease-in-out infinite" : "none" }}>
+            <img src="/retro/sky.png" alt="Sky" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }} />
           </div>
         </div>
 
-        {/* LAYER 2: CLOUDS */}
-        <div style={{ 
-          position: 'absolute', top: '5dvh', left: 0, right: 0, height: '25dvh', zIndex: 2,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(-40px)',
-          transition: `all 1.4s ${premiumEase} 0.1s`
-        }}>
-          <div style={{ width: '100%', height: '100%', animation: mounted ? 'cloudPan3D 13s ease-in-out infinite' : 'none' }}>
-            <img src="/retro/clouds.png" alt="Clouds" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'top' }} />
+        {/* CLOUDS */}
+        <div
+          style={{
+            position: "absolute",
+            top: "5dvh",
+            left: 0,
+            right: 0,
+            height: "25dvh",
+            zIndex: 2,
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(-40px)",
+            transition: `all 1.4s ${premiumEase} 0.1s`,
+          }}
+        >
+          <div style={{ width: "100%", height: "100%", animation: mounted ? "cloudPan3D 13s ease-in-out infinite" : "none" }}>
+            <img src="/retro/clouds.png" alt="Clouds" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "top" }} />
           </div>
         </div>
 
-        {/* LAYER 3: CASTLE */}
-        <div style={{ 
-          position: 'absolute', bottom: '10dvh', left: 0, right: 0, zIndex: 3,
-          display: 'flex', justifyContent: 'center',
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(40px)',
-          transition: `all 1.5s ${premiumEase} 0.2s`
-        }}>
-          <div style={{
-            width: '100%',
-            animation: mounted ? 'castleBreathe 5s ease-in-out infinite' : 'none',
-            transformOrigin: 'bottom center'
-          }}>
-            <img src="/retro/castle.png" alt="Castle" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        {/* CASTLE */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "10dvh",
+            left: 0,
+            right: 0,
+            zIndex: 3,
+            display: "flex",
+            justifyContent: "center",
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(40px)",
+            transition: `all 1.5s ${premiumEase} 0.2s`,
+          }}
+        >
+          <div style={{ width: "100%", animation: mounted ? "castleBreathe 5s ease-in-out infinite" : "none", transformOrigin: "bottom center" }}>
+            <img src="/retro/castle.png" alt="Castle" style={{ width: "100%", height: "auto", display: "block" }} />
           </div>
         </div>
 
-        {/* LAYER 4: HILLS */}
-        <div style={{ 
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '45dvh', zIndex: 4,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(80px)',
-          transition: `all 1.2s ${premiumEase} 0.15s`
-        }}>
-          <div style={{ width: '100%', height: '100%', animation: mounted ? 'hillsFloat 14s ease-in-out infinite' : 'none' }}>
-            <img src="/retro/hills.png" alt="Hills" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom center' }} />
+        {/* HILLS */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "45dvh",
+            zIndex: 4,
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(80px)",
+            transition: `all 1.2s ${premiumEase} 0.15s`,
+          }}
+        >
+          <div style={{ width: "100%", height: "100%", animation: mounted ? "hillsFloat 14s ease-in-out infinite" : "none" }}>
+            <img src="/retro/hills.png" alt="Hills" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom center" }} />
           </div>
         </div>
 
-        {/* LAYER 5: TERRAIN FLOOR */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '30dvh', zIndex: 5,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(100px)',
-          transition: `all 1s ${aggressiveEase} 0.25s`
-        }}>
-          <div style={{ width: '100%', height: '100%', animation: mounted ? 'terrainPulse 10s ease-in-out infinite' : 'none' }}>
-            <img src="/retro/terrain.png" alt="Terrain" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom' }} />
+        {/* TERRAIN */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "30dvh",
+            zIndex: 5,
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(100px)",
+            transition: `all 1s ${aggressiveEase} 0.25s`,
+          }}
+        >
+          <div style={{ width: "100%", height: "100%", animation: mounted ? "terrainPulse 10s ease-in-out infinite" : "none" }}>
+            <img src="/retro/terrain.png" alt="Terrain" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "bottom" }} />
           </div>
         </div>
 
-        {/* LAYER 6: CHARACTER */}
-        <div style={{
-          position: 'absolute', bottom: '4dvh', left: '40vw', zIndex: 6,
-          width: 'clamp(190px, 80vw, 270px)',
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateX(0)' : 'translateX(-100px)',
-          transition: `all 1.1s ${aggressiveEase} 0.35s`
-        }}>
-          <div style={{ 
-            filter: 'drop-shadow(6px 8px 0px rgba(0,0,0,0.4))',
-            animation: mounted ? 'charTilt3D 4s ease-in-out infinite' : 'none',
-            transformOrigin: 'bottom center'
-          }}>
-            <img src="/retro/character.png" alt="Character" style={{ width: '100%', height: '100%', display: 'block' }} />
+        {/* CHARACTER */}
+        <div className={`retro-character ${mounted ? "mounted" : ""}`}>
+          <div className="retro-character-inner">
+            <img src="/retro/character.png" alt="Character" style={{ width: "100%", height: "100%", display: "block" }} />
           </div>
         </div>
 
-        {/* LAYER 7: COINS */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 7,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(50px)',
-          transition: `all 1.3s ${premiumEase} 0.4s`
-        }}>
-          <div style={{ position: 'absolute', left: '10%', bottom: '10dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinSpin3D 1.6s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
-          <div style={{ position: 'absolute', left: '60%', bottom: '5dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinSpin3D 1.6s ease-in-out infinite 0.2s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
-          <div style={{ position: 'absolute', left: '65%', bottom: '5dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinSpin3D 1.6s ease-in-out infinite 0.4s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
-          <div style={{ position: 'absolute', left: '76%', bottom: '8dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinSpin3D 1.8s ease-in-out infinite' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
-          <div style={{ position: 'absolute', left: '81%', bottom: '8dvh', width: 'clamp(40px, 10vw, 65px)', animation: 'coinSpin3D 1.8s ease-in-out infinite 0.3s' }}><img src="/retro/coin.png" style={{ width: '100%' }} alt="" /></div>
+        {/* COINS */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 7,
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(50px)",
+            transition: `all 1.3s ${premiumEase} 0.4s`,
+          }}
+        >
+          <div style={{ position: "absolute", left: "10%", bottom: "10dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite" }}>
+            <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
+          </div>
+          <div style={{ position: "absolute", left: "60%", bottom: "5dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite 0.2s" }}>
+            <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
+          </div>
+          <div style={{ position: "absolute", left: "65%", bottom: "5dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.6s ease-in-out infinite 0.4s" }}>
+            <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
+          </div>
+          <div style={{ position: "absolute", left: "76%", bottom: "8dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.8s ease-in-out infinite" }}>
+            <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
+          </div>
+          <div style={{ position: "absolute", left: "81%", bottom: "8dvh", width: "clamp(40px, 10vw, 65px)", animation: "coinSpin3D 1.8s ease-in-out infinite 0.3s" }}>
+            <img src="/retro/coin.png" style={{ width: "100%" }} alt="" />
+          </div>
         </div>
-
       </div>
 
-      {/* OBSIDIAN GRADIENT */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'linear-gradient(to bottom, rgba(2,2,2,0.85) 0%, rgba(2,2,2,0.1) 25%, transparent 45%)',
-        opacity: mounted ? 1 : 0,
-        transition: `opacity 1s ${premiumEase}`,
-        zIndex: 10
-      }} />
+      {/* GRADIENT */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          background: "linear-gradient(to bottom, rgba(2,2,2,0.85) 0%, rgba(2,2,2,0.1) 25%, transparent 45%)",
+          opacity: mounted ? 1 : 0,
+          transition: `opacity 1s ${premiumEase}`,
+          zIndex: 10,
+        }}
+      />
 
       {/* TYPOGRAPHY */}
-      <div style={{
-        position: 'absolute', top: '8dvh', left: 0, right: 0, zIndex: 20,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0) skewX(0deg)' : 'translateY(-20px) skewX(-4deg)',
-        filter: mounted ? 'blur(0px)' : 'blur(8px)',
-        transition: `all 1.2s ${aggressiveEase} 0.3s`,
-        willChange: 'opacity, transform, filter'
-      }}>
-        <span style={{ 
-          fontFamily: "'Inter', sans-serif", fontSize: '0.65rem', letterSpacing: '0.4em', 
-          color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' as const, marginBottom: '12px' 
-        }}>
+      <div
+        style={{
+          position: "absolute",
+          top: "8dvh",
+          left: 0,
+          right: 0,
+          zIndex: 20,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? "translateY(0) skewX(0deg)" : "translateY(-20px) skewX(-4deg)",
+          filter: mounted ? "blur(0px)" : "blur(8px)",
+          transition: `all 1.2s ${aggressiveEase} 0.3s`,
+          willChange: "opacity, transform, filter",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "0.65rem",
+            letterSpacing: "0.4em",
+            color: "rgba(255,255,255,0.7)",
+            textTransform: "uppercase",
+            marginBottom: "12px",
+          }}
+        >
           Stage 2 · Retro
         </span>
-        <h2 style={{ 
-          fontFamily: "'Press Start 2P', cursive", 
-          fontSize: 'clamp(1.2rem, 5vw, 3.5rem)', margin: 0,
-          fontWeight: 400, lineHeight: 1.2, textTransform: 'uppercase' as const,
-          letterSpacing: '0.04em',
-          textShadow: '0 6px 0px #000',
-          display: 'flex', gap: '16px', flexWrap: 'wrap' as const,
-          justifyContent: 'center',
-        }}>
-          <span style={{ color: '#FACC15' }}>pixels</span>
-          <span style={{ color: '#FFFFFF' }}>never died</span>
+        <h2
+          style={{
+            fontFamily: "'Press Start 2P', cursive",
+            fontSize: "clamp(1.2rem, 5vw, 3.5rem)",
+            margin: 0,
+            fontWeight: 400,
+            lineHeight: 1.2,
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            textShadow: "0 6px 0px #000",
+            display: "flex",
+            gap: "16px",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <span style={{ color: "#FACC15" }}>pixels</span>
+          <span style={{ color: "#FFFFFF" }}>never died</span>
         </h2>
       </div>
-
     </div>
   );
-        }
-
+}
