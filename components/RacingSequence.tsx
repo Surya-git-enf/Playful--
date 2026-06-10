@@ -81,7 +81,7 @@ export default function RacingSequence({ isActive }: Props) {
           filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.9))',
         }}>
           <div style={{
-            animation: mounted ? 'engineVibrate 0.09s linear infinite' : 'none',
+            
             transformOrigin: 'bottom center',
           }}>
             <img
@@ -119,7 +119,7 @@ export default function RacingSequence({ isActive }: Props) {
           fontSize: 'clamp(0.55rem, 1.2vw, 0.75rem)',
           letterSpacing: '0.28em',
           color: 'rgba(255,255,255,0.5)',
-          textTransform: 'uppercase' as const,
+          textTransform: 'none' as const,
           marginBottom: '10px',
         }}>
           Stage 3 · Racing
