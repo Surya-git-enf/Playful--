@@ -108,10 +108,11 @@ export default function RacingSequence({ isActive }: Props) {
           animation: ${mounted ? 'roadPulse 8s ease-in-out infinite' : 'none'};
         }
 
+        /* CAR — percentage-based placement */
         .car-layer {
           position: absolute;
           left: 50%;
-          bottom: 16%;
+          bottom: 14%;
           width: 62%;
           z-index: 10;
           transform: translateX(-50%);
@@ -183,7 +184,7 @@ export default function RacingSequence({ isActive }: Props) {
         @media (max-width: 1024px) {
           .car-layer {
             width: 70%;
-            bottom: 17%;
+            bottom: 15%;
           }
 
           .road-layer {
@@ -199,7 +200,7 @@ export default function RacingSequence({ isActive }: Props) {
         @media (max-width: 768px) {
           .car-layer {
             width: 80%;
-            bottom: 18%;
+            bottom: 16%;
           }
 
           .road-layer {
@@ -219,7 +220,7 @@ export default function RacingSequence({ isActive }: Props) {
         @media (max-width: 480px) {
           .car-layer {
             width: 88%;
-            bottom: 19%;
+            bottom: 17%;
           }
 
           .road-layer {
