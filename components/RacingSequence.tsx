@@ -1,173 +1,219 @@
 
-'use client'
+"use client";
 
-import React, { useEffect, useState, useRef } from 'react'
+import { useRef } from "react";
+import Image from "next/image";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 
-interface Props {
-  isActive: boolean
-}
+gsap.registerPlugin(ScrollTrigger);
 
-export default function RacingSequence({ isActive }: Props) {
-  const [mounted, setMounted] = useState(false)
-  const [showVideo, setShowVideo] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
+const FLAVORS = [
+  { id: "chocolate",  title: "CHOCOLATE",  bg: "#F2C94C", textHex: "#4A2311" },
+  { id: "strawberry", title: "STRAWBERRY", bg: "#00FFFF", textHex: "#E91E63" },
+  { id: "vanilla",    title: "VANILLA",    bg: "#3E2723", textHex: "#FFFFFF" },
+  { id: "pistachio",  title: "PISTACHIO",  bg: "#A5D6A7", textHex: "#1B5E20" },
+];
 
-  useEffect(() => {
-    let mountTimer: NodeJS.Timeout
-    let videoTimer: NodeJS.Timeout
+export default function HeroSequence() {
+  const mainRef = useRef<HTMLElement>(null);
+  const pinRef = useRef<HTMLDivElement>(null);
 
-    if (isActive) {
-      // 1. Mount the static parallax layers immediately after snap
-      mountTimer = setTimeout(() => setMounted(true), 50)
-      
-      // 2. Crossfade to the MP4 video after 2.5 seconds of intense parallax
-      videoTimer = setTimeout(() => setShowVideo(true), 2500)
-    } else {
-      setMounted(false)
-      setShowVideo(false)
-    }
+  useGSAP(() => {
+    // ── 1. BULLETPROOF INITIAL STATES ───────────────────────────────────────
+    gsap.set(".shutter-bg:not(.shutter-bg-0)", { clipPath: "inset(0% 0% 0% 100%)" });
+    gsap.set(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 0%)" }); 
+    
+    gsap.set(".flavor-group:not(.flavor-group-0)", { autoAlpha: 0, xPercent: 20, rotationY: 10 });
+    gsap.set(".flavor-group:not(.flavor-group-0) .hs-text", { opacity: 0, y: 60 });
+    gsap.set(".flavor-group:not(.flavor-group-0) .hs-pop", { yPercent: 100, rotation: 35 });
+    gsap.set(".flavor-group:not(.flavor-group-0) .hs-splash", { yPercent: 60, opacity: 0 });
 
-    return () => {
-      clearTimeout(mountTimer)
-      clearTimeout(videoTimer)
-    }
-  }, [isActive])
+    // ── 2. THE PREMIUM LOADING SCREEN & ENTRANCE ────────────────────────────
+    const initTl = gsap.timeline();
 
-  // Play video automatically when crossfade triggers
-  useEffect(() => {
-    if (showVideo && videoRef.current) {
-      videoRef.current.play().catch(() => {})
-    }
-  }, [showVideo])
+    initTl.fromTo(".loader-bar", 
+      { scaleX: 0 }, 
+      { scaleX: 1, duration: 1.5, ease: "power2.inOut", transformOrigin: "left" }
+    )
+    .to(".loader-wrapper", {
+      yPercent: -100,
+      duration: 1.2,
+      ease: "expo.inOut"
+    })
+    .from(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 100%)", duration: 1.2, ease: "power3.inOut" }, "-=0.6")
+    .from(".flavor-group-0", { autoAlpha: 0, xPercent: 20, rotationY: 10, duration: 1, ease: "power3.out" }, "-=0.8")
+    .from(".flavor-group-0 .hs-text", { opacity: 0, y: 60, duration: 1, ease: "power3.out" }, "-=0.8")
+    .from(".flavor-group-0 .hs-pop", { yPercent: 100, rotation: 35, duration: 1.2, ease: "expo.out" }, "-=0.8")
+    .from(".flavor-group-0 .hs-splash", { yPercent: 60, opacity: 0, duration: 1, ease: "power2.out" }, "-=0.8");
 
-  const premiumEase = 'cubic-bezier(0.16, 1, 0.3, 1)'
-  const aggressiveEase = 'cubic-bezier(0.19, 1, 0.22, 1)'
+    // ── 3. CONTINUOUS "SURYA 3D FLOATING" MOTIONS ───────────────────────────
+    gsap.to(".float-pop", {
+      y: -20, rotationX: 8, rotationY: 4, duration: 3,
+      yoyo: true, repeat: -1, ease: "sine.inOut", stagger: 0.2
+    });
+
+    gsap.to(".float-splash", {
+      y: 12, scale: 1.05, rotationX: -8, duration: 4,
+      yoyo: true, repeat: -1, ease: "sine.inOut", stagger: 0.3
+    });
+
+    // ── 4. PERPLEXITY SCROLL & SNAP TIMELINE (PINNED SECTION) ───────────────
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: pinRef.current, // We explicitly pin JUST the 100vh section
+        start: "top top",
+        end: "+=300%", 
+        pin: true,
+        scrub: 0.5, 
+        snap: {
+          snapTo: "labelsDirectional", 
+          duration: { min: 0.4, max: 0.7 },
+          delay: 0, 
+          ease: "power2.inOut" 
+        },
+      },
+    });
+
+    tl.addLabel("flavor0", 0);
+
+    FLAVORS.forEach((_, i) => {
+      if (i === 0) return; 
+
+      tl.fromTo(`.shutter-bg-${i}`, 
+        { clipPath: "inset(0% 0% 0% 100%)" }, 
+        { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power2.inOut" }, i - 1);
+
+      tl.fromTo(`.flavor-group-${i - 1} .hs-text`,   { opacity: 1, y: 0 }, { opacity: 0, y: -60, duration: 0.5, ease: "power2.in" }, i - 1);
+      tl.fromTo(`.flavor-group-${i - 1} .hs-pop`,    { yPercent: 0, rotation: 0 }, { yPercent: -100, rotation: -20, duration: 0.5, ease: "power2.in" }, i - 1);
+      tl.fromTo(`.flavor-group-${i - 1} .hs-splash`, { opacity: 1, yPercent: 0 }, { opacity: 0, yPercent: 60, duration: 0.5, ease: "power2.in" }, i - 1);
+      tl.fromTo(`.flavor-group-${i - 1}`,           { autoAlpha: 1, xPercent: 0, rotationY: 0 }, { autoAlpha: 0, xPercent: -20, rotationY: -10, duration: 0.8 }, i - 1);
+
+      tl.fromTo(`.flavor-group-${i}`,           { autoAlpha: 0, xPercent: 20, rotationY: 10 }, { autoAlpha: 1, xPercent: 0, rotationY: 0, duration: 0.8, ease: "power2.out" }, i - 0.8);
+      tl.fromTo(`.flavor-group-${i} .hs-text`,   { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, i - 0.6);
+      tl.fromTo(`.flavor-group-${i} .hs-pop`,    { yPercent: 100, rotation: 35 }, { yPercent: 0, rotation: 0, duration: 1, ease: "expo.out" }, i - 0.6);
+      tl.fromTo(`.flavor-group-${i} .hs-splash`, { opacity: 0, yPercent: 60 }, { opacity: 1, yPercent: 0, duration: 0.8, ease: "power2.out" }, i - 0.6);
+
+      tl.addLabel(`flavor${i}`, i); 
+    });
+
+    // ── 5. UNPINNED OUTRO (FAST SCROLL REVEAL) ──────────────────────────────
+    // Applies the exact same 3D floating animation as the popsicles
+    gsap.to(".outro-swing", {
+      y: -20, rotationX: 10, rotationY: 5, duration: 3,
+      yoyo: true, repeat: -1, ease: "sine.inOut"
+    });
+
+    // Swings in dramatically as the user scrolls down into the white section
+    gsap.from(".outro-swing", {
+      scrollTrigger: {
+        trigger: ".outro-section",
+        start: "top 80%",
+        end: "center center",
+        scrub: 1
+      },
+      y: 150,
+      rotationX: -45,
+      opacity: 0,
+      ease: "power2.out"
+    });
+
+  }, { scope: mainRef });
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#020202' }}>
+    <section ref={mainRef} className="relative w-full bg-black">
       
-      <style>{`
-        @keyframes panBgSlow {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes panRoadFast {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes engineVibrate {
-          0%, 100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
-          25% { transform: translateX(-50%) translateY(1.5px) rotate(0.5deg); }
-          75% { transform: translateX(-50%) translateY(-1px) rotate(-0.5deg); }
-        }
-      `}</style>
-
-      {/* ─── 1. PARALLAX LAYERS (Fades out when video starts) ─── */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        opacity: mounted && !showVideo ? 1 : 0,
-        transition: 'opacity 1s cubic-bezier(0.25, 1, 0.5, 1)',
-        willChange: 'opacity'
-      }}>
-        
-        {/* A. Background (Slow Pan) */}
-        <div style={{ position: 'absolute', inset: 0, opacity: mounted ? 1 : 0, transition: `opacity 0.6s ${premiumEase}` }}>
-          <div style={{ width: '200%', height: '100%', display: 'flex', animation: 'panBgSlow 40s linear infinite' }}>
-            <img src="/racing/bg.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
-            <img src="/racing/bg.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        </div>
-
-        {/* B. Road (Ultra-Fast Pan) */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '35%',
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(100px)',
-          transition: `all 0.8s ${aggressiveEase} 0.1s`
-        }}>
-          <div style={{ width: '200%', height: '100%', display: 'flex', animation: 'panRoadFast 1.5s linear infinite' }}>
-            <img src="/racing/road.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
-            <img src="/racing/road.png" alt="" style={{ width: '50%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        </div>
-
-        {/* C. Car (Slams in, then vibrates) */}
-        <div style={{
-          position: 'absolute', bottom: '25%', left: '50%', 
-          width: 'clamp(280px, 45vw, 600px)',
-          // The container handles the aggressive slide-in from the left
-          opacity: mounted ? 1 : 0,
-          marginLeft: mounted ? '0' : '-300px',
-          transition: `all 1s ${aggressiveEase} 0.2s`,
-        }}>
-          {/* Inner div handles the constant engine vibration */}
-          <div style={{
-            animation: mounted ? 'engineVibrate 0.1s linear infinite' : 'none',
-            transformOrigin: 'bottom center',
-            filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.8))'
-          }}>
-            <img src="/racing/car.png" alt="F1 Car" style={{ width: '100%', height: 'auto', display: 'block' }} />
-          </div>
+      {/* ── NEW: PREMIUM LOADING SCREEN ── */}
+      <div className="loader-wrapper fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center">
+        <p className="text-white/80 font-mono text-[10px] tracking-[0.4em] uppercase mb-4">
+          Initiating 3D Engine
+        </p>
+        <div className="w-48 h-[1px] bg-white/10 overflow-hidden">
+          <div className="loader-bar w-full h-full bg-white" />
         </div>
       </div>
 
+      {/* ── PINNED 3D SHOWCASE (Locks to screen for flavors) ── */}
+      <div
+        ref={pinRef}
+        className="relative w-full h-screen overflow-hidden bg-black"
+        style={{ perspective: "1200px" }} 
+      >
+        <div className="absolute inset-0 z-0">
+          {FLAVORS.map((flavor, i) => (
+            <div key={`bg-${flavor.id}`} className={`shutter-bg shutter-bg-${i} absolute inset-0 w-full h-full`} style={{ backgroundColor: flavor.bg, zIndex: i }} />
+          ))}
+        </div>
 
-      {/* ─── 2. VIDEO LAYER (Crossfades in) ─── */}
-      <video
-        ref={videoRef}
-        src="/racing/racing.mp4"
-        loop
-        muted
-        playsInline
-        style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-          opacity: showVideo ? 1 : 0,
-          transition: 'opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1)',
-          willChange: 'opacity'
-        }}
-      />
+        {FLAVORS.map((flavor, i) => (
+          <div key={`group-${flavor.id}`} className={`flavor-group flavor-group-${i} absolute inset-0 z-10 flex flex-col items-center justify-center`} style={{ transformStyle: "preserve-3d" }}>
+            <div className="hs-text absolute top-[8%] md:top-[10%] w-full flex justify-center z-10 pointer-events-none">
+              <h1 className="text-[15vw] font-black tracking-tighter uppercase" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", background: `linear-gradient(to bottom, ${flavor.textHex}00 0%, ${flavor.textHex} 100%)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", textAlign: "center" }}>
+                {flavor.title}
+              </h1>
+            </div>
+            <div className="hs-pop absolute top-[12%] z-30 w-full flex items-center justify-center pointer-events-none">
+              <div className="float-pop relative w-[280px] h-[550px] md:w-[380px] md:h-[750px]" style={{ filter: "drop-shadow(0 30px 40px rgba(0,0,0,0.35))" }}>
+                <Image src={`/images/${flavor.id}-pop.png`} alt={flavor.title} fill className="object-contain object-center" priority={i === 0} />
+              </div>
+            </div>
+            <div className="hs-splash absolute bottom-0 z-20 w-full h-[40vh] md:h-[45vh] pointer-events-none flex items-end justify-center">
+              <div className="float-splash relative w-full h-full">
+                <Image src={`/images/${flavor.id}-splash.png`} alt={`${flavor.title} Splash`} fill className="object-cover object-bottom" priority={i === 0} />
+              </div>
+            </div>
+          </div>
+        ))}
 
-
-      {/* ─── 3. OBSIDIAN GRADIENT MASK (Keeps text legible over both layers & video) ─── */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'linear-gradient(to bottom, rgba(2,2,2,0.9) 0%, rgba(2,2,2,0.3) 20%, transparent 40%)',
-        opacity: mounted ? 1 : 0,
-        transition: `opacity 1s ${premiumEase}`,
-        zIndex: 5
-      }} />
-
-
-      {/* ─── 4. TOP-MIDDLE TYPOGRAPHY (Aggressive 'Thunder' Entrance) ─── */}
-      <div style={{
-        position: 'absolute', top: '12vh', left: 0, right: 0,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        opacity: mounted ? 1 : 0,
-        // Aggressive skew-in to simulate high-speed braking into position
-        transform: mounted ? 'translateY(0) skewX(0deg)' : 'translateY(-40px) skewX(-10deg)',
-        filter: mounted ? 'blur(0px)' : 'blur(16px)',
-        transition: `all 1.2s ${aggressiveEase} 0.3s`,
-        willChange: 'opacity, transform, filter',
-        zIndex: 10
-      }}>
-        <span style={{ 
-          fontFamily: "'Inter', sans-serif", fontSize: '0.75rem', letterSpacing: '0.3em', 
-          color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginBottom: '8px' 
-        }}>
-          Stage 3 · Racing
-        </span>
-        
-        <h2 style={{ 
-          fontFamily: "'Thunder', 'Bebas Neue', sans-serif", 
-          fontSize: 'clamp(4.5rem, 11vw, 9rem)', margin: 0, color: '#FFFFFF', 
-          fontWeight: 800, lineHeight: 0.85, textTransform: 'uppercase',
-          letterSpacing: '0.02em',
-          textShadow: '0 12px 40px rgba(0,0,0,0.9)'
-        }}>
-          Heads Up, Gear
-        </h2>
+        <div className="absolute bottom-6 right-8 z-50 pointer-events-none opacity-60">
+          <p className="font-mono text-[10px] tracking-[0.3em] text-white uppercase mix-blend-difference">
+            3D Experience by Surya
+          </p>
+        </div>
       </div>
 
-    </div>
-  )
-}
+      {/* ── UNPINNED OUTRO SECTION (Fast Scroll) ── */}
+      <div className="outro-section relative w-full h-[60vh] bg-white flex flex-col items-center justify-center overflow-hidden" style={{ perspective: "1200px" }}>
+        
+        {/* Load Google Fonts Securely */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Special+Elite&display=swap');
+        `}} />
+
+        {/* Custom SVG Displacement Filter for True "Melt" Edges */}
+        <svg className="absolute w-0 h-0 pointer-events-none">
+          <filter id="ink-melt">
+            <feTurbulence type="fractalNoise" baseFrequency="0.15" numOctaves="1" result="warp" />
+            <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="2.5" in="SourceGraphic" in2="warp" />
+            <feGaussianBlur stdDeviation="0.6" result="blur" />
+          </filter>
+        </svg>
+
+        <div className="outro-swing flex flex-col items-center justify-center z-10 w-full px-4">
+          
+          <h2 
+            className="text-black text-5xl md:text-7xl mb-2" 
+            style={{ fontFamily: "'Special Elite', monospace" }}
+          >
+            Our flavours,
+          </h2>
+          
+          <h2 
+            className="text-black text-7xl md:text-9xl mt-[-10px]" 
+            style={{
+              fontFamily: "'Great Vibes', cursive",
+              transform: "rotate(-4deg)",
+              filter: "url(#ink-melt)", // Applies the advanced SVG ink bleed
+            }}
+          >
+            your obsession.
+          </h2>
+
+        </div>
+      </div>
+
+    </section>
+  );
+        }
+      
