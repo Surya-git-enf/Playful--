@@ -111,7 +111,7 @@ export default function RacingSequence({ isActive }: Props) {
         .car-layer {
           position: absolute;
           left: 50%;
-          bottom: -4%;
+          bottom: -5%;
           width: 62%;
           z-index: 3;
           transform: translateX(-50%);
@@ -120,7 +120,7 @@ export default function RacingSequence({ isActive }: Props) {
         .car-layer-inner {
           opacity: 0;
           transform: perspective(900px) rotateY(32deg) translateX(180%) scale(0.65);
-          transition: opacity 0.5s ${aggressiveEase} 0.22s, transform 1.15s ${aggressiveEase} 0.22s;
+          transition: opacity 0.9s ${aggressiveEase} 0.22s, transform 1.15s ${aggressiveEase} 0.22s;
           filter: drop-shadow(0 22px 48px rgba(0,0,0,0.92));
           animation: ${mounted ? 'carFloat 7s ease-in-out infinite' : 'none'};
         }
