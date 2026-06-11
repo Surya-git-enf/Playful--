@@ -113,7 +113,7 @@ export default function RacingSequence({ isActive }: Props) {
           left: 50%;
           bottom: 0%;
           width: 62%;
-          z-index: 10;
+          z-index: 3;
           transform: translateX(-50%);
         }
 
