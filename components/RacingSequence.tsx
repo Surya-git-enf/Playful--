@@ -37,18 +37,18 @@ export default function RacingSequence({ isActive }: Props) {
         }
 
         @keyframes bgBreath {
-          0%,100% { transform: perspective(1200px) rotateX(0deg) scale(1.02) translateY(0%); }
-          50%     { transform: perspective(1200px) rotateX(1.5deg) scale(1.05) translateY(-1%); }
+          0%, 100% { transform: perspective(1200px) rotateX(0deg) scale(1.02) translateY(0%); }
+          50% { transform: perspective(1200px) rotateX(1.5deg) scale(1.05) translateY(-1%); }
         }
 
         @keyframes roadPulse {
-          0%,100% { transform: scale(1); }
-          50%     { transform: scale(1.008); }
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.008); }
         }
 
         @keyframes carFloat {
-          0%,100% { transform: translateY(0%) scale(1); }
-          50%     { transform: translateY(-1%) scale(1.01); }
+          0%, 100% { transform: translateY(0%) scale(1); }
+          50% { transform: translateY(-1%) scale(1.01); }
         }
 
         .master-wrapper {
@@ -110,8 +110,8 @@ export default function RacingSequence({ isActive }: Props) {
 
         .car-layer {
           position: absolute;
-          left: 30%;
-          bottom: 20%;
+          left: 50%;
+          bottom: 3%;
           width: 62%;
           z-index: 3;
           transform: translateX(-50%);
@@ -182,12 +182,10 @@ export default function RacingSequence({ isActive }: Props) {
 
         @media (max-width: 1024px) {
           .car-layer {
-            width: 70%;
-            bottom: 3%;
+            width: 68%;
           }
 
           .road-layer {
-            bottom: 0%;
             height: 31%;
           }
 
@@ -198,12 +196,10 @@ export default function RacingSequence({ isActive }: Props) {
 
         @media (max-width: 768px) {
           .car-layer {
-            width: 80%;
-            bottom: 3%;
+            width: 76%;
           }
 
           .road-layer {
-            bottom: 0%;
             height: 30%;
           }
 
@@ -218,12 +214,10 @@ export default function RacingSequence({ isActive }: Props) {
 
         @media (max-width: 480px) {
           .car-layer {
-            width: 88%;
-            bottom: 3%;
+            width: 86%;
           }
 
           .road-layer {
-            bottom: 0%;
             height: 28%;
           }
 
