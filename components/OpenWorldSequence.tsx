@@ -162,7 +162,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
             src="/openworld/moon.png"
             alt="Moon"
             style={{
-              width: 'clamp(130px, 15vw, 210px)',
+              width: 'clamp(190px, 45vw, 310px)',
               height: 'auto',
               display: 'block',
               filter: 'drop-shadow(0 0 30px rgba(255,70,40,0.8))',
@@ -225,7 +225,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
             alt="Hero"
             style={{
               width: '100%',
-              height: 'auto',
+              height: '100%',
               display: 'block',
               filter: 'drop-shadow(0 0 20px rgba(0,220,90,0.6)) drop-shadow(0 6px 30px rgba(0,0,0,0.95))',
             }}
@@ -272,7 +272,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
           textTransform: 'uppercase',
           marginBottom: '10px',
         }}>
-          Stage 4 · Open World
+  
         </span>
         <h2 style={{
           fontFamily: "'Cinzel', 'Times New Roman', serif",
@@ -285,9 +285,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
           textShadow: '0 8px 40px rgba(0,0,0,0.95), 0 0 60px rgba(0,180,80,0.2)',
           textAlign: 'center',
         }}>
-          Every Path
-          <br />
-          Breathes
+          Every Path Breathes
         </h2>
       </div>
     </div>
