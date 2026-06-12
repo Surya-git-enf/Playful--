@@ -227,8 +227,8 @@ export default function SpaceSequence({ isActive }: Props) {
       <div style={{
         position: 'absolute',
         bottom: '10%',
-        left: '68%',
-        height: '40vh',
+        left: '69%',
+        height: '30vh',
         width: 'auto',
         zIndex: 5,
         opacity: mounted ? 1 : 0,
