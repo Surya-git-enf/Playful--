@@ -189,7 +189,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         left: '50%',
         bottom: '5%',
         width:  'clamp(320px, 42vw, 580px)',
-        height: 'clamp(420px, 55vh, 720px)',
+        height: 'clamp(820px, 95vh, 920px)',
         zIndex: 5,
         transform: mounted
           ? 'translateX(-50%) translateY(0px)'
