@@ -198,7 +198,7 @@ export default function SpaceSequence({ isActive }: Props) {
         })}
       </div>
 
-      {/* ─── 2. EARTH (continuous breathe in/out) ─── */}
+      {/* ─── 2. EARTH (faster continuous breathe in/out) ─── */}
       <div style={{
         position: 'absolute',
         top: '8%',
@@ -208,7 +208,7 @@ export default function SpaceSequence({ isActive }: Props) {
         transform: 'translateX(-50%)',
         opacity: mounted ? 1 : 0,
         animation: mounted
-          ? 'earthRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, earthBreathe 7s ease-in-out infinite 1.95s'
+          ? 'earthRise 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, earthBreathe 4s ease-in-out infinite 1.95s'
           : 'none',
       }}>
         <div style={{ position: 'relative' }}>
@@ -217,7 +217,7 @@ export default function SpaceSequence({ isActive }: Props) {
             position: 'absolute', inset: 0, borderRadius: '50%',
             background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25) 0%, transparent 45%)',
             mixBlendMode: 'screen',
-            animation: mounted ? 'earthShimmer 5s ease-in-out infinite 2s' : 'none',
+            animation: mounted ? 'earthShimmer 3s ease-in-out infinite 2s' : 'none',
             pointerEvents: 'none',
           }} />
         </div>
@@ -233,11 +233,11 @@ export default function SpaceSequence({ isActive }: Props) {
         <img src="/space/lunar-ground.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
       </div>
 
-      {/* ─── 4. ASTRONAUT — larger, bottom-left ─── */}
+      {/* ─── 4. ASTRONAUT — large, repositioned (bottom 20%, left 73%) ─── */}
       <div style={{
         position: 'absolute',
-        bottom: '17%',
-        left: '75%',
+        bottom: '20%',
+        left: '73%',
         width: 'clamp(130px, 22vw, 320px)',
         zIndex: 5,
         opacity: mounted ? 1 : 0,
@@ -335,7 +335,7 @@ export default function SpaceSequence({ isActive }: Props) {
           </button>
         </div>
 
-        {/* Action pills — refined, distinct icon + label hierarchy */}
+        {/* Action pills */}
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '22px', flexWrap: 'wrap' }}>
           {[
             { icon: '🎤', label: 'Prompt it' },
@@ -378,4 +378,4 @@ export default function SpaceSequence({ isActive }: Props) {
 
     </div>
   )
-      }
+    }
