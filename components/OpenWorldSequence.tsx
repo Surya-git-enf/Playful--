@@ -213,7 +213,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
           ? 'translateX(-50%) translateY(0px)'
           : 'translateX(-50%) translateY(-130px) scale(0.65)',
         opacity: mounted ? 1 : 0,
-        transition: `opacity 0.8s ${smooth} 0.6s, transform 1.1s ${bounce} 0.6s`,
+        transition: `opacity 0.8s ${smooth} 0.6s, transform 0.1s ${bounce} 0.6s`,
       }}>
         {/* Inner div: only breathes in Y — no translateX ever */}
         <div style={{
