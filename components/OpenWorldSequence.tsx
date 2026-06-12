@@ -206,7 +206,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         position: 'absolute',
         left: '50%',
         bottom: '22%',
-        width: 'clamp(180px, 22vw, 340px)',
+        width: 'clamp(250px, 42vw, 440px)',
         zIndex: 5,
         /* Arrival: only translateX(-50%) + translateY drop. No X drift. */
         transform: mounted
@@ -225,7 +225,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
             alt="Hero"
             style={{
               width: '100%',
-              height: '100%',
+              height: '1000%',
               display: 'block',
               filter: 'drop-shadow(0 0 20px rgba(0,220,90,0.6)) drop-shadow(0 6px 30px rgba(0,0,0,0.95))',
             }}
