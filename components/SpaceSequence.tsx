@@ -103,16 +103,6 @@ export default function SpaceSequence({ isActive }: Props) {
           0% { transform: translateY(120px); opacity: 0; }
           100% { transform: translateY(0); opacity: 1; }
         }
-        @keyframes astroLand {
-          0% { transform: translateY(-100px); opacity: 0; }
-          60% { transform: translateY(10px); opacity: 1; }
-          80% { transform: translateY(-4px); }
-          100% { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes astroBreathe {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-14px) rotate(-1.5deg); }
-        }
         @keyframes blurFadeIn {
           from { opacity: 0; filter: blur(8px); transform: translateY(10px); }
           to { opacity: 1; filter: blur(0px); transform: translateY(0); }
@@ -198,7 +188,7 @@ export default function SpaceSequence({ isActive }: Props) {
         })}
       </div>
 
-      {/* ─── 2. EARTH (faster continuous breathe in/out) ─── */}
+      {/* ─── 2. EARTH (fast continuous breathe in/out) ─── */}
       <div style={{
         position: 'absolute',
         top: '8%',
@@ -208,7 +198,7 @@ export default function SpaceSequence({ isActive }: Props) {
         transform: 'translateX(-50%)',
         opacity: mounted ? 1 : 0,
         animation: mounted
-          ? 'earthRise 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, earthBreathe 3s ease-in-out infinite 1.95s'
+          ? 'earthRise 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, earthBreathe 4s ease-in-out infinite 1.95s'
           : 'none',
       }}>
         <div style={{ position: 'relative' }}>
@@ -233,19 +223,17 @@ export default function SpaceSequence({ isActive }: Props) {
         <img src="/space/lunar-ground.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
       </div>
 
-      {/* ─── 4. ASTRONAUT — large, repositioned (bottom 20%, left 73%) ─── */}
+      {/* ─── 4. ASTRONAUT — large, fixed position (bottom 10%, left 68%), no animation, same size on desktop & mobile via vh ─── */}
       <div style={{
         position: 'absolute',
         bottom: '10%',
-        left: '69%',
-        width: 'clamp(130px, 22vw, 320px)',
+        left: '68%',
+        height: '40vh',
+        width: 'auto',
         zIndex: 5,
         opacity: mounted ? 1 : 0,
-        animation: mounted
-          ? 'astroLand 1.1s cubic-bezier(0.34, 1.2, 0.4, 1) 0.7s both, astroBreathe 4s ease-in-out infinite 1.85s'
-          : 'none',
       }}>
-        <img src="/space/astronaut.png" alt="" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 0 28px rgba(120,180,255,0.28))' }} />
+        <img src="/space/astronaut.png" alt="" style={{ height: '100%', width: 'auto', filter: 'drop-shadow(0 0 28px rgba(120,180,255,0.28))' }} />
       </div>
 
       {/* ─── 5. VIGNETTE ─── */}
@@ -378,4 +366,4 @@ export default function SpaceSequence({ isActive }: Props) {
 
     </div>
   )
-    }
+}
