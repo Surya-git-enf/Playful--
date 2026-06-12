@@ -236,8 +236,8 @@ export default function SpaceSequence({ isActive }: Props) {
       {/* ─── 4. ASTRONAUT — large, repositioned (bottom 20%, left 73%) ─── */}
       <div style={{
         position: 'absolute',
-        bottom: '0%',
-        left: '70%',
+        bottom: '10%',
+        left: '69%',
         width: 'clamp(130px, 22vw, 320px)',
         zIndex: 5,
         opacity: mounted ? 1 : 0,
