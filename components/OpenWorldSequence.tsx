@@ -107,7 +107,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
 
         /* Moon responsive */
         .moon-img {
-          width: clamp(130px, 20vw, 250px);
+          width: clamp(230px, 80vw, 350px);
           height: auto;
           display: block;
         }
