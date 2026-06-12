@@ -404,28 +404,8 @@ export default function RetroSequence({ isActive }: Props) {
             marginBottom: "12px",
           }}
         >
-          
-        </span>
 
-        <h2
-          style={{
-            fontFamily: "'Press Start 2P', cursive",
-            fontSize: "clamp(1.2rem, 5vw, 3.5rem)",
-            margin: 0,
-            fontWeight: 400,
-            lineHeight: 1.2,
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
-            textShadow: "0 6px 0px #000",
-            display: "flex",
-            gap: "16px",
-            flexWrap: "wrap",
-            justifyContent: "center",
-          }}
-        >
-          <span style={{ color: "#FACC15" }}>pixels</span>
-          <span style={{ color: "#FFFFFF" }}>never died</span>
-        </h2>
+        </span>
       </div>
     </div>
   );

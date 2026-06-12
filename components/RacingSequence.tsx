@@ -283,10 +283,6 @@ export default function RacingSequence({ isActive }: Props) {
       {/* MASK */}
       <div className={`mask ${mounted ? 'mounted' : ''}`} />
 
-      {/* TITLE — enters at 0.6s */}
-      <div className={`title ${mounted ? 'mounted' : ''}`}>
-        <h2>Heads Up, Gear</h2>
-      </div>
     </div>
   )
 }

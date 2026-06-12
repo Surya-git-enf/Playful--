@@ -245,14 +245,6 @@ export default function SpaceSequence({ isActive }: Props) {
         zIndex: 6,
       }} />
 
-      {/* ─── 6. PROMPT PANEL — refined UI/UX ─── */}
-      <div style={{
-        position: 'absolute', top: '80%', left: '50%',
-        width: 'min(92vw, 660px)',
-        zIndex: 20,
-        opacity: mounted ? 1 : 0,
-        animation: mounted ? 'panelRise 1s cubic-bezier(0.16, 1, 0.3, 1) 1.4s both' : 'none',
-      }}>
         <div style={{
           background: 'rgba(12, 14, 22, 0.5)',
           backdropFilter: 'blur(36px)', WebkitBackdropFilter: 'blur(36px)',
@@ -267,17 +259,6 @@ export default function SpaceSequence({ isActive }: Props) {
           transition: `border 0.3s ${premiumEase}, box-shadow 0.3s ${premiumEase}`,
         }}>
 
-          {!promptValue && (
-            <div style={{ position: 'absolute', left: '22px', right: '150px', top: '20px', pointerEvents: 'none', overflow: 'hidden' }}>
-              <span key={phIdx} style={{
-                fontFamily: "'Space Mono', monospace", fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)',
-                color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, display: 'block',
-                animation: 'blurFadeIn 0.5s ease both'
-              }}>
-                {PROMPTS[phIdx]}
-              </span>
-            </div>
-          )}
 
           <textarea
             ref={textareaRef}
@@ -323,8 +304,6 @@ export default function SpaceSequence({ isActive }: Props) {
           </button>
         </div>
 
-        {/* Action pills */}
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '22px', flexWrap: 'wrap' }}>
           {[
             { icon: '🎤', label: 'Prompt it' },
             { icon: '⚡', label: 'Build it' },
@@ -360,10 +339,8 @@ export default function SpaceSequence({ isActive }: Props) {
               <span style={{ fontSize: '0.95rem', lineHeight: 1 }}>{item.icon}</span>
               <span>{item.label}</span>
             </button>
-          ))}
-        </div>
-      </div>
+          )}
 
-    </div>
+
   )
 }

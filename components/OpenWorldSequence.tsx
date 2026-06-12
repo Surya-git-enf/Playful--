@@ -276,43 +276,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
         transition: `opacity 1.4s ${smooth} 0.2s`,
       }} />
 
-      {/* ── TYPOGRAPHY — Cinzel Decorative ── */}
-      <div style={{
-        position: 'absolute',
-        top: '8vh',
-        left: 0,
-        right: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        zIndex: 10,
-        pointerEvents: 'none',
-        opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0%) skewX(0deg)' : 'translateY(-8%) skewX(-6deg)',
-        filter: mounted ? 'blur(0px)' : 'blur(14px)',
-        transition: `opacity 1.1s ${snap} 0.7s, transform 1.2s ${snap} 0.7s, filter 1.0s ${snap} 0.7s`,
-        padding: '0 5vw',
-      }}>
-        <h2 style={{
-          fontFamily: "'Cinzel Decorative', serif",
-          /* clamp: 1.6rem mobile → 4vw fluid → 4.8rem desktop cap */
-          fontSize: 'clamp(1.6rem, 4vw, 4.8rem)',
-          margin: 0,
-          color: '#FFFFFF',
-          fontWeight: 900,
-          lineHeight: 1.15,
-          letterSpacing: '0.04em',
-          textShadow: [
-            '0 2px 0px rgba(0,0,0,1)',
-            '0 8px 40px rgba(0,0,0,0.95)',
-            '0 0 80px rgba(0,200,80,0.25)',
-            '0 0 160px rgba(0,150,60,0.12)',
-          ].join(', '),
-          textAlign: 'center',
-        }}>
-          Every Path Breathes
-        </h2>
-      </div>
     </div>
   )
 }
