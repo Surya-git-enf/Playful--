@@ -208,7 +208,7 @@ export default function SpaceSequence({ isActive }: Props) {
         transform: 'translateX(-50%)',
         opacity: mounted ? 1 : 0,
         animation: mounted
-          ? 'earthRise 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, earthBreathe 7s ease-in-out infinite 1.95s'
+          ? 'earthRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, earthBreathe 7s ease-in-out infinite 1.95s'
           : 'none',
       }}>
         <div style={{ position: 'relative' }}>
@@ -236,8 +236,8 @@ export default function SpaceSequence({ isActive }: Props) {
       {/* ─── 4. ASTRONAUT — larger, bottom-left ─── */}
       <div style={{
         position: 'absolute',
-        bottom: '14%',
-        left: '6%',
+        bottom: '17%',
+        left: '75%',
         width: 'clamp(130px, 22vw, 320px)',
         zIndex: 5,
         opacity: mounted ? 1 : 0,
