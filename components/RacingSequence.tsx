@@ -52,13 +52,13 @@ export default function RacingSequence({ isActive }: Props) {
           50%       { transform: perspective(900px) rotateX(1.5deg) scale(1.012) translateY(-0.4%); }
         }
 
-        /* CAR: float up-down + micro-tilt for living feel */
+        /* CAR: float up-down + micro-tilt — NO translateX here, centering via margin */
         @keyframes carFloat {
-          0%   { transform: translateX(-50%) translateY(0%)    rotate(0deg)   scale(1); }
-          25%  { transform: translateX(-50%) translateY(-1.4%) rotate(-0.4deg) scale(1.008); }
-          50%  { transform: translateX(-50%) translateY(-0.6%) rotate(0.2deg)  scale(1.005); }
-          75%  { transform: translateX(-50%) translateY(-1.8%) rotate(-0.3deg) scale(1.01); }
-          100% { transform: translateX(-50%) translateY(0%)    rotate(0deg)   scale(1); }
+          0%   { transform: translateY(0%)    rotate(0deg)    scale(1); }
+          25%  { transform: translateY(-1.4%) rotate(-0.4deg) scale(1.008); }
+          50%  { transform: translateY(-0.6%) rotate(0.2deg)  scale(1.005); }
+          75%  { transform: translateY(-1.8%) rotate(-0.3deg) scale(1.01); }
+          100% { transform: translateY(0%)    rotate(0deg)    scale(1); }
         }
 
         /* ── MASTER WRAPPER ── */
@@ -127,12 +127,11 @@ export default function RacingSequence({ isActive }: Props) {
         /* Enter: pans in from the right (real translateX) + slight drop */
         .car-layer {
           position: absolute;
-          left: 0%;
+          left: 50%;
+          margin-left: -31%;
           bottom: -5%;
           width: 62%;
           z-index: 3;
-          /* base transform handled by inner for idle anim to stack cleanly */
-          transform: translateX(-50%);
         }
 
         .car-layer-inner {
@@ -291,3 +290,4 @@ export default function RacingSequence({ isActive }: Props) {
     </div>
   )
 }
+
