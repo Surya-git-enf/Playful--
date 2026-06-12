@@ -26,6 +26,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#02050A' }}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;700;900&display=swap');
 
         @keyframes worldBreathe {
           0%   { transform: scale(1);    filter: brightness(0.88) saturate(0.9); }
@@ -57,6 +58,12 @@ export default function OpenWorldSequence({ isActive }: Props) {
           0%   { transform: translateX(0%);    opacity: 0.2; }
           50%  { transform: translateX(-3.5%); opacity: 0.35; }
           100% { transform: translateX(0%);    opacity: 0.2; }
+        }
+
+        /* Hero slides in from right — translateX goes from +120% to 0 */
+        @keyframes heroSlideIn {
+          0%   { transform: translateX(120%) translateY(0px); opacity: 0; }
+          100% { transform: translateX(0%)   translateY(0px); opacity: 1; }
         }
       `}</style>
 
@@ -174,28 +181,30 @@ export default function OpenWorldSequence({ isActive }: Props) {
         />
       </div>
 
-      {/* ── HERO — no animation, just arrives and stays perfectly still ──
-          Arrival: drops in from top with bounce, then FREEZES.
-          No inner animation div at all.
-          
+      {/* ── HERO — slides in from RIGHT to LEFT, then freezes ──
+          Uses CSS animation heroSlideIn (not transition) so it goes
+          right → center cleanly with no drift after landing.
+
           ── TUNE HERO HERE ──
-          left:   '50%'             → horizontal center (change to '40%' to shift left)
-          bottom: '5%'              → how far from bottom (lower = closer to ground)
-          width:  'clamp(320px, 42vw, 580px)' → hero size (increase 42vw to grow)
-          height: 'clamp(420px, 55vh, 720px)' → hero height (increase 55vh to grow taller)
+          left:   '50%'                        → horizontal center
+          bottom: '13%'                        → distance from bottom
+          width:  'clamp(320px, 42vw, 580px)'  → hero width
+          height: 'clamp(850px, 95vh, 950px)'  → hero height
+          animation-duration: 1.1s             → slide speed
       ── */}
       <div style={{
         position: 'absolute',
         left: '50%',
-        bottom: '12%',
+        bottom: '13%',
         width:  'clamp(320px, 42vw, 580px)',
         height: 'clamp(850px, 95vh, 950px)',
         zIndex: 5,
-        transform: mounted
-          ? 'translateX(-50%) translateY(0px)'
-          : 'translateX(-50%) translateY(-150px) scale(0.6)',
         opacity: mounted ? 1 : 0,
-        transition: `opacity 0.9s ${smooth} 0.6s, transform 1.2s ${bounce} 0.6s`,
+        /* Slide from right: starts at translateX(+120%) lands at translateX(-50%) */
+        transform: mounted ? 'translateX(-50%)' : 'translateX(80%)',
+        transition: mounted
+          ? `opacity 0.6s ${smooth} 0.5s, transform 1.1s ${bounce} 0.5s`
+          : 'none',
       }}>
         <img
           src="/openworld/hero.png"
@@ -226,7 +235,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         transition: `opacity 1.4s ${smooth} 0.2s`,
       }} />
 
-      {/* ── TYPOGRAPHY ── */}
+      {/* ── TYPOGRAPHY — Archivo font, no label ── */}
       <div style={{
         position: 'absolute',
         top: '8vh',
@@ -242,24 +251,14 @@ export default function OpenWorldSequence({ isActive }: Props) {
         filter: mounted ? 'blur(0px)' : 'blur(14px)',
         transition: `opacity 1.1s ${snap} 0.7s, transform 1.2s ${snap} 0.7s, filter 1.0s ${snap} 0.7s`,
       }}>
-        <span style={{
-          fontFamily: "'Inter', sans-serif",
-          fontSize: '0.68rem',
-          letterSpacing: '0.38em',
-          color: 'rgba(120,255,160,0.65)',
-          textTransform: 'uppercase',
-          marginBottom: '10px',
-        }}>
-          
-        </span>
         <h2 style={{
-          fontFamily: "'Cinzel', 'Times New Roman', serif",
+          fontFamily: "'Archivo', sans-serif",
           fontSize: 'clamp(2.8rem, 6.5vw, 5.5rem)',
           margin: 0,
           color: '#FFFFFF',
-          fontWeight: 400,
+          fontWeight: 900,
           lineHeight: 1.1,
-          letterSpacing: '0.02em',
+          letterSpacing: '-0.02em',
           textShadow: '0 8px 40px rgba(0,0,0,0.95), 0 0 60px rgba(0,180,80,0.2)',
           textAlign: 'center',
         }}>
