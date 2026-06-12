@@ -26,7 +26,9 @@ export default function OpenWorldSequence({ isActive }: Props) {
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#02050A' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;700;900&display=swap');
+
+        /* ── FONT: Cinzel Decorative — Roman-carved, dark fantasy, unique ── */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&display=swap');
 
         @keyframes worldBreathe {
           0%   { transform: scale(1);    filter: brightness(0.88) saturate(0.9); }
@@ -60,10 +62,74 @@ export default function OpenWorldSequence({ isActive }: Props) {
           100% { transform: translateX(0%);    opacity: 0.2; }
         }
 
-        /* Hero slides in from right — translateX goes from +120% to 0 */
-        @keyframes heroSlideIn {
-          0%   { transform: translateX(120%) translateY(0px); opacity: 0; }
-          100% { transform: translateX(0%)   translateY(0px); opacity: 1; }
+        /* ── HERO: fully responsive sizing via CSS custom properties ──
+           Desktop (landscape): width drives size → 28vw wide, height auto
+           Mobile  (portrait):  height drives size → 62vh tall, width auto
+           The min() trick picks whichever is smaller so it never overflows.
+        ── */
+        .hero-wrap {
+          position: absolute;
+          left: 50%;
+          bottom: 13%;
+          /* width  = smaller of 28vw (desktop) or 55vw (mobile cap)  */
+          width:  min(28vw, 55vw);
+          /* height = smaller of 68vh (portrait cap) or 85vh           */
+          height: min(68vh, 85vh);
+          z-index: 5;
+        }
+
+        /* Portrait phones: hero fills more vertical space */
+        @media (max-width: 640px) {
+          .hero-wrap {
+            width:  min(72vw, 320px);
+            height: min(60vh, 520px);
+            bottom: 11%;
+          }
+        }
+
+        /* Tablets */
+        @media (min-width: 641px) and (max-width: 1024px) {
+          .hero-wrap {
+            width:  min(38vw, 380px);
+            height: min(65vh, 600px);
+            bottom: 12%;
+          }
+        }
+
+        /* Large desktop */
+        @media (min-width: 1440px) {
+          .hero-wrap {
+            width:  min(22vw, 520px);
+            height: min(72vh, 780px);
+            bottom: 13%;
+          }
+        }
+
+        /* Moon responsive */
+        .moon-img {
+          width: clamp(90px, 12vw, 200px);
+          height: auto;
+          display: block;
+        }
+        @media (max-width: 640px) {
+          .moon-img { width: clamp(70px, 20vw, 130px); }
+        }
+
+        .moon-corona {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width:  clamp(160px, 20vw, 320px);
+          height: clamp(160px, 20vw, 320px);
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,60,30,0.5) 0%, rgba(200,40,20,0.28) 45%, transparent 70%);
+          z-index: -1;
+        }
+        @media (max-width: 640px) {
+          .moon-corona {
+            width:  clamp(120px, 32vw, 200px);
+            height: clamp(120px, 32vw, 200px);
+          }
         }
       `}</style>
 
@@ -128,29 +194,18 @@ export default function OpenWorldSequence({ isActive }: Props) {
         transform: mounted ? 'translateY(0px) scale(1)' : 'translateY(-80px) scale(0.5)',
         transition: `opacity 1.2s ${smooth} 0.4s, transform 1.4s ${bounce} 0.4s`,
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: 'clamp(240px, 24vw, 340px)',
-          height: 'clamp(240px, 24vw, 340px)',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,60,30,0.5) 0%, rgba(200,40,20,0.28) 45%, transparent 70%)',
-          animation: mounted ? 'coronaPulse 3s ease-in-out infinite' : 'none',
-          zIndex: -1,
-        }} />
-        <div style={{
-          animation: mounted ? 'moonPulse 3s ease-in-out infinite' : 'none',
-        }}>
+        <div
+          className="moon-corona"
+          style={{
+            animation: mounted ? 'coronaPulse 3s ease-in-out infinite' : 'none',
+          }}
+        />
+        <div style={{ animation: mounted ? 'moonPulse 3s ease-in-out infinite' : 'none' }}>
           <img
             src="/openworld/moon.png"
             alt="Moon"
-            style={{
-              width: 'clamp(190px, 45vw, 310px)',
-              height: 'auto',
-              display: 'block',
-              filter: 'drop-shadow(0 0 30px rgba(255,70,40,0.8))',
-            }}
+            className="moon-img"
+            style={{ filter: 'drop-shadow(0 0 30px rgba(255,70,40,0.8))' }}
           />
         </div>
       </div>
@@ -181,31 +236,17 @@ export default function OpenWorldSequence({ isActive }: Props) {
         />
       </div>
 
-      {/* ── HERO — slides in from RIGHT to LEFT, then freezes ──
-          Uses CSS animation heroSlideIn (not transition) so it goes
-          right → center cleanly with no drift after landing.
-
-          ── TUNE HERO HERE ──
-          left:   '50%'                        → horizontal center
-          bottom: '13%'                        → distance from bottom
-          width:  'clamp(320px, 42vw, 580px)'  → hero width
-          height: 'clamp(850px, 95vh, 950px)'  → hero height
-          animation-duration: 1.1s             → slide speed
-      ── */}
-      <div style={{
-        position: 'absolute',
-        left: '50%',
-        bottom: '13%',
-        width:  'clamp(320px, 42vw, 580px)',
-        height: 'clamp(850px, 95vh, 950px)',
-        zIndex: 5,
-        opacity: mounted ? 1 : 0,
-        /* Slide from right: starts at translateX(+120%) lands at translateX(-50%) */
-        transform: mounted ? 'translateX(-50%)' : 'translateX(80%)',
-        transition: mounted
-          ? `opacity 0.6s ${smooth} 0.5s, transform 1.1s ${bounce} 0.5s`
-          : 'none',
-      }}>
+      {/* ── HERO — slides right → center, fully responsive via .hero-wrap ── */}
+      <div
+        className="hero-wrap"
+        style={{
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? 'translateX(-50%)' : 'translateX(80%)',
+          transition: mounted
+            ? `opacity 0.6s ${smooth} 0.5s, transform 1.1s ${bounce} 0.5s`
+            : 'none',
+        }}
+      >
         <img
           src="/openworld/hero.png"
           alt="Hero"
@@ -235,7 +276,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         transition: `opacity 1.4s ${smooth} 0.2s`,
       }} />
 
-      {/* ── TYPOGRAPHY — Archivo font, no label ── */}
+      {/* ── TYPOGRAPHY — Cinzel Decorative ── */}
       <div style={{
         position: 'absolute',
         top: '8vh',
@@ -250,16 +291,23 @@ export default function OpenWorldSequence({ isActive }: Props) {
         transform: mounted ? 'translateY(0%) skewX(0deg)' : 'translateY(-8%) skewX(-6deg)',
         filter: mounted ? 'blur(0px)' : 'blur(14px)',
         transition: `opacity 1.1s ${snap} 0.7s, transform 1.2s ${snap} 0.7s, filter 1.0s ${snap} 0.7s`,
+        padding: '0 5vw',
       }}>
         <h2 style={{
-          fontFamily: "'Archivo', sans-serif",
-          fontSize: 'clamp(2.8rem, 6.5vw, 5.5rem)',
+          fontFamily: "'Cinzel Decorative', serif",
+          /* clamp: 1.6rem mobile → 4vw fluid → 4.8rem desktop cap */
+          fontSize: 'clamp(1.6rem, 4vw, 4.8rem)',
           margin: 0,
           color: '#FFFFFF',
           fontWeight: 900,
-          lineHeight: 1.1,
-          letterSpacing: '-0.02em',
-          textShadow: '0 8px 40px rgba(0,0,0,0.95), 0 0 60px rgba(0,180,80,0.2)',
+          lineHeight: 1.15,
+          letterSpacing: '0.04em',
+          textShadow: [
+            '0 2px 0px rgba(0,0,0,1)',
+            '0 8px 40px rgba(0,0,0,0.95)',
+            '0 0 80px rgba(0,200,80,0.25)',
+            '0 0 160px rgba(0,150,60,0.12)',
+          ].join(', '),
           textAlign: 'center',
         }}>
           Every Path Breathes
