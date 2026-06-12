@@ -27,47 +27,32 @@ export default function OpenWorldSequence({ isActive }: Props) {
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#02050A' }}>
       <style>{`
 
-        /* ── WORLD: strong zoom pulse — clearly visible ── */
         @keyframes worldBreathe {
-          0%   { transform: scale(1);     filter: brightness(0.88) saturate(0.9); }
-          100% { transform: scale(1.08);  filter: brightness(1.08) saturate(1.2) drop-shadow(0 0 80px rgba(0,200,80,0.4)); }
+          0%   { transform: scale(1);    filter: brightness(0.88) saturate(0.9); }
+          100% { transform: scale(1.08); filter: brightness(1.08) saturate(1.2) drop-shadow(0 0 80px rgba(0,200,80,0.4)); }
         }
 
-        /* ── MOON: big glow pulse — fast and obvious ── */
         @keyframes moonPulse {
           0%   { transform: scale(1);    filter: drop-shadow(0 0 20px rgba(255,80,50,0.6))  drop-shadow(0 0 50px rgba(200,40,20,0.3)); }
           50%  { transform: scale(1.12); filter: drop-shadow(0 0 60px rgba(255,100,60,1.0)) drop-shadow(0 0 120px rgba(220,50,30,0.7)); }
           100% { transform: scale(1);    filter: drop-shadow(0 0 20px rgba(255,80,50,0.6))  drop-shadow(0 0 50px rgba(200,40,20,0.3)); }
         }
 
-        /* ── MOON CORONA: independent fast pulse ── */
         @keyframes coronaPulse {
           0%,100% { opacity: 0.3;  transform: translate(-50%, -50%) scale(1); }
           50%      { opacity: 0.75; transform: translate(-50%, -50%) scale(1.25); }
         }
 
-        /* ── HERO BREATH: pure Y + scale only — NO translateX ── */
-        @keyframes heroBreath {
-          0%   { transform: translateY(0px)   scaleY(1)     scaleX(1); }
-          30%  { transform: translateY(-10px) scaleY(1.025) scaleX(0.988); }
-          60%  { transform: translateY(-5px)  scaleY(1.012) scaleX(0.994); }
-          80%  { transform: translateY(-13px) scaleY(1.03)  scaleX(0.985); }
-          100% { transform: translateY(0px)   scaleY(1)     scaleX(1); }
-        }
-
-        /* ── GROUND: subtle forward push ── */
         @keyframes groundPush {
           0%, 100% { transform: translateY(0px); }
           50%       { transform: translateY(-5px); }
         }
 
-        /* ── BG pulse ── */
         @keyframes bgPulse {
           0%, 100% { opacity: 0.85; }
           50%       { opacity: 1; }
         }
 
-        /* ── FOG drift ── */
         @keyframes fogDrift {
           0%   { transform: translateX(0%);    opacity: 0.2; }
           50%  { transform: translateX(-3.5%); opacity: 0.35; }
@@ -85,10 +70,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         animation: mounted ? 'bgPulse 10s ease-in-out infinite 2s' : 'none',
       }} />
 
-      {/* ── WORLD IMAGE ──
-          objectPosition: center bottom = image anchors from bottom up.
-          No black bar. transformOrigin: center bottom = zoom from ground up.
-      ── */}
+      {/* ── WORLD IMAGE ── */}
       <div style={{
         position: 'absolute',
         inset: 0,
@@ -101,7 +83,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
         <div style={{
           width: '100%',
           height: '100%',
-          /* Speed: 4s — was 12s. Direction alternate so it zooms in/out */
           animation: mounted ? 'worldBreathe 4s ease-in-out infinite alternate 2s' : 'none',
         }}>
           <img
@@ -130,32 +111,28 @@ export default function OpenWorldSequence({ isActive }: Props) {
         transition: `opacity 2s ${smooth} 0.5s`,
       }} />
 
-      {/* ── MOON — TOP RIGHT in the clouds ── */}
+      {/* ── MOON — TOP RIGHT ── */}
       <div style={{
         position: 'absolute',
         top: '5%',
-        right: '8%',   /* ← TOP RIGHT */
+        right: '8%',
         zIndex: 3,
         opacity: mounted ? 1 : 0,
         transform: mounted ? 'translateY(0px) scale(1)' : 'translateY(-80px) scale(0.5)',
         transition: `opacity 1.2s ${smooth} 0.4s, transform 1.4s ${bounce} 0.4s`,
       }}>
-        {/* Corona glow behind moon */}
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
-          width:  'clamp(240px, 24vw, 340px)',
+          width: 'clamp(240px, 24vw, 340px)',
           height: 'clamp(240px, 24vw, 340px)',
           borderRadius: '50%',
           background: 'radial-gradient(circle, rgba(255,60,30,0.5) 0%, rgba(200,40,20,0.28) 45%, transparent 70%)',
-          /* Speed: 3s — was 6s */
           animation: mounted ? 'coronaPulse 3s ease-in-out infinite' : 'none',
           zIndex: -1,
         }} />
-
         <div style={{
-          /* Speed: 3s — was 8s */
           animation: mounted ? 'moonPulse 3s ease-in-out infinite' : 'none',
         }}>
           <img
@@ -197,40 +174,41 @@ export default function OpenWorldSequence({ isActive }: Props) {
         />
       </div>
 
-      {/* ── HERO ──
-          CRITICAL: parent handles all positioning + arrival translateX(-50%).
-          The heroBreath keyframe has ZERO translateX — only Y + scale.
-          This stops the leftward drift completely.
+      {/* ── HERO — no animation, just arrives and stays perfectly still ──
+          Arrival: drops in from top with bounce, then FREEZES.
+          No inner animation div at all.
+          
+          ── TUNE HERO HERE ──
+          left:   '50%'             → horizontal center (change to '40%' to shift left)
+          bottom: '5%'              → how far from bottom (lower = closer to ground)
+          width:  'clamp(320px, 42vw, 580px)' → hero size (increase 42vw to grow)
+          height: 'clamp(420px, 55vh, 720px)' → hero height (increase 55vh to grow taller)
       ── */}
       <div style={{
         position: 'absolute',
         left: '50%',
-        bottom: '22%',
-        width: 'clamp(250px, 85vw, 440px)',
+        bottom: '5%',
+        width:  'clamp(320px, 42vw, 580px)',
+        height: 'clamp(420px, 55vh, 720px)',
         zIndex: 5,
-        /* Arrival: only translateX(-50%) + translateY drop. No X drift. */
         transform: mounted
           ? 'translateX(-50%) translateY(0px)'
-          : 'translateX(-50%) translateY(-130px) scale(0.65)',
+          : 'translateX(-50%) translateY(-150px) scale(0.6)',
         opacity: mounted ? 1 : 0,
-        transition: `opacity 0.8s ${smooth} 0.6s, transform 0.1s ${bounce} 0.6s`,
+        transition: `opacity 0.9s ${smooth} 0.6s, transform 1.2s ${bounce} 0.6s`,
       }}>
-        {/* Inner div: only breathes in Y — no translateX ever */}
-        <div style={{
-          animation: mounted ? 'heroBreath 5s ease-in-out infinite 1.8s' : 'none',
-          transformOrigin: 'center bottom',
-        }}>
-          <img
-            src="/openworld/hero.png"
-            alt="Hero"
-            style={{
-              width: '100%',
-              height: '10000%',
-              display: 'cover',
-              filter: 'drop-shadow(0 0 20px rgba(0,220,90,0.6)) drop-shadow(0 6px 30px rgba(0,0,0,0.95))',
-            }}
-          />
-        </div>
+        <img
+          src="/openworld/hero.png"
+          alt="Hero"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            objectPosition: 'center bottom',
+            display: 'block',
+            filter: 'drop-shadow(0 0 24px rgba(0,220,90,0.65)) drop-shadow(0 8px 40px rgba(0,0,0,0.98))',
+          }}
+        />
       </div>
 
       {/* ── VIGNETTE ── */}
@@ -272,7 +250,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
           textTransform: 'uppercase',
           marginBottom: '10px',
         }}>
-  
+          
         </span>
         <h2 style={{
           fontFamily: "'Cinzel', 'Times New Roman', serif",
