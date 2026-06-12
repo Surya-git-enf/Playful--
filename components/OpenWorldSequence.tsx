@@ -187,7 +187,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
       <div style={{
         position: 'absolute',
         left: '50%',
-        bottom: '8%',
+        bottom: '12%',
         width:  'clamp(320px, 42vw, 580px)',
         height: 'clamp(850px, 95vh, 950px)',
         zIndex: 5,
