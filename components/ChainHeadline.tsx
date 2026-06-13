@@ -18,8 +18,7 @@ interface ChainHeadlineProps {
   textShadow?: string
   textTransform?: React.CSSProperties['textTransform']
 
-  // Cell sizing (controls flip geometry — keep consistent across scenes
-  // unless you intentionally want a different "card" size)
+  // Cell sizing (controls flip geometry)
   letterWidth?: string
   letterHeight?: string
 }
@@ -41,9 +40,10 @@ export default function ChainHeadline({
   letterWidth = '0.78em',
   letterHeight = '1.2em',
 }: ChainHeadlineProps) {
-  const doFlip = isAnimating && previousText !== '' && previousText !== text
+  // Removed the previousText !== '' check so it animates gracefully from spaces
+  const doFlip = isAnimating && previousText !== text
 
-  const maxLen = Math.max(text.length, previousText.length)
+  const maxLen = Math.max(text.length, previousText.length, 1)
   const pad = (s: string) => s.padEnd(maxLen, ' ')
 
   const currChars = pad(text).split('')
@@ -54,15 +54,19 @@ export default function ChainHeadline({
   const flipTo = animationDirection === 'forward' ? -90 : 90
   const backRotation = animationDirection === 'forward' ? 90 : -90
 
+  // FIXED: Added backticks so the CSS min() function is valid and scales exactly to one line
+  const fitFontSize = `min(${fontSize}, ${(90 / maxLen).toFixed(2)}vw)`
+
   return (
     <div
       style={{
-        display: 'inline-flex',
+        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        flexWrap: 'wrap',
+        flexWrap: 'nowrap',
+        whiteSpace: 'nowrap',
         fontFamily,
-        fontSize,
+        fontSize: fitFontSize,
         fontWeight,
         color,
         letterSpacing,
@@ -91,6 +95,7 @@ export default function ChainHeadline({
           >
             {showFlip ? (
               <motion.div
+                key={`flip-${text}-${index}`}
                 style={{
                   position: 'relative',
                   width: '100%',
@@ -136,8 +141,7 @@ export default function ChainHeadline({
                 </div>
               </motion.div>
             ) : (
-              // Static — no flip needed
-              <span style={{ display: 'block' }}>
+              <span key={`static-${text}-${index}`} style={{ display: 'block' }}>
                 {char === ' ' ? '\u00A0' : char}
               </span>
             )}
