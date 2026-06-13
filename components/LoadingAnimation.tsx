@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, Variants } from 'framer-motion';
 
@@ -65,7 +67,13 @@ const iconVariants: Variants = {
   }
 };
 
-export default function LoadingAnimation() {
+interface Props {
+  // Optional: shows a "Loading X%" label under the icon, driven by the
+  // real asset-preload progress from page.tsx.
+  progress?: number
+}
+
+export default function LoadingAnimation({ progress }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [step, setStep] = useState(0); // 0: falling, 1: settled, 2: crossfade (fading out current, fading in next)
   const [showRing, setShowRing] = useState(false);
@@ -120,73 +128,51 @@ export default function LoadingAnimation() {
       background: '#02030a',
       overflow: 'hidden',
       display: 'flex',
+      flexDirection: 'column',
       justifyContent: 'center',
-      alignItems: 'center'
+      alignItems: 'center',
+      gap: '24px',
     }}>
-      {/* Impact Ring */}
-      {showRing && (
+      <div style={{ position: 'relative', width: '100px', height: '100px' }}>
+        {/* Impact Ring */}
+        {showRing && (
+          <motion.div
+            ref={ringRef}
+            style={{
+              position: 'absolute',
+              bottom: '-20%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '80px',
+              height: '80px',
+              pointerEvents: 'none'
+            }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: [0, 1.2, 1], opacity: [0, 0.4, 0], transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } }}
+          >
+            <div style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              border: '2px solid rgba(255,255,255,0.3)',
+              boxShadow: '0 0 15px rgba(255,255,255,0.2)'
+            }}/>
+          </motion.div>
+        )}
+
+        {/* Current Icon */}
         <motion.div
-          ref={ringRef}
+          ref={iconRef}
           style={{
             position: 'absolute',
-            bottom: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '80px',
-            height: '80px',
-            pointerEvents: 'none'
+            inset: 0,
           }}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: [0, 1.2, 1], opacity: [0, 0.4, 0], transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } }}
-        >
-          <div style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: '50%',
-            border: '2px solid rgba(255,255,255,0.3)',
-            boxShadow: '0 0 15px rgba(255,255,255,0.2)'
-          }}/>
-        </motion.div>
-      )}
-
-      {/* Current Icon */}
-      <motion.div
-        ref={iconRef}
-        style={{
-          position: 'relative',
-          width: '100px',
-          height: '100px'
-        }}
-        initial="initial"
-        animate={step === 0 ? 'fall' : step === 1 ? 'settled' : 'exit'}
-        variants={iconVariants}
-      >
-        <div
-          dangerouslySetInnerHTML={{ __html: ICONS[currentIndex] }}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%'
-          }}
-        />
-      </motion.div>
-
-      {/* Next Icon (only during crossfade) */}
-      {step === 2 && (
-        <motion.div
-          ref={nextIconRef}
-          style={{
-            position: 'relative',
-            width: '100px',
-            height: '100px'
-          }}
-          initial={{ y: -150, opacity: 0, scale: 0 }}
-          animate={{ y: -150, opacity: 1, scale: 1, transition: { duration: 0.2 } }}
+          initial="initial"
+          animate={step === 0 ? 'fall' : step === 1 ? 'settled' : 'exit'}
+          variants={iconVariants}
         >
           <div
-            dangerouslySetInnerHTML={{ __html: ICONS[nextIndex] }}
+            dangerouslySetInnerHTML={{ __html: ICONS[currentIndex] }}
             style={{
               position: 'absolute',
               top: 0,
@@ -196,6 +182,42 @@ export default function LoadingAnimation() {
             }}
           />
         </motion.div>
+
+        {/* Next Icon (only during crossfade) */}
+        {step === 2 && (
+          <motion.div
+            ref={nextIconRef}
+            style={{
+              position: 'absolute',
+              inset: 0,
+            }}
+            initial={{ y: 0, opacity: 0, scale: 0.8 }}
+            animate={{ y: 0, opacity: 1, scale: 1, transition: { duration: 0.2 } }}
+          >
+            <div
+              dangerouslySetInnerHTML={{ __html: ICONS[nextIndex] }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%'
+              }}
+            />
+          </motion.div>
+        )}
+      </div>
+
+      {typeof progress === 'number' && (
+        <span style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: '0.75rem',
+          letterSpacing: '0.15em',
+          color: 'rgba(255,255,255,0.4)',
+          textTransform: 'uppercase',
+        }}>
+          Loading {progress}%
+        </span>
       )}
     </div>
   );
