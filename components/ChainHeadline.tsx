@@ -1,3 +1,4 @@
+// ChainHeadline.tsx
 'use client'
 
 import React from 'react'
@@ -8,6 +9,7 @@ interface ChainHeadlineProps {
   previousText?: string
   isAnimating: boolean
   animationDirection: 'forward' | 'reverse'
+  sceneIndex: number
 
   // Per-scene typography overrides
   fontFamily?: string
@@ -21,6 +23,9 @@ interface ChainHeadlineProps {
   // Cell sizing (controls flip geometry)
   letterWidth?: string
   letterHeight?: string
+
+  // Animation variant
+  variant?: 'chain' | 'fade-up'
 }
 
 const STAGGER_MS = 40 // delay between letters
@@ -30,17 +35,18 @@ export default function ChainHeadline({
   previousText = '',
   isAnimating,
   animationDirection,
+  sceneIndex,
   fontFamily = "var(--font-bebas, 'Bebas Neue', sans-serif)",
   fontSize = 'clamp(1.4rem, 4vw, 3.5rem)',
   fontWeight = 700,
-  color = '#FFD400',
+  color = '#FFFFFF',
   letterSpacing = '0.02em',
   textShadow = '0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.25)',
   textTransform = 'uppercase',
   letterWidth = '0.78em',
   letterHeight = '1.2em',
+  variant = 'chain',
 }: ChainHeadlineProps) {
-  // Removed the previousText !== '' check so it animates gracefully from spaces
   const doFlip = isAnimating && previousText !== text
 
   const maxLen = Math.max(text.length, previousText.length, 1)
@@ -49,13 +55,11 @@ export default function ChainHeadline({
   const currChars = pad(text).split('')
   const prevChars = pad(previousText).split('')
 
-  // Forward: rotor rotates to -90deg, back face sits at +90deg so it lands at 0.
-  // Reverse: rotor rotates to +90deg, back face sits at -90deg so it lands at 0.
   const flipTo = animationDirection === 'forward' ? -90 : 90
   const backRotation = animationDirection === 'forward' ? 90 : -90
 
-  // FIXED: Added backticks so the CSS min() function is valid and scales exactly to one line
-  const fitFontSize = `min(${fontSize}, ${(90 / maxLen).toFixed(2)}vw)`
+  // Responsive one-line calculation
+  const fitFontSize = `min(${fontSize}, calc(80vw / ${maxLen}))`
 
   return (
     <div
@@ -73,15 +77,54 @@ export default function ChainHeadline({
         textShadow,
         textTransform,
         lineHeight: 1,
+        maxWidth: '90vw',
+        overflow: 'visible',
       }}
     >
       {currChars.map((char, index) => {
         const prevChar = prevChars[index] ?? ' '
-        const showFlip = doFlip && prevChar !== char
+        const showAnimation = doFlip && prevChar !== char
 
+        if (variant === 'fade-up') {
+          return (
+            <div
+              key={`wrap-${sceneIndex}-${index}`}
+              style={{
+                position: 'relative',
+                width: letterWidth,
+                height: letterHeight,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <motion.div
+                key={`fade-${sceneIndex}-${text}-${index}`}
+                initial={{ opacity: 0.2, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.8,
+                  delay: index * 0.05,
+                  ease: [0.215, 0.61, 0.355, 1],
+                }}
+                style={{
+                  willChange: 'transform, opacity',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {char === ' ' ? '\u00A0' : char}
+              </motion.div>
+            </div>
+          )
+        }
+
+        // Default 'chain' variant
         return (
           <div
-            key={index}
+            key={`wrap-${sceneIndex}-${index}`}
             style={{
               position: 'relative',
               width: letterWidth,
@@ -93,14 +136,15 @@ export default function ChainHeadline({
               flexShrink: 0,
             }}
           >
-            {showFlip ? (
+            {showAnimation ? (
               <motion.div
-                key={`flip-${text}-${index}`}
+                key={`flip-${sceneIndex}-${text}-${index}`}
                 style={{
                   position: 'relative',
                   width: '100%',
                   height: '100%',
                   transformStyle: 'preserve-3d',
+                  willChange: 'transform',
                 }}
                 initial={{ rotateX: 0 }}
                 animate={{ rotateX: flipTo }}
@@ -120,6 +164,7 @@ export default function ChainHeadline({
                     justifyContent: 'center',
                     backfaceVisibility: 'hidden',
                     transform: 'translateZ(0.28em)',
+                    WebkitBackfaceVisibility: 'hidden',
                   }}
                 >
                   {prevChar === ' ' ? '\u00A0' : prevChar}
@@ -135,13 +180,14 @@ export default function ChainHeadline({
                     justifyContent: 'center',
                     backfaceVisibility: 'hidden',
                     transform: `rotateX(${backRotation}deg) translateZ(0.28em)`,
+                    WebkitBackfaceVisibility: 'hidden',
                   }}
                 >
                   {char === ' ' ? '\u00A0' : char}
                 </div>
               </motion.div>
             ) : (
-              <span key={`static-${text}-${index}`} style={{ display: 'block' }}>
+              <span key={`static-${sceneIndex}-${text}-${index}`} style={{ display: 'block' }}>
                 {char === ' ' ? '\u00A0' : char}
               </span>
             )}
