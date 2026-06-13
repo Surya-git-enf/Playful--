@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 // Define simplified SVG icons as strings (white outlines, viewBox="0 0 100 100")
 const ICONS = [
@@ -38,14 +38,18 @@ const ICONS = [
   </g>`
 ];
 
-// Animation variants for the main icon container
-const iconVariants = {
+// Animation variants for the main icon container explicitly typed as Variants
+const iconVariants: Variants = {
   initial: { y: -150, opacity: 0, scale: 0 },
   fall: {
     y: 0,
     opacity: 1,
     scale: 1,
-    transition: { type: 'spring' as const, stiffness: 300, damping: 20 }
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 20
+    }
   },
   settled: {
     y: 0,
@@ -53,10 +57,11 @@ const iconVariants = {
     scale: 1
   },
   exit: {
-    y: 20,
     opacity: 0,
-    scale: 0.3,
-    transition: { type: 'spring' as const, stiffness: 400, damping: 20 }
+    scale: 0.8,
+    transition: {
+      duration: 0.2
+    }
   }
 };
 
@@ -85,18 +90,21 @@ export default function LoadingAnimation() {
       // Settled - show impact ring
       setShowRing(true);
       // After ring animation, start crossfade
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setStep(2); // Crossfade
       }, 400);
+      return () => clearTimeout(timer);
     }
 
     if (step === 2) {
       // Crossfade complete - reset for next icon
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         // Set current icon to next icon, and reset step to 0 (falling)
         setCurrentIndex(prev => (prev + 1) % ICONS.length);
         setStep(0);
+        setShowRing(false); // Clean up the ring for the next cycle
       }, 200); // Duration of crossfade
+      return () => clearTimeout(timer);
     }
   }, [step]);
 
