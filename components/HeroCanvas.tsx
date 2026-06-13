@@ -329,7 +329,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         {/* Palace text - Improved cinematic animation */}
         <div style={{
           position: 'absolute',
-          bottom: '15%', // Moved up slightly for better composition
+          bottom: '13%', // Moved up slightly for better composition
           left: '50%',
           transform: `translateX(-50%) translateY(${(1 - textProgress) * 40}px)`, // Increased range for more dramatic rise
           opacity: textProgress,
