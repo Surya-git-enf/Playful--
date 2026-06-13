@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
@@ -19,7 +18,6 @@ const pad = (n: number) => String(n).padStart(4, '0')
 
 function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number) {
   const ZOOM_FACTOR = 1.1;
-
   const ir = img.naturalWidth / img.naturalHeight, cr = w / h
   let dw: number, dh: number, ox: number, oy: number
 
@@ -30,7 +28,6 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: numb
     dw = w * ZOOM_FACTOR;
     dh = dw / ir;
   }
-
   ox = (w - dw) / 2;
   oy = (h - dh) / 2;
 
@@ -45,7 +42,7 @@ interface Props {
 }
 
 // ------------------------------------------------------------------
-// GLOBAL HEADLINE SYSTEM (ANTI-GLITCH CONSTANT ARRAY SYSTEM)
+// GLOBAL HEADLINE SYSTEM 
 // ------------------------------------------------------------------
 const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, style: React.CSSProperties }> = {
   0: { 
@@ -112,22 +109,25 @@ function padCenter(str: string, len: number) {
 }
 
 function GlobalHeadline({ scene }: { scene: number }) {
-  const [trans, setTrans] = useState({ from: 0, to: 0, key: 0 });
+  // CRITICAL FIX: Synchronous rendering state. 
+  // Prevents the 1-frame React delay that caused letters to glitch randomly during fast scrolls.
+  const prevSceneRef = useRef(scene);
+  const transRef = useRef({ from: 0, to: 0, key: 0 });
 
-  useEffect(() => {
-    if (scene !== trans.to) {
-      setTrans({ from: trans.to, to: scene, key: Date.now() });
-    }
-  }, [scene, trans.to]);
+  if (scene !== prevSceneRef.current) {
+    transRef.current = { 
+      from: prevSceneRef.current, 
+      to: scene, 
+      key: transRef.current.key + 1 
+    };
+    prevSceneRef.current = scene;
+  }
+  const trans = transRef.current;
 
   const fromConf = SCENE_CONFIG[trans.from] || SCENE_CONFIG[0];
   const toConf = SCENE_CONFIG[trans.to] || SCENE_CONFIG[0];
 
-  // CRITICAL FIX: Lock the maximum length permanently to 22 characters.
-  // This absolutely guarantees that React's DOM nodes map 1-to-1 perfectly, 
-  // preventing ANY letters from being dropped or glitches during scene transitions.
   const GLOBAL_MAX_LEN = 22; 
-  
   const fromChars = padCenter(fromConf.text, GLOBAL_MAX_LEN).split('');
   const toChars = padCenter(toConf.text, GLOBAL_MAX_LEN).split('');
 
@@ -152,6 +152,7 @@ function GlobalHeadline({ scene }: { scene: number }) {
       maxWidth: '96vw',
       color: '#FFFFFF',
       pointerEvents: 'none',
+      WebkitTransformStyle: 'preserve-3d',
     }}>
 
       {/* Cinematic Fog Bloom exclusively for Space Scene */}
@@ -168,10 +169,16 @@ function GlobalHeadline({ scene }: { scene: number }) {
         }}
       />
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', WebkitTransformStyle: 'preserve-3d', transformStyle: 'preserve-3d' }}>
         {toChars.map((char, i) => {
           const prevChar = fromChars[i] ?? ' ';
           const isAnimating = trans.from !== trans.to && prevChar !== char;
+          
+          // Preserves the delayed letter-by-letter effect for Space scene while maintaining the chain-twist logic
+          let animDelay = (i * 40) / 1000;
+          if (trans.to === 4 && trans.from === 3) {
+            animDelay = 2.0 + (i * 0.05);
+          }
 
           return (
             <div key={`wrap-${i}`} style={{
@@ -209,17 +216,15 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     position: 'absolute',
                     inset: 0,
                     transformStyle: 'preserve-3d',
-                    willChange: 'transform'
                   }}
                   initial={{ rotateX: 0 }}
                   animate={{ rotateX: flipTo }}
                   transition={{
                     duration: 0.65,
-                    delay: (i * 40) / 1000,
+                    delay: animDelay,
                     ease: [0.65, 0.05, 0.36, 1]
                   }}
                 >
-                  {/* Front face — Outgoing Character */}
                   <div style={{
                     position: 'absolute',
                     inset: 0,
@@ -237,7 +242,6 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     {prevChar === ' ' ? '\u00A0' : prevChar}
                   </div>
 
-                  {/* Back face — Incoming Character */}
                   <div style={{
                     position: 'absolute',
                     inset: 0,
@@ -567,6 +571,5 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       </div>
     </div>
   )
-}
-
-      
+                  }
+    
