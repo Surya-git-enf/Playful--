@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useEffect, useState } from 'react'
@@ -25,36 +24,35 @@ export default function OpenWorldSequence({ isActive }: Props) {
   const bounce = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#02050A' }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#02050A', WebkitTransformStyle: 'preserve-3d' }}>
       <style>{`
 
         /* ── FONT: Cinzel Decorative — Roman-carved, dark fantasy, unique ── */
         @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&display=swap');
 
-        /* CRITICAL GPU FIX: 
-           Removed animated CSS filters (drop-shadow, brightness, saturate).
-           Animating heavy filters on full-screen PNGs crashes mobile GPUs 
-           and causes the "black screen / missing layer" glitch.
-           Added translateZ(0) to force hardware acceleration.
+        /* CRITICAL GPU VRAM FIX: 
+           Removed excessive will-change and translateZ(0) spam.
+           This solves the "Mobile Desktop Mode Black Screen" crash by allowing the browser 
+           to smartly composite layers instead of running out of memory. 
         */
         @keyframes worldBreathe {
-          0%   { transform: scale(1) translateZ(0); }
-          100% { transform: scale(1.06) translateZ(0); }
+          0%   { transform: scale(1); }
+          100% { transform: scale(1.06); }
         }
 
         @keyframes moonPulse {
-          0%, 100% { transform: scale(1) translateZ(0); }
-          50%      { transform: scale(1.08) translateZ(0); }
+          0%, 100% { transform: scale(1); }
+          50%      { transform: scale(1.08); }
         }
 
         @keyframes coronaPulse {
-          0%,100% { opacity: 0.3;  transform: translate(-50%, -50%) scale(1) translateZ(0); }
-          50%     { opacity: 0.75; transform: translate(-50%, -50%) scale(1.25) translateZ(0); }
+          0%,100% { opacity: 0.3;  transform: translate(-50%, -50%) scale(1); }
+          50%     { opacity: 0.75; transform: translate(-50%, -50%) scale(1.25); }
         }
 
         @keyframes groundPush {
-          0%, 100% { transform: translateY(0px) translateZ(0); }
-          50%      { transform: translateY(-5px) translateZ(0); }
+          0%, 100% { transform: translateY(0px); }
+          50%      { transform: translateY(-5px); }
         }
 
         @keyframes bgPulse {
@@ -63,12 +61,11 @@ export default function OpenWorldSequence({ isActive }: Props) {
         }
 
         @keyframes fogDrift {
-          0%   { transform: translateX(0%) translateZ(0);    opacity: 0.2; }
-          50%  { transform: translateX(-3.5%) translateZ(0); opacity: 0.35; }
-          100% { transform: translateX(0%) translateZ(0);    opacity: 0.2; }
+          0%   { transform: translateX(0%);    opacity: 0.2; }
+          50%  { transform: translateX(-3.5%); opacity: 0.35; }
+          100% { transform: translateX(0%);    opacity: 0.2; }
         }
 
-        /* ── HERO: fully responsive sizing via CSS custom properties ── */
         .hero-wrap {
           position: absolute;
           left: 50%;
@@ -76,7 +73,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
           width:  min(28vw, 55vw);
           height: min(68vh, 85vh);
           z-index: 5;
-          will-change: transform, opacity;
         }
 
         @media (max-width: 640px) {
@@ -109,12 +105,11 @@ export default function OpenWorldSequence({ isActive }: Props) {
           top: 5%;
           right: 8%;
           z-index: 3;
-          will-change: transform, opacity;
         }
         
         @media (max-width: 640px) {
           .moon-container {
-            top: 15%; /* Moves the moon down on mobile so it perfectly clears the headline */
+            top: 15%; /* Drops perfectly below mobile headline */
             right: 5%;
           }
         }
@@ -123,9 +118,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
           width: clamp(230px, 80vw, 350px);
           height: auto;
           display: block;
-          /* Static filter is completely safe for GPUs, only animating it causes crashes */
           filter: drop-shadow(0 0 30px rgba(255,70,40,0.8));
-          will-change: transform;
         }
         @media (max-width: 640px) {
           .moon-img { width: clamp(70px, 20vw, 130px); }
@@ -140,7 +133,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
           border-radius: 50%;
           background: radial-gradient(circle, rgba(255,60,30,0.5) 0%, rgba(200,40,20,0.28) 45%, transparent 70%);
           z-index: -1;
-          will-change: transform, opacity;
         }
         @media (max-width: 640px) {
           .moon-corona {
@@ -158,7 +150,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
         opacity: mounted ? 1 : 0,
         transition: `opacity 1.6s ${smooth} 0s`,
         animation: mounted ? 'bgPulse 10s ease-in-out infinite 2s' : 'none',
-        willChange: 'opacity',
       }} />
 
       {/* ── WORLD IMAGE ── */}
@@ -167,16 +158,14 @@ export default function OpenWorldSequence({ isActive }: Props) {
         inset: 0,
         zIndex: 1,
         opacity: mounted ? 1 : 0,
-        transform: mounted ? 'scale(1) translateZ(0)' : 'scale(0.88) translateZ(0)',
+        transform: mounted ? 'scale(1)' : 'scale(0.88)',
         transition: `opacity 1.8s ${smooth} 0.05s, transform 2s ${smooth} 0.05s`,
         transformOrigin: 'center bottom',
-        willChange: 'transform, opacity',
       }}>
         <div style={{
           width: '100%',
           height: '100%',
           animation: mounted ? 'worldBreathe 6s ease-in-out infinite alternate 2s' : 'none',
-          willChange: 'transform',
         }}>
           <img
             src="/openworld/world.png"
@@ -187,7 +176,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
               objectFit: 'cover',
               objectPosition: 'center bottom',
               display: 'block',
-              filter: 'brightness(0.95) saturate(1.1)', // Static filter instead of animated
+              filter: 'brightness(0.95) saturate(1.1)',
             }}
           />
         </div>
@@ -203,7 +192,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
         animation: mounted ? 'fogDrift 14s ease-in-out infinite' : 'none',
         opacity: mounted ? 1 : 0,
         transition: `opacity 2s ${smooth} 0.5s`,
-        willChange: 'transform, opacity',
       }} />
 
       {/* ── MOON — TOP RIGHT ── */}
@@ -211,7 +199,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         className="moon-container"
         style={{
           opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0px) scale(1) translateZ(0)' : 'translateY(-80px) scale(0.5) translateZ(0)',
+          transform: mounted ? 'translateY(0px) scale(1)' : 'translateY(-80px) scale(0.5)',
           transition: `opacity 1.2s ${smooth} 0.4s, transform 1.4s ${bounce} 0.4s`,
         }}
       >
@@ -223,7 +211,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
         />
         <div style={{ 
           animation: mounted ? 'moonPulse 4s ease-in-out infinite' : 'none',
-          willChange: 'transform' 
         }}>
           <img
             src="/openworld/moon.png"
@@ -242,10 +229,9 @@ export default function OpenWorldSequence({ isActive }: Props) {
         height: '28%',
         zIndex: 4,
         opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0%) translateZ(0)' : 'translateY(100%) translateZ(0)',
+        transform: mounted ? 'translateY(0%)' : 'translateY(100%)',
         transition: `opacity 1s ${snap} 0.1s, transform 1.1s ${snap} 0.1s`,
         animation: mounted ? 'groundPush 9s ease-in-out infinite 1.5s' : 'none',
-        willChange: 'transform, opacity',
       }}>
         <img
           src="/openworld/ground.png"
@@ -265,10 +251,10 @@ export default function OpenWorldSequence({ isActive }: Props) {
         className="hero-wrap"
         style={{
           opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateX(-50%) translateZ(0)' : 'translateX(80%) translateZ(0)',
+          transform: mounted ? 'translateX(-50%)' : 'translateX(80%)',
           transition: mounted
             ? `opacity 0.6s ${smooth} 0.5s, transform 1.1s ${bounce} 0.5s`
-            : `opacity 0.4s ease, transform 0.4s ease`, // Ensures a clean exit before unmounting
+            : `opacity 0.4s ease, transform 0.4s ease`,
         }}
       >
         <img
@@ -298,12 +284,8 @@ export default function OpenWorldSequence({ isActive }: Props) {
         ].join(', '),
         opacity: mounted ? 1 : 0,
         transition: `opacity 1.4s ${smooth} 0.2s`,
-        willChange: 'opacity',
       }} />
 
     </div>
   )
 }
-
-
-
