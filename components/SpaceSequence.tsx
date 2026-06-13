@@ -94,16 +94,6 @@ export default function SpaceSequence({ isActive }: Props) {
           0%, 100% { opacity: 0.12; }
           50% { opacity: 0.32; }
         }
-        @keyframes astroLand {
-          0% { transform: translateY(-100px); opacity: 0; }
-          60% { transform: translateY(10px); opacity: 1; }
-          80% { transform: translateY(-4px); }
-          100% { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes astroBreathe {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-14px) rotate(-1.5deg); }
-        }
         @keyframes blurFadeIn {
           from { opacity: 0; filter: blur(8px); transform: translateY(10px); }
           to { opacity: 1; filter: blur(0px); transform: translateY(0); }
@@ -225,17 +215,20 @@ export default function SpaceSequence({ isActive }: Props) {
         <img src="/space/lunar-ground.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
       </div>
 
-      {/* ─── 4. ASTRONAUT — large, fixed (bottom 10%, left 68%), no animation, consistent size across devices ─── */}
+      {/* ─── 4. ASTRONAUT — bottom 10%, left 60%, height 20vh, slides in from right ─── */}
       <div style={{
         position: 'absolute',
         bottom: '10%',
-        left: '68%',
-        height: '40vh',
+        left: '60%',
+        height: '20vh',
         width: 'auto',
         zIndex: 5,
         opacity: mounted ? 1 : 0,
+        transform: mounted ? 'translateX(0)' : 'translateX(45vw)',
+        transition: `opacity 0.6s ${premiumEase}, transform 0.8s ${premiumEase}`,
+        willChange: 'transform, opacity',
       }}>
-        <img src="/space/astronaut.png" alt="" style={{ height: '100%', width: 'auto', filter: 'drop-shadow(0 0 28px rgba(120,180,255,0.28))' }} />
+        <img src="/space/astronaut.png" alt="" style={{ height: '100%', width: 'auto', display: 'block', filter: 'drop-shadow(0 0 28px rgba(120,180,255,0.28))' }} />
       </div>
 
       {/* ─── 5. VIGNETTE ─── */}
@@ -368,4 +361,5 @@ export default function SpaceSequence({ isActive }: Props) {
 
     </div>
   )
-}
+      }
+      
