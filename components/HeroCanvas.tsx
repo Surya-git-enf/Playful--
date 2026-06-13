@@ -17,8 +17,6 @@ const FRAMES_PER_DELTA = 0.16
 const pad = (n: number) => String(n).padStart(4, '0')
 
 function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number) {
-  // NEW: Add a zoom multiplier to crop out baked-in black borders.
-  // 1.1 = 10% zoom. If you still see black bars, increase it to 1.15 or 1.2.
   const ZOOM_FACTOR = 1.1;
 
   const ir = img.naturalWidth / img.naturalHeight, cr = w / h
@@ -32,7 +30,6 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: numb
     dh = dw / ir;
   }
 
-  // This math ensures the zoomed image stays perfectly centered
   ox = (w - dw) / 2;
   oy = (h - dh) / 2;
 
@@ -44,6 +41,15 @@ interface Props {
   onRelease: () => void
   onSceneChange: (scene: number) => void
   isReleased: boolean
+}
+
+// FIXED: Defined sceneSlogans here so we can pad Scene 0 with spaces!
+const sceneSlogans: Record<number, string> = {
+  0: '                      ', // Spaces ensure a smooth chain flip transition to Scene 1
+  1: 'PIXELS NEVER DIE',
+  2: 'FASTER THAN FEAR',
+  3: 'WONDER WITHOUT LIMITS',
+  4: 'IMAGINE BEYOND GRAVITY'
 }
 
 export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Props) {
@@ -66,27 +72,24 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const imagesRef   = useRef<(HTMLImageElement | null)[]>([])
   const rafRef      = useRef<number>(0)
 
-  // Syncs the parent state to the internal ref to unfreeze scroll-back
   useEffect(() => {
     hasReleased.current = isReleased
   }, [isReleased])
 
-  // Track scene changes for text animation
   useEffect(() => {
     if (sceneRef.current !== scene) {
       const prev = sceneRef.current
       setPreviousScene(prev)
       sceneRef.current = scene
 
-      // Determine animation direction
       const direction = scene > prev ? 'forward' : 'reverse'
       setAnimationDirection(direction)
       setIsAnimating(true)
 
-      // Reset animation flag after delay
+      // FIXED: Increased to 2000ms so long text strings have time to finish flipping!
       const timer = setTimeout(() => {
         setIsAnimating(false)
-      }, 900) // Match animation duration
+      }, 2000)
 
       return () => clearTimeout(timer)
     }
@@ -95,11 +98,9 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const setScene = useCallback((n: number) => {
     sceneRef.current = n
     setSceneState(n)
-    onSceneChange(n) // NEW: Notifies Page.tsx when we reach Space (scene 4)
+    onSceneChange(n)
   }, [onSceneChange])
 
-
-  // canvas setup
   const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -122,7 +123,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     frameDrawn.current = idx
   }, [])
 
-  // preload — frame 0 drawn immediately
   useEffect(() => {
     setupCanvas()
     window.addEventListener('resize', setupCanvas)
@@ -138,20 +138,16 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     return () => window.removeEventListener('resize', setupCanvas)
   }, [setupCanvas, drawFrame])
 
-  // release — unlock body so window can scroll, then call parent
   const doRelease = useCallback(() => {
     if (hasReleased.current) return
     hasReleased.current = true
-    // Unlock body FIRST so scroll-back detection works
     document.body.style.overflow = 'auto'
     onRelease()
   }, [onRelease])
 
-  // snap helper
   const snapTo = useCallback((next: number) => {
     if (snapLocked.current) return
     velocity.current = 0
-    // Scrolling down from Space (scene 4) → release
     if (next > TOTAL_SCENES) {
       snapLocked.current = true
       doRelease()
@@ -164,47 +160,31 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
   }, [doRelease, setScene])
 
-  // RAF momentum + draw
   useEffect(() => {
     const loop = () => {
       if (sceneRef.current === 0) {
-        // IMPROVED PALACE SECTION - Slower, more cinematic movement
-        if (!wheelActive.current && Math.abs(velocity.current) > 0.03) { // Reduced sensitivity
-          velocity.current *= FRICTION * 0.95 // Increased inertia (more sliding)
-          frameFloat.current += velocity.current * 0.7 // Reduced scroll sensitivity
+        if (!wheelActive.current && Math.abs(velocity.current) > 0.03) {
+          velocity.current *= FRICTION * 0.95
+          frameFloat.current += velocity.current * 0.7
         } else if (!wheelActive.current) {
           velocity.current = 0
         }
 
-        // Clamp frame position
         frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current))
         const idx = Math.round(frameFloat.current)
 
         if (idx !== frameDrawn.current) {
           drawFrame(idx)
 
-          // IMPROVED TEXT ANIMATION - Cinematic palace text
-          // Hidden before frame 100
-          // Begin appearing at frame 100
-          // Fully visible by frame 120 (instead of 144)
-          // Rise upward while fading in
           let tp = 0
-          let textTranslateY = 0
-
           if (idx < TEXT_FADE_START) {
             tp = 0
-            textTranslateY = 30
           } else if (idx >= 120) {
             tp = 1
-            textTranslateY = -10 // Slight rise when fully visible
           } else {
-            // Frame 100-120: fade in and rise up
             const progress = (idx - TEXT_FADE_START) / (120 - TEXT_FADE_START)
             tp = progress
-            // Rise upward while fading in (negative Y = up)
-            textTranslateY = 30 - (progress * 40) // Goes from 30px down to -10px up
           }
-
           setTextProgress(tp)
         }
       }
@@ -214,7 +194,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-  // Add float animation keyframes for palace text idle motion
   useEffect(() => {
     const styleId = 'palace-float-keyframes'
     let styleElement = document.getElementById(styleId)
@@ -230,20 +209,13 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       `
       document.head.appendChild(styleElement)
     }
-
-    return () => {
-      // Only remove if we created it (but in HMR we might want to keep it)
-      // For safety, we won't remove it as it's lightweight
-    }
   }, [])
 
-  // wheel + touch — lock body on mount, do NOT touch overflow after release
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)
 
     const handleWheel = (e: WheelEvent) => {
-      // After release, stop intercepting — let window scroll work
       if (hasReleased.current) return
       e.preventDefault()
       if (snapLocked.current) return
@@ -311,14 +283,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     zIndex: scene === i ? 10 : 0,
   })
 
-  // Define slogans for each scene
-  const sceneSlogans = {
-    1: 'PIXELS NEVER DIE',
-    2: 'FASTER THAN FEAR',
-    3: 'WONDER WITHOUT LIMITS',
-    4: 'IMAGINE BEYOND GRAVITY'
-  }
-
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020202' }}>
 
@@ -326,12 +290,11 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block', width: '100vw', height: '100dvh' }} />
 
-        {/* Palace text - Improved cinematic animation */}
         <div style={{
           position: 'absolute',
-          bottom: '18%', // Moved up slightly for better composition
+          bottom: '18%',
           left: '50%',
-          transform: `translateX(-50%) translateY(${(1 - textProgress) * 40}px)`, // Increased range for more dramatic rise
+          transform: `translateX(-50%) translateY(${(1 - textProgress) * 40}px)`,
           opacity: textProgress,
           pointerEvents: 'none',
           zIndex: 20,
@@ -342,17 +305,15 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
             fontFamily: 'var(--font-serif,"Instrument Serif",serif)',
             fontStyle: 'italic',
             fontWeight: 400,
-            fontSize: 'clamp(2.6rem, 7vw, 6.5rem)', // Slightly larger for premium feel
+            fontSize: 'clamp(2.6rem, 7vw, 6.5rem)',
             color: '#fff',
             margin: 0,
-            textShadow: '0 4px 40px rgba(0,0,0,0.8), 0 0 80px rgba(255,255,255,0.2)', // Added glow
+            textShadow: '0 4px 40px rgba(0,0,0,0.8), 0 0 80px rgba(255,255,255,0.2)',
             whiteSpace: 'nowrap',
             letterSpacing: '0.02em',
           }}>
             Step into the Kingdom
           </h2>
-
-          {/* Add subtle floating idle motion once fully visible */}
           {textProgress >= 1 && (
             <div style={{
               position: 'absolute',
@@ -366,7 +327,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           )}
         </div>
 
-        {/* Add subtle glow and shadow effects to canvas */}
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -379,7 +339,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 1 — Retro */}
       <div style={gs(1)}>
         <RetroSequence isActive={scene === 1} />
-        {/* Chain Headline for Retro scene */}
         <div style={{
           position: 'absolute',
           top: '8vh',
@@ -391,7 +350,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         }}>
           <ChainHeadline
             text={sceneSlogans[1]}
-            previousText={previousScene === 0 ? '' : sceneSlogans[previousScene]}
+            previousText={sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
             fontFamily="'Press Start 2P', cursive"
@@ -407,7 +366,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 2 — Racing */}
       <div style={gs(2)}>
         <RacingSequence isActive={scene === 2} />
-        {/* Chain Headline for Racing scene */}
         <div style={{
           position: 'absolute',
           top: '8vh',
@@ -419,7 +377,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         }}>
           <ChainHeadline
             text={sceneSlogans[2]}
-            previousText={previousScene === 0 ? '' : sceneSlogans[previousScene]}
+            previousText={sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
             fontFamily="'Inter', sans-serif"
@@ -435,7 +393,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 3 — Open World */}
       <div style={gs(3)}>
         <OpenWorldSequence isActive={scene === 3} />
-        {/* Chain Headline for Open World scene */}
         <div style={{
           position: 'absolute',
           top: '8vh',
@@ -447,7 +404,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         }}>
           <ChainHeadline
             text={sceneSlogans[3]}
-            previousText={previousScene === 0 ? '' : sceneSlogans[previousScene]}
+            previousText={sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
             fontFamily="'Cinzel Decorative', serif"
@@ -463,7 +420,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 4 — Space */}
       <div style={gs(4)}>
         <SpaceSequence isActive={scene === 4} />
-        {/* Chain Headline for Space scene */}
         <div style={{
           position: 'absolute',
           top: '8vh',
@@ -473,16 +429,22 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           zIndex: 200,
           padding: '0 5vw',
         }}>
+          {/* FIXED: Polaris Font + White Color + White Neon Glow applied! */}
           <ChainHeadline
             text={sceneSlogans[4]}
-            previousText={previousScene === 0 ? '' : sceneSlogans[previousScene]}
+            previousText={sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
+            fontFamily="'Polaris', sans-serif"
             fontSize="clamp(1.2rem, 3.8vw, 2.8rem)"
+            fontWeight={400}
+            color="#FFFFFF"
+            letterSpacing="0.08em"
+            textShadow="0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.4), 0 0 80px rgba(255,255,255,0.2)"
           />
         </div>
       </div>
     </div>
   )
-            }
+          }
       
