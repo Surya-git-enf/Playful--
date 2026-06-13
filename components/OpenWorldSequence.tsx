@@ -147,7 +147,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         background: 'radial-gradient(ellipse 120% 100% at 50% 60%, #0a1a0e 0%, #030d06 55%, #000000 100%)',
         opacity: mounted ? 1 : 0,
         transition: `opacity 1.6s ${smooth} 0s`,
-        animation: mounted ? 'bgPulse 10s ease-in-out infinite 2s' : 'none',
+        animation: mounted ? 'bgPulse 7s ease-in-out infinite 2s' : 'none',
       }} />
 
       {/* ── WORLD IMAGE ── */}
@@ -163,7 +163,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         <div style={{
           width: '100%',
           height: '100%',
-          animation: mounted ? 'worldBreathe 6s ease-in-out infinite alternate 2s' : 'none',
+          animation: mounted ? 'worldBreathe 3s ease-in-out infinite alternate 2s' : 'none',
         }}>
           {/* VRAM FIX: Removed static CSS filter from huge image block! */}
           <img
@@ -187,7 +187,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         zIndex: 2,
         pointerEvents: 'none',
         background: 'linear-gradient(to top, rgba(0,30,10,0.5) 0%, transparent 45%)',
-        animation: mounted ? 'fogDrift 14s ease-in-out infinite' : 'none',
+        animation: mounted ? 'fogDrift 10s ease-in-out infinite' : 'none',
         opacity: mounted ? 1 : 0,
         transition: `opacity 2s ${smooth} 0.5s`,
       }} />
