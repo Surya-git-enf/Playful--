@@ -572,7 +572,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           </h2>
           <div style={{
             position: 'absolute',
-            top: '-50%',
+            top: '-70%',
             left: '50%',
             width: '100%',
             height: '200%',
