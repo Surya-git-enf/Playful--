@@ -75,7 +75,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   useEffect(() => {
     if (sceneRef.current !== scene) {
       setPreviousScene(sceneRef.current)
-      SceneRef.current(scene)
+      sceneRef.current(scene)
 
       // Determine animation direction
       const direction = scene > sceneRef.current ? 'forward' : 'reverse'
