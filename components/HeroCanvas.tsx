@@ -10,7 +10,7 @@ import SpaceSequence from './SpaceSequence'
 
 const TOTAL_SCENES = 4
 const TOTAL_FRAMES = 144
-const SNAP_LOCK_MS = 900
+const SNAP_LOCK_MS = 800 // Slightly reduced for a snappier feel
 const TEXT_FADE_START = 100
 const FRICTION = 0.80
 const FRAMES_PER_DELTA = 0.16
@@ -43,7 +43,7 @@ interface Props {
 }
 
 // ------------------------------------------------------------------
-// GLOBAL HEADLINE SYSTEM
+// GLOBAL HEADLINE SYSTEM (Perfect Letter Spacing & Z-Index Locks)
 // ------------------------------------------------------------------
 const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, style: React.CSSProperties }> = {
   0: { 
@@ -55,7 +55,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
   1: { 
     text: "PIXELS NEVER DIE", 
     font: "'Press Start 2P', cursive", 
-    scale: 0.7, 
+    scale: 0.75, // Scaled for mobile pixel crispness
     style: { 
       fontWeight: 400,
       backgroundImage: 'linear-gradient(180deg, #FFD400 0%, #FF3300 100%)',
@@ -63,7 +63,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
       WebkitTextFillColor: 'transparent',
       color: 'transparent',
       filter: 'drop-shadow(0px 3px 0px rgba(0,0,0,1))',
-      lineHeight: '1.4em',
+      lineHeight: '1.2',
     } 
   },
   2: { 
@@ -74,7 +74,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
       textShadow: "0 4px 20px rgba(0,0,0,0.6)",
       fontWeight: 800,
       letterSpacing: '0.02em',
-      lineHeight: '1.2em',
+      lineHeight: '1.2',
     } 
   },
   3: { 
@@ -85,22 +85,23 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
       textShadow: "0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)",
       fontWeight: 900,
       letterSpacing: '0.04em',
-      lineHeight: '1.2em',
+      lineHeight: '1.2',
     } 
   },
   4: { 
     text: "IMAGINE BEYOND GRAVITY", 
     font: "'Orbitron', sans-serif", 
-    scale: 0.9, 
+    scale: 0.95, 
     style: { 
       textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.35), 0 0 120px rgba(255,255,255,.15)",
       fontWeight: 700,
       letterSpacing: '0.08em',
-      lineHeight: '1.2em',
+      lineHeight: '1.2',
     } 
   }
 };
 
+// Pads strings to center them perfectly during transitions
 function padCenter(str: string, len: number) {
   if (str.length >= len) return str.substring(0, len);
   const padTotal = len - str.length;
@@ -134,7 +135,7 @@ function GlobalHeadline({ scene }: { scene: number }) {
   const flipTo = isForward ? -90 : 90;
   const backRotation = isForward ? 90 : -90;
 
-  const baseFontSize = `clamp(14px, 4vw, 55px)`;
+  const baseFontSize = `clamp(14px, 4.5vw, 55px)`;
 
   return (
     <div style={{
@@ -151,13 +152,14 @@ function GlobalHeadline({ scene }: { scene: number }) {
       maxWidth: '96vw',
       color: '#FFFFFF',
       pointerEvents: 'none',
+      WebkitFontSmoothing: 'antialiased',
     }}>
 
       {/* Cinematic Fog Bloom exclusively for Space Scene */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: trans.to === 4 ? 1 : 0 }}
-        transition={{ duration: 1.2 }}
+        transition={{ duration: 0.8 }}
         style={{
           position: 'absolute',
           inset: '-50% -20%',
@@ -172,11 +174,8 @@ function GlobalHeadline({ scene }: { scene: number }) {
           const prevChar = fromChars[i] ?? ' ';
           const isAnimating = trans.from !== trans.to && prevChar !== char;
 
-          // CRITICAL FIX: The chain twist delay logic now properly applies to the Space Scene!
-          let animDelay = (i * 40) / 1000;
-          if (trans.to === 4 && trans.from === 3) {
-            animDelay = 2.0 + (i * 0.05); // Keeps the epic 2.0s delay so Earth can load first
-          }
+          // Faster, snappier delay to prevent overlap glitches
+          const animDelay = (i * 30) / 1000;
 
           return (
             <div key={`wrap-${i}`} style={{
@@ -188,23 +187,25 @@ function GlobalHeadline({ scene }: { scene: number }) {
               flexShrink: 0,
             }}>
               
-              <div style={{ display: 'flex', flexDirection: 'column', visibility: 'hidden', padding: '0 0.02em' }}>
+              {/* CSS GRID ANCHOR: The safest cross-browser way to ensure cells never squish or overlap */}
+              <div style={{ display: 'grid', visibility: 'hidden', padding: '0 0.02em' }}>
                 <span style={{ 
+                  gridArea: '1/1', 
                   fontFamily: fromConf.font, 
                   fontSize: `calc(${baseFontSize} * ${fromConf.scale})`, 
-                  ...fromConf.style,
-                  height: 0, 
-                  overflow: 'hidden' 
+                  whiteSpace: 'pre',
+                  ...fromConf.style 
                 }}>
-                  {prevChar === ' ' ? '\u00A0' : prevChar}
+                  {prevChar}
                 </span>
                 <span style={{ 
+                  gridArea: '1/1', 
                   fontFamily: toConf.font, 
                   fontSize: `calc(${baseFontSize} * ${toConf.scale})`, 
-                  ...toConf.style,
-                  height: 'auto' 
+                  whiteSpace: 'pre',
+                  ...toConf.style 
                 }}>
-                  {char === ' ' ? '\u00A0' : char}
+                  {char}
                 </span>
               </div>
 
@@ -219,7 +220,7 @@ function GlobalHeadline({ scene }: { scene: number }) {
                   initial={{ rotateX: 0 }}
                   animate={{ rotateX: flipTo }}
                   transition={{
-                    duration: 0.65,
+                    duration: 0.5, // Faster rotation
                     delay: animDelay,
                     ease: [0.65, 0.05, 0.36, 1]
                   }}
@@ -235,10 +236,11 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     transform: 'translateZ(0.4em)',
                     fontFamily: fromConf.font,
                     fontSize: `calc(${baseFontSize} * ${fromConf.scale})`,
+                    whiteSpace: 'pre',
                     paddingBottom: '0.1em',
                     ...fromConf.style
                   }}>
-                    {prevChar === ' ' ? '\u00A0' : prevChar}
+                    {prevChar}
                   </div>
 
                   <div style={{
@@ -252,10 +254,11 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     transform: `rotateX(${backRotation}deg) translateZ(0.4em)`, 
                     fontFamily: toConf.font,
                     fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
+                    whiteSpace: 'pre',
                     paddingBottom: '0.1em',
                     ...toConf.style
                   }}>
-                    {char === ' ' ? '\u00A0' : char}
+                    {char}
                   </div>
                 </motion.div>
               ) : (
@@ -267,10 +270,11 @@ function GlobalHeadline({ scene }: { scene: number }) {
                   justifyContent: 'center',
                   fontFamily: toConf.font,
                   fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
+                  whiteSpace: 'pre',
                   paddingBottom: '0.1em',
                   ...toConf.style
                 }}>
-                  {char === ' ' ? '\u00A0' : char}
+                  {char}
                 </div>
               )}
             </div>
@@ -284,7 +288,10 @@ function GlobalHeadline({ scene }: { scene: number }) {
 
 export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Props) {
   const [scene, setSceneState] = useState(0)
-  const [textProgress, setTextProgress] = useState(0)
+
+  // Direct DOM refs bypass React renders during high-speed scroll (Massive Performance Boost)
+  const palaceTextRef = useRef<HTMLDivElement>(null)
+  const palaceGlowRef = useRef<HTMLDivElement>(null)
 
   const sceneRef    = useRef(0)
   const frameFloat  = useRef(0)
@@ -384,16 +391,23 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         if (idx !== frameDrawn.current) {
           drawFrame(idx)
 
+          // Direct DOM updates for buttery smooth scrolling (NO REACT RE-RENDERS)
           let tp = 0
           if (idx < TEXT_FADE_START) {
             tp = 0
           } else if (idx >= 120) {
             tp = 1
           } else {
-            const progress = (idx - TEXT_FADE_START) / (120 - TEXT_FADE_START)
-            tp = progress
+            tp = (idx - TEXT_FADE_START) / (120 - TEXT_FADE_START)
           }
-          setTextProgress(tp)
+
+          if (palaceTextRef.current) {
+            palaceTextRef.current.style.opacity = tp.toString()
+            palaceTextRef.current.style.transform = `translateX(-50%) translateY(${(1 - tp) * 40}px)`
+          }
+          if (palaceGlowRef.current) {
+            palaceGlowRef.current.style.opacity = (tp * 0.5).toString()
+          }
         }
       }
       rafRef.current = requestAnimationFrame(loop)
@@ -449,7 +463,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     }
     const onTouchMove = (e: TouchEvent) => {
       if (hasReleased.current) return
-      e.preventDefault()
+      e.preventDefault() // Prevents default scroll bounce smoothly
       const now = Date.now()
       const dy = tyLast - e.touches[0].clientY
       tvY = dy / Math.max(1, now - ttLast)
@@ -502,16 +516,20 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block', width: '100vw', height: '100dvh' }} />
 
-        <div style={{
-          position: 'absolute',
-          bottom: '18%',
-          left: '50%',
-          transform: `translateX(-50%) translateY(${(1 - textProgress) * 40}px)`,
-          opacity: textProgress,
-          pointerEvents: 'none',
-          zIndex: 20,
-          textAlign: 'center',
-        }}>
+        <div 
+          ref={palaceTextRef}
+          style={{
+            position: 'absolute',
+            bottom: '18%',
+            left: '50%',
+            transform: 'translateX(-50%) translateY(40px)',
+            opacity: 0,
+            pointerEvents: 'none',
+            zIndex: 20,
+            textAlign: 'center',
+            willChange: 'transform, opacity',
+          }}
+        >
           <h2 style={{
             fontFamily: 'var(--font-serif,"Instrument Serif",serif)',
             fontStyle: 'italic',
@@ -525,26 +543,28 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           }}>
             Step into the Kingdom
           </h2>
-          {textProgress >= 1 && (
-            <div style={{
-              position: 'absolute',
-              top: '-50%',
-              left: '50%',
-              width: '100%',
-              height: '200%',
-              pointerEvents: 'none',
-              animation: 'float 6s ease-in-out infinite',
-            }}/>
-          )}
+          <div style={{
+            position: 'absolute',
+            top: '-50%',
+            left: '50%',
+            width: '100%',
+            height: '200%',
+            pointerEvents: 'none',
+            animation: 'float 6s ease-in-out infinite',
+          }}/>
         </div>
 
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at center, rgba(255,212,0,0.1) 0%, transparent 70%)',
-          opacity: textProgress * 0.5,
-        }}/>
+        <div 
+          ref={palaceGlowRef}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at center, rgba(255,212,0,0.1) 0%, transparent 70%)',
+            opacity: 0,
+            willChange: 'opacity',
+          }}
+        />
       </div>
 
       {/* Scene 1 — Retro */}
