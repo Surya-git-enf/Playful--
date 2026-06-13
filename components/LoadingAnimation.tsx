@@ -45,16 +45,18 @@ const iconVariants = {
     y: 0,
     opacity: 1,
     scale: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 300,
-      damping: 20
-    }
+    transition: { type: 'spring' as const, stiffness: 300, damping: 20 }
   },
   settled: {
     y: 0,
     opacity: 1,
     scale: 1
+  },
+  exit: {
+    y: 20,
+    opacity: 0,
+    scale: 0.3,
+    transition: { type: 'spring' as const, stiffness: 400, damping: 20 }
   }
 };
 
