@@ -94,6 +94,7 @@ export default function ChainHeadline({
             style={{
               display: 'inline-block',
               width: '1ch',
+              height: '1em',
               textAlign: 'center',
               fontSize: 'inherit',
               fontFamily: 'inherit',
