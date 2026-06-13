@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import dynamic from 'next/dynamic'
+import LoadingAnimation from '../components/LoadingAnimation'
 
 const HeroCanvas = dynamic(() => import('../components/HeroCanvas'), { ssr: false })
 const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: false })
@@ -15,16 +16,17 @@ const pad = (n: number) => String(n).padStart(4, '0')
 // this is what prevents any flash (blue, white, or otherwise)
 // when the hero scenes first become visible.
 // --------------------------------------------------------------
-function buildAssetList(): string[] {
-  const assets: string[] = []
+function buildAssetList(): { images: string[]; videos: string[] } {
+  const images: string[] = []
+  const videos: string[] = []
 
   // Palace canvas scrub sequence (0-144)
   for (let i = 0; i <= 144; i++) {
-    assets.push(`/palace/palace-frame_${pad(i)}.webp`)
+    images.push(`/palace/palace-frame_${pad(i)}.webp`)
   }
 
   // Retro scene
-  assets.push(
+  images.push(
     '/retro/sky.png',
     '/retro/clouds.png',
     '/retro/castle.png',
@@ -34,17 +36,39 @@ function buildAssetList(): string[] {
     '/retro/coin.png',
   )
 
+  // Racing scene
+  images.push(
+    '/racing/bg.png',
+    '/racing/car.png',
+    '/racing/road.png',
+  )
+
+  // Open World scene
+  images.push(
+    '/openworld/ground.png',
+    '/openworld/hero.png',
+    '/openworld/moon.png',
+    '/openworld/world.png',
+  )
+
   // Space scene
-  assets.push(
+  images.push(
     '/space/earth.png',
     '/space/lunar-ground.png',
     '/space/astronaut.png',
   )
 
   // Shared UI
-  assets.push('/logo.png')
+  images.push('/logo.png')
 
-  return assets
+  // SnapCards background videos
+  videos.push(
+    '/cards/play.mp4',
+    '/cards/bang.mp4',
+    '/cards/lego.mp4',
+  )
+
+  return { images, videos }
 }
 
 function preloadImage(src: string): Promise<void> {
@@ -53,6 +77,24 @@ function preloadImage(src: string): Promise<void> {
     img.onload = () => resolve()
     img.onerror = () => resolve() // don't block the whole app on one missing file
     img.src = src
+  })
+}
+
+// Videos can't be "preloaded" the same way images can — we just ask the
+// browser to fetch enough to start playback (metadata + some buffer) so
+// the SnapCards section doesn't show a blank/black frame on first paint.
+function preloadVideo(src: string): Promise<void> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    video.preload = 'auto'
+    video.muted = true
+    video.src = src
+    const done = () => resolve()
+    video.oncanplaythrough = done
+    video.onloadeddata = done
+    video.onerror = done
+    // Safety timeout — large videos shouldn't hold up the whole loader
+    setTimeout(done, 4000)
   })
 }
 
@@ -76,17 +118,19 @@ export default function Home() {
   // the canvas can mount underneath with zero visual flash.
   useEffect(() => {
     let cancelled = false
-    const assets = buildAssetList()
+    const { images, videos } = buildAssetList()
+    const total = images.length + videos.length
     let loaded = 0
 
-    Promise.all(
-      assets.map((src) =>
-        preloadImage(src).then(() => {
-          loaded += 1
-          if (!cancelled) setProgress(Math.round((loaded / assets.length) * 100))
-        })
-      )
-    ).then(() => {
+    const tick = () => {
+      loaded += 1
+      if (!cancelled) setProgress(Math.round((loaded / total) * 100))
+    }
+
+    Promise.all([
+      ...images.map((src) => preloadImage(src).then(tick)),
+      ...videos.map((src) => preloadVideo(src).then(tick)),
+    ]).then(() => {
       if (cancelled) return
       // Tiny delay so the progress bar visibly reaches 100% before fading
       setTimeout(() => {
@@ -189,61 +233,14 @@ export default function Home() {
       {isLoading && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 5000,
-          background: '#020202',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          gap: '28px',
           opacity: loadingOut ? 0 : 1,
           transition: 'opacity 0.6s ease',
           pointerEvents: loadingOut ? 'none' : 'auto',
         }}>
-          <style>{`
-            @keyframes loaderPulse {
-              0%, 100% { opacity: 0.55; transform: scale(1); }
-              50% { opacity: 1; transform: scale(1.04); }
-            }
-          `}</style>
-
-          <span style={{
-            fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)',
-            fontWeight: 900,
-            fontSize: 'clamp(1.4rem, 5vw, 2.4rem)',
-            letterSpacing: '.3em',
-            color: '#fff',
-            animation: 'loaderPulse 1.6s ease-in-out infinite',
-            textShadow: '0 0 24px rgba(255,255,255,0.25)',
-          }}>
-            PLAYFUL
-          </span>
-
-          <div style={{
-            width: 'min(60vw, 260px)',
-            height: '3px',
-            borderRadius: '99px',
-            background: 'rgba(255,255,255,0.12)',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              height: '100%',
-              width: `${progress}%`,
-              background: 'linear-gradient(90deg, rgba(120,180,255,0.9), #ffffff)',
-              borderRadius: '99px',
-              transition: 'width 0.2s ease-out',
-            }} />
-          </div>
-
-          <span style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: '0.75rem',
-            letterSpacing: '0.15em',
-            color: 'rgba(255,255,255,0.4)',
-            textTransform: 'uppercase',
-          }}>
-            {progress}%
-          </span>
+          <LoadingAnimation progress={progress} />
         </div>
       )}
     </>
   )
-      }
-          
+    }
+      
