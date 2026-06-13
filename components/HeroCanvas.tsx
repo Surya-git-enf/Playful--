@@ -74,11 +74,12 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   // Track scene changes for text animation
   useEffect(() => {
     if (sceneRef.current !== scene) {
-      setPreviousScene(sceneRef.current)
-      sceneRef.current(scene)
+      const prev = sceneRef.current
+      setPreviousScene(prev)
+      sceneRef.current = scene
 
       // Determine animation direction
-      const direction = scene > sceneRef.current ? 'forward' : 'reverse'
+      const direction = scene > prev ? 'forward' : 'reverse'
       setAnimationDirection(direction)
       setIsAnimating(true)
 
@@ -460,4 +461,4 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       </div>
     </div>
   )
-}
+            }
