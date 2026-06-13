@@ -22,7 +22,7 @@ export default function ChainHeadline({
       return {
         initial: { rotateX: 0 },
         animate: { rotateX: 0 },
-      }
+      } as Variants
     }
 
     const delay = index * 40 // 40ms stagger between characters
@@ -31,26 +31,30 @@ export default function ChainHeadline({
       // Forward scroll: old text rotates downward (up and away), new text comes from below (up and over)
       return {
         initial: { rotateX: 0 },
-        animate: { rotateX: [0, -90, 0] },
-        transition: {
-          delay,
-          duration: 0.6,
-          ease: [0.25, 0.1, 0.25, 1],
-          times: [0, 0.5, 1]
-        }
-      }
+        animate: {
+          rotateX: [0, -90, 0],
+          transition: {
+            delay,
+            duration: 0.6,
+            ease: [0.25, 0.1, 0.25, 1],
+            times: [0, 0.5, 1]
+          }
+        },
+      } as Variants
     } else {
       // Reverse scroll: old text rotates upward (down and over), new text comes from above (down and under)
       return {
         initial: { rotateX: 0 },
-        animate: { rotateX: [0, 90, 0] },
-        transition: {
-          delay,
-          duration: 0.6,
-          ease: [0.25, 0.1, 0.25, 1],
-          times: [0, 0.5, 1]
-        }
-      }
+        animate: {
+          rotateX: [0, 90, 0],
+          transition: {
+            delay,
+            duration: 0.6,
+            ease: [0.25, 0.1, 0.25, 1],
+            times: [0, 0.5, 1]
+          }
+        },
+      } as Variants
     }
   }
 
