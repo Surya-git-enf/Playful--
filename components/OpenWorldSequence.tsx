@@ -103,6 +103,22 @@ export default function OpenWorldSequence({ isActive }: Props) {
           }
         }
 
+        /* ── RESPONSIVE MOON CONTAINER TO PREVENT TEXT OVERLAP ── */
+        .moon-container {
+          position: absolute;
+          top: 5%;
+          right: 8%;
+          z-index: 3;
+          will-change: transform, opacity;
+        }
+        
+        @media (max-width: 640px) {
+          .moon-container {
+            top: 15%; /* Moves the moon down on mobile so it perfectly clears the headline */
+            right: 5%;
+          }
+        }
+
         .moon-img {
           width: clamp(230px, 80vw, 350px);
           height: auto;
@@ -191,16 +207,14 @@ export default function OpenWorldSequence({ isActive }: Props) {
       }} />
 
       {/* ── MOON — TOP RIGHT ── */}
-      <div style={{
-        position: 'absolute',
-        top: '5%',
-        right: '8%',
-        zIndex: 3,
-        opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0px) scale(1) translateZ(0)' : 'translateY(-80px) scale(0.5) translateZ(0)',
-        transition: `opacity 1.2s ${smooth} 0.4s, transform 1.4s ${bounce} 0.4s`,
-        willChange: 'transform, opacity',
-      }}>
+      <div 
+        className="moon-container"
+        style={{
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? 'translateY(0px) scale(1) translateZ(0)' : 'translateY(-80px) scale(0.5) translateZ(0)',
+          transition: `opacity 1.2s ${smooth} 0.4s, transform 1.4s ${bounce} 0.4s`,
+        }}
+      >
         <div
           className="moon-corona"
           style={{
@@ -290,3 +304,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
     </div>
   )
 }
+
+
+
