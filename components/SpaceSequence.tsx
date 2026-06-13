@@ -80,11 +80,6 @@ export default function SpaceSequence({ isActive }: Props) {
           90% { opacity: 0.35; }
           100% { transform: translateY(-50px) translateX(10px); opacity: 0; }
         }
-        @keyframes earthRise {
-          0% { transform: translateX(-50%) translateY(70px) scale(0.94); opacity: 0; }
-          55% { transform: translateX(-50%) translateY(-8px) scale(1.015); opacity: 1; }
-          100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
-        }
         @keyframes earthBreathe {
           0%, 100% {
             transform: translateX(-50%) scale(1);
@@ -99,9 +94,15 @@ export default function SpaceSequence({ isActive }: Props) {
           0%, 100% { opacity: 0.12; }
           50% { opacity: 0.32; }
         }
-        @keyframes groundRise {
-          0% { transform: translateY(120px); opacity: 0; }
+        @keyframes astroLand {
+          0% { transform: translateY(-100px); opacity: 0; }
+          60% { transform: translateY(10px); opacity: 1; }
+          80% { transform: translateY(-4px); }
           100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes astroBreathe {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-14px) rotate(-1.5deg); }
         }
         @keyframes blurFadeIn {
           from { opacity: 0; filter: blur(8px); transform: translateY(10px); }
@@ -121,7 +122,7 @@ export default function SpaceSequence({ isActive }: Props) {
       <div style={{
         position: 'absolute', inset: '-2%',
         opacity: mounted ? 1 : 0,
-        transition: `opacity 1.8s ${premiumEase}`,
+        transition: `opacity 0.3s ${premiumEase}`,
         animation: mounted ? 'spaceBreathe 20s ease-in-out infinite' : 'none',
         zIndex: 0,
       }}>
@@ -188,7 +189,7 @@ export default function SpaceSequence({ isActive }: Props) {
         })}
       </div>
 
-      {/* ─── 2. EARTH (fast continuous breathe in/out) ─── */}
+      {/* ─── 2. EARTH (instant settle, continuous breathe in/out) ─── */}
       <div style={{
         position: 'absolute',
         top: '8%',
@@ -197,8 +198,9 @@ export default function SpaceSequence({ isActive }: Props) {
         zIndex: 3,
         transform: 'translateX(-50%)',
         opacity: mounted ? 1 : 0,
+        transition: `opacity 0.3s ${premiumEase}`,
         animation: mounted
-          ? 'earthRise 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, earthBreathe 4s ease-in-out infinite 1.95s'
+          ? 'earthBreathe 4s ease-in-out infinite 0.3s'
           : 'none',
       }}>
         <div style={{ position: 'relative' }}>
@@ -207,7 +209,7 @@ export default function SpaceSequence({ isActive }: Props) {
             position: 'absolute', inset: 0, borderRadius: '50%',
             background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25) 0%, transparent 45%)',
             mixBlendMode: 'screen',
-            animation: mounted ? 'earthShimmer 3s ease-in-out infinite 2s' : 'none',
+            animation: mounted ? 'earthShimmer 3s ease-in-out infinite 0.3s' : 'none',
             pointerEvents: 'none',
           }} />
         </div>
@@ -218,17 +220,17 @@ export default function SpaceSequence({ isActive }: Props) {
         position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
         zIndex: 4,
         opacity: mounted ? 1 : 0,
-        animation: mounted ? 'groundRise 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both' : 'none',
+        transition: `opacity 0.3s ${premiumEase}`,
       }}>
         <img src="/space/lunar-ground.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
       </div>
 
-      {/* ─── 4. ASTRONAUT — fixed position, no animation ─── */}
+      {/* ─── 4. ASTRONAUT — large, fixed (bottom 10%, left 68%), no animation, consistent size across devices ─── */}
       <div style={{
         position: 'absolute',
         bottom: '10%',
-        left: '60%',
-        height: '20vh',
+        left: '68%',
+        height: '40vh',
         width: 'auto',
         zIndex: 5,
         opacity: mounted ? 1 : 0,
@@ -241,7 +243,7 @@ export default function SpaceSequence({ isActive }: Props) {
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: 'linear-gradient(to bottom, rgba(2,3,10,0.55) 0%, rgba(2,3,10,0) 32%, rgba(2,3,10,0) 65%, rgba(2,3,10,0.85) 100%)',
         opacity: mounted ? 1 : 0,
-        transition: `opacity 1.2s ${premiumEase}`,
+        transition: `opacity 0.3s ${premiumEase}`,
         zIndex: 6,
       }} />
 
@@ -251,7 +253,7 @@ export default function SpaceSequence({ isActive }: Props) {
         width: 'min(92vw, 660px)',
         zIndex: 20,
         opacity: mounted ? 1 : 0,
-        animation: mounted ? 'panelRise 1s cubic-bezier(0.16, 1, 0.3, 1) 1.4s both' : 'none',
+        animation: mounted ? 'panelRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both' : 'none',
       }}>
         <div style={{
           background: 'rgba(12, 14, 22, 0.5)',
@@ -342,7 +344,7 @@ export default function SpaceSequence({ isActive }: Props) {
               display: 'flex', alignItems: 'center', gap: '8px',
               transition: `background 0.25s ${premiumEase}, border-color 0.25s ${premiumEase}, transform 0.25s ${premiumEase}, box-shadow 0.25s ${premiumEase}`,
               boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-              animation: mounted ? `blurFadeIn 0.8s ease ${1.7 + (i * 0.1)}s both` : 'none'
+              animation: mounted ? `blurFadeIn 0.8s ease ${0.35 + (i * 0.07)}s both` : 'none'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'rgba(255,255,255,0.09)'
