@@ -45,7 +45,7 @@ interface Props {
 }
 
 // ------------------------------------------------------------------
-// GLOBAL HEADLINE SYSTEM (ANTI-GLITCH & PROPORTIONAL SIZING)
+// GLOBAL HEADLINE SYSTEM (ANTI-GLITCH CONSTANT ARRAY SYSTEM)
 // ------------------------------------------------------------------
 const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, style: React.CSSProperties }> = {
   0: { 
@@ -57,7 +57,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
   1: { 
     text: "PIXELS NEVER DIE", 
     font: "'Press Start 2P', cursive", 
-    scale: 0.7, // Scaled down because 8-bit fonts are naturally very wide
+    scale: 0.7, 
     style: { 
       fontWeight: 400,
       backgroundImage: 'linear-gradient(180deg, #FFD400 0%, #FF3300 100%)',
@@ -71,7 +71,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
   2: { 
     text: "CHASE THE HORIZON", 
     font: "'Bebas Neue', sans-serif", 
-    scale: 1.4, // Massively increased font size for aggressive racing look
+    scale: 1.4, 
     style: { 
       textShadow: "0 4px 20px rgba(0,0,0,0.6)",
       fontWeight: 800,
@@ -103,10 +103,8 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
   }
 };
 
-// Helper function to pad shorter strings equally on both sides.
-// This guarantees perfect centering when flipping between words of different lengths!
 function padCenter(str: string, len: number) {
-  if (str.length >= len) return str;
+  if (str.length >= len) return str.substring(0, len);
   const padTotal = len - str.length;
   const padLeft = Math.floor(padTotal / 2);
   const padRight = padTotal - padLeft;
@@ -125,18 +123,18 @@ function GlobalHeadline({ scene }: { scene: number }) {
   const fromConf = SCENE_CONFIG[trans.from] || SCENE_CONFIG[0];
   const toConf = SCENE_CONFIG[trans.to] || SCENE_CONFIG[0];
 
-  const maxLen = Math.max(fromConf.text.length, toConf.text.length);
+  // CRITICAL FIX: Lock the maximum length permanently to 22 characters.
+  // This absolutely guarantees that React's DOM nodes map 1-to-1 perfectly, 
+  // preventing ANY letters from being dropped or glitches during scene transitions.
+  const GLOBAL_MAX_LEN = 22; 
   
-  const fromChars = padCenter(fromConf.text, maxLen).split('');
-  const toChars = padCenter(toConf.text, maxLen).split('');
+  const fromChars = padCenter(fromConf.text, GLOBAL_MAX_LEN).split('');
+  const toChars = padCenter(toConf.text, GLOBAL_MAX_LEN).split('');
 
-  // Swipe UP -> Scene progresses -> isForward = true -> Text turns UP (-90)
-  // Swipe DOWN -> Scene regresses -> isForward = false -> Text twists DOWN (90)
   const isForward = trans.to >= trans.from;
   const flipTo = isForward ? -90 : 90;
   const backRotation = isForward ? 90 : -90;
 
-  // Base font sizing that beautifully scales from mobile to ultrawide desktop
   const baseFontSize = `clamp(14px, 4vw, 55px)`;
 
   return (
@@ -175,9 +173,6 @@ function GlobalHeadline({ scene }: { scene: number }) {
           const prevChar = fromChars[i] ?? ' ';
           const isAnimating = trans.from !== trans.to && prevChar !== char;
 
-          // -----------------------------------------------------
-          // UNIFIED ENGINE: Smooth Chain Twist Mechanism for ALL Scenes
-          // -----------------------------------------------------
           return (
             <div key={`wrap-${i}`} style={{
               position: 'relative',
@@ -188,10 +183,6 @@ function GlobalHeadline({ scene }: { scene: number }) {
               flexShrink: 0,
             }}>
               
-              {/* THE MAGIC GRID ANCHOR: 
-                Renders both letters invisibly to force the exact proper cell width instantly.
-                Eliminates layout collapse, text overlap, and spacing glitches!
-              */}
               <div style={{ display: 'grid', visibility: 'hidden', padding: '0 0.05em' }}>
                 <span style={{ 
                   gridArea: '1/1', 
@@ -237,7 +228,7 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     justifyContent: 'center',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
-                    transform: 'translateZ(0.4em)', // Pushed forward slightly to prevent clipping
+                    transform: 'translateZ(0.4em)',
                     fontFamily: fromConf.font,
                     fontSize: `calc(${baseFontSize} * ${fromConf.scale})`,
                     paddingBottom: '0.1em',
@@ -577,3 +568,5 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     </div>
   )
 }
+
+      
