@@ -381,7 +381,7 @@ export default function RetroSequence({ isActive }: Props) {
           top: "8dvh",
           left: 0,
           right: 0,
-          zIndex: 20,
+          zIndex: 50,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
