@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
@@ -42,7 +43,7 @@ interface Props {
 }
 
 // ------------------------------------------------------------------
-// GLOBAL HEADLINE SYSTEM (Perfect Letter Spacing & Z-Index Locks)
+// GLOBAL HEADLINE SYSTEM
 // ------------------------------------------------------------------
 const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, style: React.CSSProperties }> = {
   0: { 
@@ -140,7 +141,6 @@ function GlobalHeadline({ scene }: { scene: number }) {
       position: 'absolute',
       top: 'clamp(6%, 7.5vh, 8%)',
       left: '50%',
-      // CRITICAL Z-INDEX FIX: Pushes the text 100px forward in 3D space so the moon NEVER overlaps it!
       transform: 'translateX(-50%) translateZ(100px)',
       zIndex: 9999,
       display: 'flex',
@@ -167,131 +167,89 @@ function GlobalHeadline({ scene }: { scene: number }) {
         }}
       />
 
-      {trans.to === 4 ? (
-        /* -------------------------------------------------------------
-           SPACE SCENE RENDER ENGINE: Fades up letter-by-letter as requested
-           ------------------------------------------------------------- */
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          {toChars.map((char, i) => (
-            <motion.div
-              key={`space-${trans.key}-${i}`}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.8,
-                delay: 2.0 + (i * 0.05), // Delayed rising letter effect
-                ease: [0.215, 0.61, 0.355, 1]
-              }}
-              style={{
-                fontFamily: toConf.font,
-                fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
-                lineHeight: '1.5em',
-                ...toConf.style
-              }}
-            >
-              {char === ' ' ? '\u00A0' : char}
-            </motion.div>
-          ))}
-        </div>
-      ) : (
-        /* -------------------------------------------------------------
-           MECHANICAL CHAIN RENDER ENGINE: For Retro, Racing, Open World
-           ------------------------------------------------------------- */
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          {toChars.map((char, i) => {
-            const prevChar = fromChars[i] ?? ' ';
-            const isAnimating = trans.from !== trans.to && prevChar !== char;
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {toChars.map((char, i) => {
+          const prevChar = fromChars[i] ?? ' ';
+          const isAnimating = trans.from !== trans.to && prevChar !== char;
 
-            return (
-              <div key={`wrap-${i}`} style={{
-                position: 'relative',
-                display: 'inline-flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                perspective: '1000px',
-                flexShrink: 0,
-              }}>
-                
-                {/* CRITICAL LAYOUT FIX: Uses a column flex box to enforce perfect maximum dynamic width without relying on grid, stopping all overlapping glitches permanently! */}
-                <div style={{ display: 'flex', flexDirection: 'column', visibility: 'hidden', padding: '0 0.02em' }}>
-                  <span style={{ 
-                    fontFamily: fromConf.font, 
-                    fontSize: `calc(${baseFontSize} * ${fromConf.scale})`, 
-                    ...fromConf.style,
-                    height: 0, 
-                    overflow: 'hidden' 
-                  }}>
-                    {prevChar === ' ' ? '\u00A0' : prevChar}
-                  </span>
-                  <span style={{ 
-                    fontFamily: toConf.font, 
-                    fontSize: `calc(${baseFontSize} * ${toConf.scale})`, 
-                    ...toConf.style,
-                    height: 'auto' 
-                  }}>
-                    {char === ' ' ? '\u00A0' : char}
-                  </span>
-                </div>
+          // CRITICAL FIX: The chain twist delay logic now properly applies to the Space Scene!
+          let animDelay = (i * 40) / 1000;
+          if (trans.to === 4 && trans.from === 3) {
+            animDelay = 2.0 + (i * 0.05); // Keeps the epic 2.0s delay so Earth can load first
+          }
 
-                {isAnimating ? (
-                  <motion.div
-                    key={`flip-${trans.key}-${i}`}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      transformStyle: 'preserve-3d',
-                    }}
-                    initial={{ rotateX: 0 }}
-                    animate={{ rotateX: flipTo }}
-                    transition={{
-                      duration: 0.65,
-                      delay: (i * 40) / 1000,
-                      ease: [0.65, 0.05, 0.36, 1]
-                    }}
-                  >
-                    {/* Front face — Outgoing Character */}
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                      transform: 'translateZ(0.4em)',
-                      fontFamily: fromConf.font,
-                      fontSize: `calc(${baseFontSize} * ${fromConf.scale})`,
-                      paddingBottom: '0.1em',
-                      ...fromConf.style
-                    }}>
-                      {prevChar === ' ' ? '\u00A0' : prevChar}
-                    </div>
+          return (
+            <div key={`wrap-${i}`} style={{
+              position: 'relative',
+              display: 'inline-flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              perspective: '1000px',
+              flexShrink: 0,
+            }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', visibility: 'hidden', padding: '0 0.02em' }}>
+                <span style={{ 
+                  fontFamily: fromConf.font, 
+                  fontSize: `calc(${baseFontSize} * ${fromConf.scale})`, 
+                  ...fromConf.style,
+                  height: 0, 
+                  overflow: 'hidden' 
+                }}>
+                  {prevChar === ' ' ? '\u00A0' : prevChar}
+                </span>
+                <span style={{ 
+                  fontFamily: toConf.font, 
+                  fontSize: `calc(${baseFontSize} * ${toConf.scale})`, 
+                  ...toConf.style,
+                  height: 'auto' 
+                }}>
+                  {char === ' ' ? '\u00A0' : char}
+                </span>
+              </div>
 
-                    {/* Back face — Incoming Character */}
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                      transform: `rotateX(${backRotation}deg) translateZ(0.4em)`, 
-                      fontFamily: toConf.font,
-                      fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
-                      paddingBottom: '0.1em',
-                      ...toConf.style
-                    }}>
-                      {char === ' ' ? '\u00A0' : char}
-                    </div>
-                  </motion.div>
-                ) : (
+              {isAnimating ? (
+                <motion.div
+                  key={`flip-${trans.key}-${i}`}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    transformStyle: 'preserve-3d',
+                  }}
+                  initial={{ rotateX: 0 }}
+                  animate={{ rotateX: flipTo }}
+                  transition={{
+                    duration: 0.65,
+                    delay: animDelay,
+                    ease: [0.65, 0.05, 0.36, 1]
+                  }}
+                >
                   <div style={{
                     position: 'absolute',
                     inset: 0,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: 'translateZ(0.4em)',
+                    fontFamily: fromConf.font,
+                    fontSize: `calc(${baseFontSize} * ${fromConf.scale})`,
+                    paddingBottom: '0.1em',
+                    ...fromConf.style
+                  }}>
+                    {prevChar === ' ' ? '\u00A0' : prevChar}
+                  </div>
+
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: `rotateX(${backRotation}deg) translateZ(0.4em)`, 
                     fontFamily: toConf.font,
                     fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
                     paddingBottom: '0.1em',
@@ -299,12 +257,26 @@ function GlobalHeadline({ scene }: { scene: number }) {
                   }}>
                     {char === ' ' ? '\u00A0' : char}
                   </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
+                </motion.div>
+              ) : (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: toConf.font,
+                  fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
+                  paddingBottom: '0.1em',
+                  ...toConf.style
+                }}>
+                  {char === ' ' ? '\u00A0' : char}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -517,6 +489,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     pointerEvents: scene === i ? 'auto' : 'none',
     transition: 'opacity 0.85s cubic-bezier(0.65,0.35,1)',
     zIndex: scene === i ? 10 : 0,
+    willChange: 'opacity',
   })
 
   return (
@@ -574,7 +547,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         }}/>
       </div>
 
-    {/* Scene 1 — Retro */}
+      {/* Scene 1 — Retro */}
       <div style={gs(1)}>
         <RetroSequence isActive={scene === 1} />
       </div>
