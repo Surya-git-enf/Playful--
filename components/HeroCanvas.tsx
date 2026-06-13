@@ -45,52 +45,73 @@ interface Props {
 }
 
 // ------------------------------------------------------------------
-// GLOBAL HEADLINE SYSTEM (ANTI-GLITCH & CONSTANT SIZING)
+// GLOBAL HEADLINE SYSTEM (ANTI-GLITCH & PROPORTIONAL SIZING)
 // ------------------------------------------------------------------
-const SCENE_CONFIG: Record<number, { text: string, font: string, style: React.CSSProperties }> = {
+const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, style: React.CSSProperties }> = {
   0: { 
-    text: "                      ", 
+    text: "", 
     font: "var(--font-bebas, 'Bebas Neue', sans-serif)", 
+    scale: 1,
     style: {} 
   },
   1: { 
     text: "PIXELS NEVER DIE", 
     font: "'Press Start 2P', cursive", 
+    scale: 0.7, // Scaled down because 8-bit fonts are naturally very wide
     style: { 
       fontWeight: 400,
       backgroundImage: 'linear-gradient(180deg, #FFD400 0%, #FF3300 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       color: 'transparent',
-      // Use drop-shadow filter to prevent gradient text clipping
-      filter: 'drop-shadow(0px 4px 0px rgba(0,0,0,0.8))',
+      filter: 'drop-shadow(0px 3px 0px rgba(0,0,0,1))',
+      lineHeight: '1.4em',
     } 
   },
   2: { 
     text: "CHASE THE HORIZON", 
     font: "'Bebas Neue', sans-serif", 
+    scale: 1.4, // Massively increased font size for aggressive racing look
     style: { 
       textShadow: "0 4px 20px rgba(0,0,0,0.6)",
       fontWeight: 800,
+      letterSpacing: '0.02em',
+      lineHeight: '1.2em',
     } 
   },
   3: { 
     text: "WONDER WITHOUT LIMITS", 
     font: "'Cinzel Decorative', serif", 
+    scale: 1.05, 
     style: { 
       textShadow: "0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)",
       fontWeight: 900,
+      letterSpacing: '0.04em',
+      lineHeight: '1.2em',
     } 
   },
   4: { 
     text: "IMAGINE BEYOND GRAVITY", 
     font: "'Orbitron', sans-serif", 
+    scale: 0.9, 
     style: { 
       textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.35), 0 0 120px rgba(255,255,255,.15)",
       fontWeight: 700,
+      letterSpacing: '0.08em',
+      lineHeight: '1.2em',
     } 
   }
 };
+
+// Helper function to pad shorter strings equally on both sides.
+// This guarantees perfect centering when flipping between words of different lengths!
+function padCenter(str: string, len: number) {
+  if (str.length >= len) return str;
+  const padTotal = len - str.length;
+  const padLeft = Math.floor(padTotal / 2);
+  const padRight = padTotal - padLeft;
+  return ' '.repeat(padLeft) + str + ' '.repeat(padRight);
+}
 
 function GlobalHeadline({ scene }: { scene: number }) {
   const [trans, setTrans] = useState({ from: 0, to: 0, key: 0 });
@@ -104,11 +125,10 @@ function GlobalHeadline({ scene }: { scene: number }) {
   const fromConf = SCENE_CONFIG[trans.from] || SCENE_CONFIG[0];
   const toConf = SCENE_CONFIG[trans.to] || SCENE_CONFIG[0];
 
-  const maxLen = 22; // Hardcoded to length of longest string to guarantee no layout jumps
-  const padStr = (s: string) => s.padEnd(maxLen, ' ');
-
-  const fromChars = padStr(fromConf.text).split('');
-  const toChars = padStr(toConf.text).split('');
+  const maxLen = Math.max(fromConf.text.length, toConf.text.length);
+  
+  const fromChars = padCenter(fromConf.text, maxLen).split('');
+  const toChars = padCenter(toConf.text, maxLen).split('');
 
   // Swipe UP -> Scene progresses -> isForward = true -> Text turns UP (-90)
   // Swipe DOWN -> Scene regresses -> isForward = false -> Text twists DOWN (90)
@@ -116,15 +136,13 @@ function GlobalHeadline({ scene }: { scene: number }) {
   const flipTo = isForward ? -90 : 90;
   const backRotation = isForward ? 90 : -90;
 
-  // Constant size across all scenes for perfectly smooth continuity
-  // Increased base size slightly as requested, ensuring it scales correctly on mobile
-  const responsiveFontSize = `clamp(18px, 4vw, 60px)`;
-  const cellWidth = `calc(90vw / ${maxLen})`;
+  // Base font sizing that beautifully scales from mobile to ultrawide desktop
+  const baseFontSize = `clamp(14px, 4vw, 55px)`;
 
   return (
     <div style={{
       position: 'absolute',
-      top: 'clamp(6%, 7vh, 8%)',
+      top: 'clamp(6%, 7.5vh, 8%)',
       left: '50%',
       transform: 'translateX(-50%)',
       zIndex: 200,
@@ -132,11 +150,10 @@ function GlobalHeadline({ scene }: { scene: number }) {
       alignItems: 'center',
       justifyContent: 'center',
       whiteSpace: 'nowrap',
-      width: '90vw',
+      width: 'max-content',
+      maxWidth: '96vw',
       color: '#FFFFFF',
       pointerEvents: 'none',
-      // Disable global letter-spacing to prevent 3D flip wobble
-      letterSpacing: '0px', 
     }}>
 
       {/* Cinematic Fog Bloom exclusively for Space Scene */}
@@ -153,64 +170,45 @@ function GlobalHeadline({ scene }: { scene: number }) {
         }}
       />
 
-      <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
         {toChars.map((char, i) => {
           const prevChar = fromChars[i] ?? ' ';
           const isAnimating = trans.from !== trans.to && prevChar !== char;
 
           // -----------------------------------------------------
-          // SPACE SCENE EXCLUSIVE: Rising letter-by-letter fade up
-          // -----------------------------------------------------
-          if (trans.to === 4) {
-            return (
-              <div key={`space-wrap-${i}`} style={{
-                position: 'relative',
-                width: cellWidth,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexShrink: 0
-              }}>
-                <motion.div
-                  key={`fade-${trans.key}-${i}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.8,
-                    delay: 2.0 + (i * 0.05), // Waits for Earth sequence before animating
-                    ease: [0.215, 0.61, 0.355, 1]
-                  }}
-                  style={{
-                    fontFamily: toConf.font,
-                    fontSize: responsiveFontSize,
-                    ...toConf.style,
-                    willChange: 'transform, opacity',
-                    lineHeight: '1.5em',
-                  }}
-                >
-                  {char === ' ' ? '\u00A0' : char}
-                </motion.div>
-              </div>
-            )
-          }
-
-          // -----------------------------------------------------
-          // DEFAULT SCENES: Smooth Chain Twist Mechanism
+          // UNIFIED ENGINE: Smooth Chain Twist Mechanism for ALL Scenes
           // -----------------------------------------------------
           return (
             <div key={`wrap-${i}`} style={{
               position: 'relative',
-              width: cellWidth,
-              display: 'flex',
+              display: 'inline-flex',
               justifyContent: 'center',
               alignItems: 'center',
-              perspective: '1200px',
+              perspective: '1000px',
               flexShrink: 0,
             }}>
               
-              {/* Invisible size anchor ensures height never collapses/clips the font */}
-              <div style={{ visibility: 'hidden', fontSize: responsiveFontSize, lineHeight: '1.5em', padding: '0.2em 0' }}>
-                A
+              {/* THE MAGIC GRID ANCHOR: 
+                Renders both letters invisibly to force the exact proper cell width instantly.
+                Eliminates layout collapse, text overlap, and spacing glitches!
+              */}
+              <div style={{ display: 'grid', visibility: 'hidden', padding: '0 0.05em' }}>
+                <span style={{ 
+                  gridArea: '1/1', 
+                  fontFamily: fromConf.font, 
+                  fontSize: `calc(${baseFontSize} * ${fromConf.scale})`, 
+                  ...fromConf.style 
+                }}>
+                  {prevChar === ' ' ? '\u00A0' : prevChar}
+                </span>
+                <span style={{ 
+                  gridArea: '1/1', 
+                  fontFamily: toConf.font, 
+                  fontSize: `calc(${baseFontSize} * ${toConf.scale})`, 
+                  ...toConf.style 
+                }}>
+                  {char === ' ' ? '\u00A0' : char}
+                </span>
               </div>
 
               {isAnimating ? (
@@ -239,11 +237,10 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     justifyContent: 'center',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
-                    transform: 'translateZ(0.5em)', // Increased Z-distance to avoid clipping
+                    transform: 'translateZ(0.4em)', // Pushed forward slightly to prevent clipping
                     fontFamily: fromConf.font,
-                    fontSize: responsiveFontSize,
-                    lineHeight: '1.5em',
-                    padding: '0.2em 0', // Crucial for gradient background-clip text
+                    fontSize: `calc(${baseFontSize} * ${fromConf.scale})`,
+                    paddingBottom: '0.1em',
                     ...fromConf.style
                   }}>
                     {prevChar === ' ' ? '\u00A0' : prevChar}
@@ -258,11 +255,10 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     justifyContent: 'center',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
-                    transform: `rotateX(${backRotation}deg) translateZ(0.5em)`, // Match Z-distance
+                    transform: `rotateX(${backRotation}deg) translateZ(0.4em)`, 
                     fontFamily: toConf.font,
-                    fontSize: responsiveFontSize,
-                    lineHeight: '1.5em',
-                    padding: '0.2em 0',
+                    fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
+                    paddingBottom: '0.1em',
                     ...toConf.style
                   }}>
                     {char === ' ' ? '\u00A0' : char}
@@ -276,9 +272,8 @@ function GlobalHeadline({ scene }: { scene: number }) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontFamily: toConf.font,
-                  fontSize: responsiveFontSize,
-                  lineHeight: '1.5em',
-                  padding: '0.2em 0',
+                  fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
+                  paddingBottom: '0.1em',
                   ...toConf.style
                 }}>
                   {char === ' ' ? '\u00A0' : char}
@@ -582,6 +577,3 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     </div>
   )
 }
-
-
-                                 
