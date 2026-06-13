@@ -1,12 +1,12 @@
-// HeroCanvas.tsx
+
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import RetroSequence from './RetroSequence'
 import RacingSequence from './RacingSequence'
 import OpenWorldSequence from './OpenWorldSequence'
 import SpaceSequence from './SpaceSequence'
-import ChainHeadline from './ChainHeadline'
 
 const TOTAL_SCENES = 4
 const TOTAL_FRAMES = 144
@@ -44,20 +44,235 @@ interface Props {
   isReleased: boolean
 }
 
-const sceneSlogans: Record<number, string> = {
-  0: '                      ',
-  1: 'PIXELS NEVER DIE',
-  2: 'CHASE THE HORIZON',
-  3: 'WONDER WITHOUT LIMITS',
-  4: 'IMAGINE BEYOND GRAVITY'
+// ------------------------------------------------------------------
+// GLOBAL HEADLINE SYSTEM (Replaces external ChainHeadline)
+// ------------------------------------------------------------------
+const SCENE_CONFIG: Record<number, { text: string, font: string, style: React.CSSProperties, variant: 'chain' | 'fade-up' }> = {
+  0: { 
+    text: "                      ", 
+    font: "var(--font-bebas, 'Bebas Neue', sans-serif)", 
+    variant: 'chain', 
+    style: {} 
+  },
+  1: { 
+    text: "PIXELS NEVER DIE", 
+    font: "'Press Start 2P', cursive", 
+    variant: 'chain', 
+    style: { 
+      textShadow: "0 0 10px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.2)",
+      fontWeight: 400
+    } 
+  },
+  2: { 
+    text: "CHASE THE HORIZON", 
+    font: "'Bebas Neue', sans-serif", 
+    variant: 'chain', 
+    style: { 
+      textShadow: "0 4px 20px rgba(0,0,0,0.6)",
+      fontWeight: 800
+    } 
+  },
+  3: { 
+    text: "WONDER WITHOUT LIMITS", 
+    font: "'Cinzel Decorative', serif", 
+    variant: 'chain', 
+    style: { 
+      textShadow: "0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)",
+      fontWeight: 900
+    } 
+  },
+  4: { 
+    text: "IMAGINE BEYOND GRAVITY", 
+    font: "'Orbitron', sans-serif", 
+    variant: 'fade-up', 
+    style: { 
+      textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.35), 0 0 120px rgba(255,255,255,.15)",
+      fontWeight: 700
+    } 
+  }
+};
+
+function GlobalHeadline({ scene }: { scene: number }) {
+  const [trans, setTrans] = useState({ from: 0, to: 0, key: 0 });
+
+  useEffect(() => {
+    if (scene !== trans.to) {
+      setTrans({ from: trans.to, to: scene, key: Date.now() });
+    }
+  }, [scene, trans.to]);
+
+  const fromConf = SCENE_CONFIG[trans.from] || SCENE_CONFIG[0];
+  const toConf = SCENE_CONFIG[trans.to] || SCENE_CONFIG[0];
+
+  const maxLen = Math.max(fromConf.text.length, toConf.text.length, 1);
+  const padStr = (s: string) => s.padEnd(maxLen, ' ');
+
+  const fromChars = padStr(fromConf.text).split('');
+  const toChars = padStr(toConf.text).split('');
+
+  const isForward = trans.to >= trans.from;
+  const flipTo = isForward ? -90 : 90;
+  const backRotation = isForward ? 90 : -90;
+
+  // Mathematically safe responsive font size that guarantees 1 line
+  const responsiveFontSize = `min(clamp(1.4rem, 4.5vw, 3.8rem), calc(90vw / ${maxLen}))`;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 'clamp(7%, 7.5vh, 8%)',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 200,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      whiteSpace: 'nowrap',
+      flexWrap: 'nowrap',
+      width: 'max-content',
+      maxWidth: '90vw',
+      color: '#FFFFFF',
+      pointerEvents: 'none',
+    }}>
+
+      {/* Cinematic Fog Bloom exclusively for Space Scene */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: trans.to === 4 ? 1 : 0 }}
+        transition={{ duration: 1.2 }}
+        style={{
+          position: 'absolute',
+          inset: '-50% -20%',
+          background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.18) 0%, transparent 65%)',
+          filter: 'blur(25px)',
+          zIndex: -1,
+        }}
+      />
+
+      <div style={{ display: 'flex' }}>
+        {toChars.map((char, i) => {
+          const prevChar = fromChars[i] ?? ' ';
+
+          // VARIANT: Fade Up Reveal (Space Scene)
+          if (toConf.variant === 'fade-up' && trans.to === 4) {
+            return (
+              <motion.div
+                key={`fade-${trans.key}-${i}`}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.8,
+                  delay: 2.0 + (i * 0.05), // Waits for Earth sequence before animating
+                  ease: [0.215, 0.61, 0.355, 1]
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '0.78em',
+                  fontFamily: toConf.font,
+                  fontSize: responsiveFontSize,
+                  ...toConf.style,
+                  willChange: 'transform, opacity'
+                }}
+              >
+                {char === ' ' ? '\u00A0' : char}
+              </motion.div>
+            )
+          }
+
+          // VARIANT: Chain Flip Mechanism
+          const isAnimating = trans.from !== trans.to && prevChar !== char;
+
+          return (
+            <div key={`wrap-${i}`} style={{
+              position: 'relative',
+              width: '0.78em',
+              height: '1.2em',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              perspective: '1000px',
+              flexShrink: 0
+            }}>
+              {isAnimating ? (
+                <motion.div
+                  key={`flip-${trans.key}-${i}`}
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    transformStyle: 'preserve-3d',
+                    willChange: 'transform'
+                  }}
+                  initial={{ rotateX: 0 }}
+                  animate={{ rotateX: flipTo }}
+                  transition={{
+                    duration: 0.6,
+                    delay: (i * 40) / 1000,
+                    ease: [0.65, 0.05, 0.36, 1]
+                  }}
+                >
+                  {/* Front face — Outgoing Character */}
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: 'translateZ(0.28em)',
+                    fontFamily: fromConf.font,
+                    fontSize: responsiveFontSize,
+                    ...fromConf.style
+                  }}>
+                    {prevChar === ' ' ? '\u00A0' : prevChar}
+                  </div>
+
+                  {/* Back face — Incoming Character */}
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: `rotateX(${backRotation}deg) translateZ(0.28em)`,
+                    fontFamily: toConf.font,
+                    fontSize: responsiveFontSize,
+                    ...toConf.style
+                  }}>
+                    {char === ' ' ? '\u00A0' : char}
+                  </div>
+                </motion.div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  height: '100%',
+                  fontFamily: toConf.font,
+                  fontSize: responsiveFontSize,
+                  ...toConf.style
+                }}>
+                  {char === ' ' ? '\u00A0' : char}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
+// ------------------------------------------------------------------
 
 export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Props) {
   const [scene, setSceneState] = useState(0)
   const [textProgress, setTextProgress] = useState(0)
-  const [previousScene, setPreviousScene] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [animationDirection, setAnimationDirection] = useState<'forward' | 'reverse'>('forward')
 
   const sceneRef    = useRef(0)
   const frameFloat  = useRef(0)
@@ -75,24 +290,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   useEffect(() => {
     hasReleased.current = isReleased
   }, [isReleased])
-
-  useEffect(() => {
-    if (sceneRef.current !== scene) {
-      const prev = sceneRef.current
-      setPreviousScene(prev)
-      sceneRef.current = scene
-
-      const direction = scene > prev ? 'forward' : 'reverse'
-      setAnimationDirection(direction)
-      setIsAnimating(true)
-
-      const timer = setTimeout(() => {
-        setIsAnimating(false)
-      }, 2000)
-
-      return () => clearTimeout(timer)
-    }
-  }, [scene])
 
   const setScene = useCallback((n: number) => {
     sceneRef.current = n
@@ -205,15 +402,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-10px) rotate(2deg); }
         }
-        .responsive-headline-wrap {
-          position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
-          pointer-events: none;
-          z-index: 200;
-          padding: 0 5vw;
-          top: clamp(7%, 7.5vh, 8%);
-        }
       `
       document.head.appendChild(styleElement)
     }
@@ -294,6 +482,9 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020202' }}>
+      
+      {/* GLOBAL HEADLINE OVERLAY (Handles all text animations seamlessly across scenes) */}
+      <GlobalHeadline scene={scene} />
 
       {/* Scene 0 — Palace */}
       <div style={gs(0)}>
@@ -349,96 +540,25 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 1 — Retro */}
       <div style={gs(1)}>
         <RetroSequence isActive={scene === 1} />
-        <div className="responsive-headline-wrap">
-          <ChainHeadline
-            text={sceneSlogans[1]}
-            previousText={sceneSlogans[previousScene]}
-            isAnimating={isAnimating}
-            animationDirection={animationDirection}
-            sceneIndex={1}
-            fontFamily="'Press Start 2P', cursive"
-            fontSize="clamp(1.1rem, 4vw, 2.6rem)"
-            fontWeight={400}
-            color="#FFFFFF"
-            letterSpacing="0.04em"
-            textShadow="0 0 10px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.2)"
-            variant="chain"
-          />
-        </div>
       </div>
 
       {/* Scene 2 — Racing */}
       <div style={gs(2)}>
         <RacingSequence isActive={scene === 2} />
-        <div className="responsive-headline-wrap">
-          <ChainHeadline
-            text={sceneSlogans[2]}
-            previousText={sceneSlogans[previousScene]}
-            isAnimating={isAnimating}
-            animationDirection={animationDirection}
-            sceneIndex={2}
-            fontFamily="'Bebas Neue', sans-serif"
-            fontSize="clamp(1.4rem, 4.5vw, 3.2rem)"
-            fontWeight={800}
-            color="#FFFFFF"
-            letterSpacing="-0.02em"
-            textShadow="0 4px 20px rgba(0,0,0,0.6)"
-            variant="chain"
-          />
-        </div>
       </div>
 
       {/* Scene 3 — Open World */}
       <div style={gs(3)}>
         <OpenWorldSequence isActive={scene === 3} />
-        <div className="responsive-headline-wrap">
-          <ChainHeadline
-            text={sceneSlogans[3]}
-            previousText={sceneSlogans[previousScene]}
-            isAnimating={isAnimating}
-            animationDirection={animationDirection}
-            sceneIndex={3}
-            fontFamily="'Cinzel Decorative', serif"
-            fontSize="clamp(1.2rem, 3.5vw, 2.8rem)"
-            fontWeight={900}
-            color="#FFFFFF"
-            letterSpacing="0.04em"
-            textShadow="0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)"
-            variant="chain"
-          />
-        </div>
       </div>
 
       {/* Scene 4 — Space */}
       <div style={gs(4)}>
         <SpaceSequence isActive={scene === 4} />
-        <div className="responsive-headline-wrap">
-          {/* Subtle white fog behind Space typography */}
-          <div style={{
-            position: 'absolute',
-            inset: '-50% -20%',
-            background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.15) 0%, transparent 60%)',
-            filter: 'blur(20px)',
-            pointerEvents: 'none',
-            zIndex: -1,
-          }} />
-          <ChainHeadline
-            text={sceneSlogans[4]}
-            previousText={sceneSlogans[previousScene]}
-            isAnimating={isAnimating}
-            animationDirection={animationDirection}
-            sceneIndex={4}
-            fontFamily="'Orbitron', sans-serif"
-            fontSize="clamp(1.2rem, 3.8vw, 2.8rem)"
-            fontWeight={700}
-            color="#FFFFFF"
-            letterSpacing="0.08em"
-            textShadow="0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.35), 0 0 120px rgba(255,255,255,.15)"
-            variant="fade-up"
-          />
-        </div>
       </div>
     </div>
   )
-    }
-      
+}
+
+
+                                 
