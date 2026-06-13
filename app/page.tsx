@@ -486,19 +486,26 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
         </div>
       </div>
 
-      {/* Scene 1 — Retro */}
-      <div style={gs(1)}><RetroSequence /></div>
+            {/* Scene 1 — Retro */}
+      <div style={gs(1)}>
+        <RetroSequence isActive={scene === 1} />
+      </div>
 
       {/* Scene 2 — Racing */}
-      <div style={gs(2)}><RacingSequence /></div>
+      <div style={gs(2)}>
+        <RacingSequence isActive={scene === 2} />
+      </div>
 
       {/* Scene 3 — OpenWorld */}
-      <div style={gs(3)}><OpenWorldSequence /></div>
+      <div style={gs(3)}>
+        <OpenWorldSequence isActive={scene === 3} />
+      </div>
 
       {/* Scene 4 — Space */}
-      <div style={gs(4)}><SpaceSequence /></div>
-    </div>
-  )
+      <div style={gs(4)}>
+        <SpaceSequence isActive={scene === 4} />
+      </div>
+      }
 }
 
 // ------------------------------------------------------------------
