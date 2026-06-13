@@ -329,7 +329,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         {/* Palace text - Improved cinematic animation */}
         <div style={{
           position: 'absolute',
-          bottom: '13%', // Moved up slightly for better composition
+          bottom: '18%', // Moved up slightly for better composition
           left: '50%',
           transform: `translateX(-50%) translateY(${(1 - textProgress) * 40}px)`, // Increased range for more dramatic rise
           opacity: textProgress,
@@ -382,17 +382,24 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         {/* Chain Headline for Retro scene */}
         <div style={{
           position: 'absolute',
-          top: '50%',
+          top: '8vh',
           left: '50%',
-          transform: 'translate(-50%, -50%)',
+          transform: 'translateX(-50%)',
           pointerEvents: 'none',
-          zIndex: 25,
+          zIndex: 200,
+          padding: '0 5vw',
         }}>
           <ChainHeadline
             text={sceneSlogans[1]}
             previousText={previousScene === 0 ? '' : sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
+            fontFamily="'Press Start 2P', cursive"
+            fontSize="clamp(1.1rem, 4vw, 2.6rem)"
+            fontWeight={400}
+            color="#FFFFFF"
+            letterSpacing="0.04em"
+            textShadow="0 6px 0px #000"
           />
         </div>
       </div>
@@ -403,17 +410,24 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         {/* Chain Headline for Racing scene */}
         <div style={{
           position: 'absolute',
-          top: '50%',
+          top: '8vh',
           left: '50%',
-          transform: 'translate(-50%, -50%)',
+          transform: 'translateX(-50%)',
           pointerEvents: 'none',
-          zIndex: 25,
+          zIndex: 200,
+          padding: '0 5vw',
         }}>
           <ChainHeadline
             text={sceneSlogans[2]}
             previousText={previousScene === 0 ? '' : sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
+            fontFamily="'Inter', sans-serif"
+            fontSize="clamp(1.4rem, 4.5vw, 3.2rem)"
+            fontWeight={800}
+            color="#FFFFFF"
+            letterSpacing="-0.02em"
+            textShadow="0 4px 20px rgba(0,0,0,0.6)"
           />
         </div>
       </div>
@@ -424,17 +438,24 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         {/* Chain Headline for Open World scene */}
         <div style={{
           position: 'absolute',
-          top: '50%',
+          top: '8vh',
           left: '50%',
-          transform: 'translate(-50%, -50%)',
+          transform: 'translateX(-50%)',
           pointerEvents: 'none',
-          zIndex: 25,
+          zIndex: 200,
+          padding: '0 5vw',
         }}>
           <ChainHeadline
             text={sceneSlogans[3]}
             previousText={previousScene === 0 ? '' : sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
+            fontFamily="'Cinzel Decorative', serif"
+            fontSize="clamp(1.2rem, 3.5vw, 2.8rem)"
+            fontWeight={900}
+            color="#FFFFFF"
+            letterSpacing="0.04em"
+            textShadow="0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)"
           />
         </div>
       </div>
@@ -445,20 +466,23 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         {/* Chain Headline for Space scene */}
         <div style={{
           position: 'absolute',
-          top: '50%',
+          top: '8vh',
           left: '50%',
-          transform: 'translate(-50%, -50%)',
+          transform: 'translateX(-50%)',
           pointerEvents: 'none',
-          zIndex: 25,
+          zIndex: 200,
+          padding: '0 5vw',
         }}>
           <ChainHeadline
             text={sceneSlogans[4]}
             previousText={previousScene === 0 ? '' : sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
+            fontSize="clamp(1.2rem, 3.8vw, 2.8rem)"
           />
         </div>
       </div>
     </div>
   )
             }
+      
