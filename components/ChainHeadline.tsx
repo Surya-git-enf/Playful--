@@ -1,156 +1,149 @@
 'use client'
 
 import React from 'react'
-import { motion, Variants } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 interface ChainHeadlineProps {
   text: string
   previousText?: string
   isAnimating: boolean
   animationDirection: 'forward' | 'reverse'
+
+  // Per-scene typography overrides
+  fontFamily?: string
+  fontSize?: string
+  fontWeight?: number | string
+  color?: string
+  letterSpacing?: string
+  textShadow?: string
+  textTransform?: React.CSSProperties['textTransform']
+
+  // Cell sizing (controls flip geometry — keep consistent across scenes
+  // unless you intentionally want a different "card" size)
+  letterWidth?: string
+  letterHeight?: string
 }
+
+const STAGGER_MS = 40 // delay between letters
 
 export default function ChainHeadline({
   text,
-  previousText,
+  previousText = '',
   isAnimating,
-  animationDirection
+  animationDirection,
+  fontFamily = "var(--font-bebas, 'Bebas Neue', sans-serif)",
+  fontSize = 'clamp(1.4rem, 4vw, 3.5rem)',
+  fontWeight = 700,
+  color = '#FFD400',
+  letterSpacing = '0.02em',
+  textShadow = '0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.25)',
+  textTransform = 'uppercase',
+  letterWidth = '0.78em',
+  letterHeight = '1.2em',
 }: ChainHeadlineProps) {
-  // Define variants for the chain flip animation
-  const getVariant = (isDifferent: boolean, index: number): Variants => {
-    if (!isDifferent || !previousText) {
-      return {
-        initial: { rotateX: 0 },
-        animate: { rotateX: 0 },
-      } as Variants
-    }
+  const doFlip = isAnimating && previousText !== '' && previousText !== text
 
-    const delay = index * 40 // 40ms stagger between characters
+  const maxLen = Math.max(text.length, previousText.length)
+  const pad = (s: string) => s.padEnd(maxLen, ' ')
 
-    if (animationDirection === 'forward') {
-      // Forward scroll: old text rotates downward (up and away), new text comes from below (up and over)
-      return {
-        initial: { rotateX: 0 },
-        animate: {
-          rotateX: [0, -90, 0],
-          transition: {
-            delay,
-            duration: 0.6,
-            ease: [0.25, 0.1, 0.25, 1],
-            times: [0, 0.5, 1]
-          }
-        },
-      } as Variants
-    } else {
-      // Reverse scroll: old text rotates upward (down and over), new text comes from above (down and under)
-      return {
-        initial: { rotateX: 0 },
-        animate: {
-          rotateX: [0, 90, 0],
-          transition: {
-            delay,
-            duration: 0.6,
-            ease: [0.25, 0.1, 0.25, 1],
-            times: [0, 0.5, 1]
-          }
-        },
-      } as Variants
-    }
-  }
+  const currChars = pad(text).split('')
+  const prevChars = pad(previousText).split('')
 
-  // Split text into characters
-  const chars = text.split('')
-  const prevChars = previousText ? previousText.split('') : []
+  // Forward: rotor rotates to -90deg, back face sits at +90deg so it lands at 0.
+  // Reverse: rotor rotates to +90deg, back face sits at -90deg so it lands at 0.
+  const flipTo = animationDirection === 'forward' ? -90 : 90
+  const backRotation = animationDirection === 'forward' ? 90 : -90
 
   return (
-    <motion.div
-      className="chain-headline"
+    <div
       style={{
-        position: 'relative',
         display: 'inline-flex',
-        gap: '0.05em',
-        fontFamily: 'var(--font-bebas, "Bebas Neue", sans-serif)',
-        fontSize: 'clamp(4rem, 12vw, 8rem)',
-        fontWeight: 800,
-        letterSpacing: '0.02em',
-        textTransform: 'uppercase',
-        color: '#FFD400',
-        textAlign: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        fontFamily,
+        fontSize,
+        fontWeight,
+        color,
+        letterSpacing,
+        textShadow,
+        textTransform,
         lineHeight: 1,
-        textShadow: '0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(255,212,0,0.3)',
-        filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))',
       }}
     >
-      {chars.map((char, index) => {
-        const prevChar = prevChars[index] || ''
-        const isDifferent = !!previousText && prevChar !== char
+      {currChars.map((char, index) => {
+        const prevChar = prevChars[index] ?? ' '
+        const showFlip = doFlip && prevChar !== char
 
         return (
-          <motion.div
+          <div
             key={index}
-            variants={getVariant(isDifferent, index)}
-            initial={isAnimating && isDifferent ? 'initial' : undefined}
-            animate={isAnimating && isDifferent ? 'animate' : undefined}
             style={{
-              display: 'inline-block',
-              width: '1ch',
-              height: '1em',
-              textAlign: 'center',
-              fontSize: 'inherit',
-              fontFamily: 'inherit',
-              fontWeight: 'inherit',
-              color: 'inherit',
-              // 3D transform properties for chain effect
-              transformStyle: 'preserve-3d',
-              perspective: '1000px',
-              // Hide overflow during rotation
-              overflow: 'hidden',
-              // Ensure proper layering
               position: 'relative',
+              width: letterWidth,
+              height: letterHeight,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              perspective: '1000px',
+              flexShrink: 0,
             }}
           >
-            {/* Front face - visible character */}
-            <div
-              style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                backfaceVisibility: 'hidden',
-                transform: 'translateZ(0.5px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'transparent',
-              }}
-            >
-              {isDifferent && animationDirection === 'forward'
-                ? prevChar
-                : char
-              }
-            </div>
+            {showFlip ? (
+              <motion.div
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+                  transformStyle: 'preserve-3d',
+                }}
+                initial={{ rotateX: 0 }}
+                animate={{ rotateX: flipTo }}
+                transition={{
+                  duration: 0.6,
+                  delay: (index * STAGGER_MS) / 1000,
+                  ease: [0.65, 0.05, 0.36, 1],
+                }}
+              >
+                {/* Front face — outgoing character */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backfaceVisibility: 'hidden',
+                    transform: 'translateZ(0.28em)',
+                  }}
+                >
+                  {prevChar === ' ' ? '\u00A0' : prevChar}
+                </div>
 
-            {/* Back face - for rotation */}
-            <div
-              style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                backfaceVisibility: 'hidden',
-                transform: 'rotateX(180deg) translateZ(0.5px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'transparent',
-              }}
-            >
-              {isDifferent && animationDirection === 'forward'
-                ? char
-                : prevChar
-              }
-            </div>
-          </motion.div>
+                {/* Back face — incoming character */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backfaceVisibility: 'hidden',
+                    transform: `rotateX(${backRotation}deg) translateZ(0.28em)`,
+                  }}
+                >
+                  {char === ' ' ? '\u00A0' : char}
+                </div>
+              </motion.div>
+            ) : (
+              // Static — no flip needed
+              <span style={{ display: 'block' }}>
+                {char === ' ' ? '\u00A0' : char}
+              </span>
+            )}
+          </div>
         )
       })}
-    </motion.div>
+    </div>
   )
 }
