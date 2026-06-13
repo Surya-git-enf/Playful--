@@ -23,7 +23,7 @@ const SCENE_FADE_S = 0.85
 const pad = (n: number) => String(n).padStart(4, '0')
 
 // ------------------------------------------------------------------
-// 1. PRELOADER COMPONENT (Black theme, no blue screen, loads public folder)
+// 1. PRELOADER COMPONENT
 // ------------------------------------------------------------------
 function Preloader({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0)
@@ -368,9 +368,7 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
       const isScrollingDown = e.deltaY > 0
 
       // ---- THE "MONSTER SCROLL" FIX ----
-      // If we are actively locked in a scene transition, we usually ignore scrolls. 
-      // EXCEPT: If we are on the final Space sequence (Scene 4) and scrolling down.
-      // We explicitly bypass the lock here so the user can instantly break out to the content below without feeling "stuck".
+      // Bypasses the lock sequence if actively trying to escape the space sequence downwards
       if (snapLocked.current) {
         if (sceneRef.current === TOTAL_SCENES && isScrollingDown) {
           wheelAccum.current += e.deltaY
@@ -502,3 +500,102 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
     </div>
   )
 }
+
+// ------------------------------------------------------------------
+// 4. MAIN HOME PAGE (Export)
+// FIX: Removed `props: any` to satisfy Next.js 15 type checker.
+// ------------------------------------------------------------------
+export default function Home() {
+  const [isLoading, setIsLoading] = useState(true)
+  const [heroReleased, setHeroReleased] = useState(false)
+  const [currentScene, setCurrentScene] = useState(0)
+  const heroReleasedRef = useRef(false)
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    window.scrollTo(0, 0)
+  }, [])
+
+  const handleRelease = useCallback(() => {
+    if (heroReleasedRef.current) return
+    heroReleasedRef.current = true
+    setHeroReleased(true)
+    setTimeout(() => {
+      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
+    }, 80)
+  }, [])
+
+  useEffect(() => {
+    if (!heroReleased) return
+    const onScroll = () => {
+      if (window.scrollY <= 10) { 
+        heroReleasedRef.current = false
+        setHeroReleased(false)
+        document.body.style.overflow = 'hidden'
+        window.scrollTo({ top: 0, behavior: 'instant' }) 
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [heroReleased])
+
+  const showNavbar = heroReleased || currentScene === 4
+
+  return (
+    <main>
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            key="preloader"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 99999 }}
+          >
+            <Preloader onComplete={() => setIsLoading(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, height: '70px', padding: '0 clamp(16px,4vw,48px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: 'linear-gradient(to bottom,rgba(2,5,16,.95) 0%,transparent 100%)',
+        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        opacity: showNavbar ? 1 : 0, transform: showNavbar ? 'translateY(0)' : 'translateY(-100%)',
+        pointerEvents: showNavbar ? 'auto' : 'none', transition: 'opacity 0.5s ease, transform 0.5s ease',
+      }}>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+          <img src="/logo.png" alt="Playful" style={{
+            width: 'clamp(36px,4vw,46px)', height: 'clamp(36px,4vw,46px)', borderRadius: '12px', objectFit: 'cover',
+            border: '1px solid rgba(0,200,255,.3)', boxShadow: '0 0 15px rgba(0,234,255,.2)',
+          }} />
+          <span style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontWeight: 900, fontSize: 'clamp(.85rem,2vw,1.3rem)', letterSpacing: '.2em', color: '#fff' }}>PLAYFUL</span>
+        </a>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <a href="/auth" className="nbtn signin" style={{ color: '#fff', textDecoration: 'none' }}>Sign in</a>
+          <a href="/auth" className="nbtn signup" style={{ color: '#fff', textDecoration: 'none', background: '#00c8ff', padding: '8px 16px', borderRadius: '4px' }}>Try Free</a>
+        </div>
+      </nav>
+
+      {/* Keeps HeroCanvas mounted in background while loading so it's instantly ready when loading fades */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        pointerEvents: heroReleased ? 'none' : 'auto',
+      }}>
+        <HeroCanvas 
+          onRelease={handleRelease} 
+          onSceneChange={setCurrentScene} 
+          isReleased={heroReleased} 
+        />
+      </div>
+
+      <div style={{ height: '100vh', scrollSnapAlign: 'start' }} aria-hidden="true" />
+
+      <div style={{ position: 'relative', zIndex: 200 }}>
+        <SnapCards isActive={heroReleased} />
+      </div>
+    </main>
+  )
+}
+ 
