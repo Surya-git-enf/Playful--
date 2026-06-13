@@ -1,3 +1,4 @@
+// HeroCanvas.tsx
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
@@ -7,7 +8,7 @@ import OpenWorldSequence from './OpenWorldSequence'
 import SpaceSequence from './SpaceSequence'
 import ChainHeadline from './ChainHeadline'
 
-const TOTAL_SCENES = 4   // scenes 0-4, scene 4 = Space
+const TOTAL_SCENES = 4
 const TOTAL_FRAMES = 144
 const SNAP_LOCK_MS = 900
 const TEXT_FADE_START = 100
@@ -43,11 +44,10 @@ interface Props {
   isReleased: boolean
 }
 
-// FIXED: Defined sceneSlogans here so we can pad Scene 0 with spaces!
 const sceneSlogans: Record<number, string> = {
-  0: '                      ', // Spaces ensure a smooth chain flip transition to Scene 1
+  0: '                      ',
   1: 'PIXELS NEVER DIE',
-  2: 'FASTER THAN FEAR',
+  2: 'CHASE THE HORIZON',
   3: 'WONDER WITHOUT LIMITS',
   4: 'IMAGINE BEYOND GRAVITY'
 }
@@ -86,7 +86,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       setAnimationDirection(direction)
       setIsAnimating(true)
 
-      // FIXED: Increased to 2000ms so long text strings have time to finish flipping!
       const timer = setTimeout(() => {
         setIsAnimating(false)
       }, 2000)
@@ -206,6 +205,15 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-10px) rotate(2deg); }
         }
+        .responsive-headline-wrap {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          pointer-events: none;
+          z-index: 200;
+          padding: 0 5vw;
+          top: clamp(7%, 7.5vh, 8%);
+        }
       `
       document.head.appendChild(styleElement)
     }
@@ -281,6 +289,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     pointerEvents: scene === i ? 'auto' : 'none',
     transition: 'opacity 0.85s cubic-bezier(0.65,0.35,1)',
     zIndex: scene === i ? 10 : 0,
+    willChange: 'opacity',
   })
 
   return (
@@ -333,32 +342,27 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           pointerEvents: 'none',
           background: 'radial-gradient(ellipse at center, rgba(255,212,0,0.1) 0%, transparent 70%)',
           opacity: textProgress * 0.5,
+          willChange: 'opacity',
         }}/>
       </div>
 
       {/* Scene 1 — Retro */}
       <div style={gs(1)}>
         <RetroSequence isActive={scene === 1} />
-        <div style={{
-          position: 'absolute',
-          top: '8vh',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          pointerEvents: 'none',
-          zIndex: 200,
-          padding: '0 5vw',
-        }}>
+        <div className="responsive-headline-wrap">
           <ChainHeadline
             text={sceneSlogans[1]}
             previousText={sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
+            sceneIndex={1}
             fontFamily="'Press Start 2P', cursive"
             fontSize="clamp(1.1rem, 4vw, 2.6rem)"
             fontWeight={400}
             color="#FFFFFF"
             letterSpacing="0.04em"
-            textShadow="0 6px 0px #000"
+            textShadow="0 0 10px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.2)"
+            variant="chain"
           />
         </div>
       </div>
@@ -366,26 +370,20 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 2 — Racing */}
       <div style={gs(2)}>
         <RacingSequence isActive={scene === 2} />
-        <div style={{
-          position: 'absolute',
-          top: '8vh',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          pointerEvents: 'none',
-          zIndex: 200,
-          padding: '0 5vw',
-        }}>
+        <div className="responsive-headline-wrap">
           <ChainHeadline
             text={sceneSlogans[2]}
             previousText={sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
-            fontFamily="'Inter', sans-serif"
+            sceneIndex={2}
+            fontFamily="'Bebas Neue', sans-serif"
             fontSize="clamp(1.4rem, 4.5vw, 3.2rem)"
             fontWeight={800}
             color="#FFFFFF"
             letterSpacing="-0.02em"
             textShadow="0 4px 20px rgba(0,0,0,0.6)"
+            variant="chain"
           />
         </div>
       </div>
@@ -393,26 +391,20 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 3 — Open World */}
       <div style={gs(3)}>
         <OpenWorldSequence isActive={scene === 3} />
-        <div style={{
-          position: 'absolute',
-          top: '8vh',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          pointerEvents: 'none',
-          zIndex: 200,
-          padding: '0 5vw',
-        }}>
+        <div className="responsive-headline-wrap">
           <ChainHeadline
             text={sceneSlogans[3]}
             previousText={sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
+            sceneIndex={3}
             fontFamily="'Cinzel Decorative', serif"
             fontSize="clamp(1.2rem, 3.5vw, 2.8rem)"
             fontWeight={900}
             color="#FFFFFF"
             letterSpacing="0.04em"
             textShadow="0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)"
+            variant="chain"
           />
         </div>
       </div>
@@ -420,31 +412,33 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 4 — Space */}
       <div style={gs(4)}>
         <SpaceSequence isActive={scene === 4} />
-        <div style={{
-          position: 'absolute',
-          top: '8vh',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          pointerEvents: 'none',
-          zIndex: 200,
-          padding: '0 5vw',
-        }}>
-          {/* FIXED: Polaris Font + White Color + White Neon Glow applied! */}
+        <div className="responsive-headline-wrap">
+          {/* Subtle white fog behind Space typography */}
+          <div style={{
+            position: 'absolute',
+            inset: '-50% -20%',
+            background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.15) 0%, transparent 60%)',
+            filter: 'blur(20px)',
+            pointerEvents: 'none',
+            zIndex: -1,
+          }} />
           <ChainHeadline
             text={sceneSlogans[4]}
             previousText={sceneSlogans[previousScene]}
             isAnimating={isAnimating}
             animationDirection={animationDirection}
-            fontFamily="'Polaris', sans-serif"
+            sceneIndex={4}
+            fontFamily="'Orbitron', sans-serif"
             fontSize="clamp(1.2rem, 3.8vw, 2.8rem)"
-            fontWeight={400}
+            fontWeight={700}
             color="#FFFFFF"
             letterSpacing="0.08em"
-            textShadow="0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.4), 0 0 80px rgba(255,255,255,0.2)"
+            textShadow="0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.35), 0 0 120px rgba(255,255,255,.15)"
+            variant="fade-up"
           />
         </div>
       </div>
     </div>
   )
-          }
+    }
       
