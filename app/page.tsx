@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
@@ -284,7 +283,6 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
     const imgs: (HTMLImageElement | null)[] = Array(TOTAL_FRAMES + 1).fill(null)
     imagesRef.current = imgs
     
-    // Grab from cache immediately since preloader fetched them
     for (let i = 0; i <= TOTAL_FRAMES; i++) {
       const img = new Image(); 
       img.src = `/palace/palace-frame_${pad(i)}.webp`; 
@@ -302,12 +300,10 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
   }, [onRelease])
 
   const snapTo = useCallback((next: number) => {
-    // If trying to release out of the canvas entirely
     if (next > TOTAL_SCENES) {
       if (hasReleased.current) return
       snapLocked.current = true
       doRelease()
-      // Lock prevents scrolling backwards into the canvas immediately
       setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
       return
     }
@@ -367,13 +363,11 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
       
       const isScrollingDown = e.deltaY > 0
 
-      // ---- THE "MONSTER SCROLL" FIX ----
-      // Bypasses the lock sequence if actively trying to escape the space sequence downwards
       if (snapLocked.current) {
         if (sceneRef.current === TOTAL_SCENES && isScrollingDown) {
           wheelAccum.current += e.deltaY
           if (wheelAccum.current > 40) {
-            snapTo(TOTAL_SCENES + 1) // Force Release
+            snapTo(TOTAL_SCENES + 1)
             wheelAccum.current = 0
           }
         } else {
@@ -382,7 +376,6 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
         return
       }
 
-      // Handle Scene 0 (Frames)
       if (sceneRef.current === 0) {
         velocity.current += e.deltaY * FRAMES_PER_DELTA
         wheelActive.current = true
@@ -395,7 +388,6 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
         return
       }
 
-      // Handle Scenes 1-4
       wheelAccum.current += e.deltaY
       if (Math.abs(wheelAccum.current) > 30) {
         snapTo(sceneRef.current + (wheelAccum.current > 0 ? 1 : -1))
@@ -486,7 +478,7 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
         </div>
       </div>
 
-            {/* Scene 1 — Retro */}
+      {/* Scene 1 — Retro */}
       <div style={gs(1)}>
         <RetroSequence isActive={scene === 1} />
       </div>
@@ -505,12 +497,12 @@ function HeroCanvas({ onRelease, onSceneChange, isReleased }: HeroProps) {
       <div style={gs(4)}>
         <SpaceSequence isActive={scene === 4} />
       </div>
-      }
+    </div>
+  )
 }
 
 // ------------------------------------------------------------------
 // 4. MAIN HOME PAGE (Export)
-// FIX: Removed `props: any` to satisfy Next.js 15 type checker.
 // ------------------------------------------------------------------
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
@@ -585,7 +577,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Keeps HeroCanvas mounted in background while loading so it's instantly ready when loading fades */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 100,
         pointerEvents: heroReleased ? 'none' : 'auto',
@@ -605,4 +596,3 @@ export default function Home() {
     </main>
   )
 }
- 
