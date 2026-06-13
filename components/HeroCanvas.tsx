@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
@@ -10,10 +9,15 @@ import SpaceSequence from './SpaceSequence'
 
 const TOTAL_SCENES = 4
 const TOTAL_FRAMES = 144
-const SNAP_LOCK_MS = 800 // Slightly reduced for a snappier feel
+// Headline flip (see below) now completes in ~0.78s total, so the snap
+// lock just needs to be a hair longer than the 0.85s scene fade — keeping
+// these two durations close is what removes the "stuck" feeling between
+// Retro/Racing/etc. and keeps the headline in sync with the world.
+const SNAP_LOCK_MS = 900
 const TEXT_FADE_START = 100
 const FRICTION = 0.80
 const FRAMES_PER_DELTA = 0.16
+const SCENE_FADE_S = 0.85
 
 const pad = (n: number) => String(n).padStart(4, '0')
 
@@ -46,17 +50,17 @@ interface Props {
 // GLOBAL HEADLINE SYSTEM (Perfect Letter Spacing & Z-Index Locks)
 // ------------------------------------------------------------------
 const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, style: React.CSSProperties }> = {
-  0: { 
-    text: "", 
-    font: "var(--font-bebas, 'Bebas Neue', sans-serif)", 
+  0: {
+    text: "",
+    font: "var(--font-bebas, 'Bebas Neue', sans-serif)",
     scale: 1,
-    style: {} 
+    style: {}
   },
-  1: { 
-    text: "PIXELS NEVER DIE", 
-    font: "'Press Start 2P', cursive", 
+  1: {
+    text: "PIXELS NEVER DIE",
+    font: "'Press Start 2P', cursive",
     scale: 0.75, // Scaled for mobile pixel crispness
-    style: { 
+    style: {
       fontWeight: 400,
       backgroundImage: 'linear-gradient(180deg, #FFD400 0%, #FF3300 100%)',
       WebkitBackgroundClip: 'text',
@@ -64,40 +68,40 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
       color: 'transparent',
       filter: 'drop-shadow(0px 3px 0px rgba(0,0,0,1))',
       lineHeight: '1.2',
-    } 
+    }
   },
-  2: { 
-    text: "CHASE THE HORIZON", 
-    font: "'Bebas Neue', sans-serif", 
-    scale: 1.4, 
-    style: { 
+  2: {
+    text: "CHASE THE HORIZON",
+    font: "'Bebas Neue', sans-serif",
+    scale: 1.4,
+    style: {
       textShadow: "0 4px 20px rgba(0,0,0,0.6)",
       fontWeight: 800,
       letterSpacing: '0.02em',
       lineHeight: '1.2',
-    } 
+    }
   },
-  3: { 
-    text: "WONDER WITHOUT LIMITS", 
-    font: "'Cinzel Decorative', serif", 
-    scale: 1.05, 
-    style: { 
+  3: {
+    text: "WONDER WITHOUT LIMITS",
+    font: "'Cinzel Decorative', serif",
+    scale: 1.05,
+    style: {
       textShadow: "0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)",
       fontWeight: 900,
       letterSpacing: '0.04em',
       lineHeight: '1.2',
-    } 
+    }
   },
-  4: { 
-    text: "IMAGINE BEYOND GRAVITY", 
-    font: "'Orbitron', sans-serif", 
-    scale: 0.95, 
-    style: { 
+  4: {
+    text: "IMAGINE BEYOND GRAVITY",
+    font: "'Orbitron', sans-serif",
+    scale: 0.95,
+    style: {
       textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.35), 0 0 120px rgba(255,255,255,.15)",
       fontWeight: 700,
       letterSpacing: '0.08em',
       lineHeight: '1.2',
-    } 
+    }
   }
 };
 
@@ -115,10 +119,10 @@ function GlobalHeadline({ scene }: { scene: number }) {
   const transRef = useRef({ from: 0, to: 0, key: 0 });
 
   if (scene !== prevSceneRef.current) {
-    transRef.current = { 
-      from: prevSceneRef.current, 
-      to: scene, 
-      key: transRef.current.key + 1 
+    transRef.current = {
+      from: prevSceneRef.current,
+      to: scene,
+      key: transRef.current.key + 1
     };
     prevSceneRef.current = scene;
   }
@@ -127,7 +131,7 @@ function GlobalHeadline({ scene }: { scene: number }) {
   const fromConf = SCENE_CONFIG[trans.from] || SCENE_CONFIG[0];
   const toConf = SCENE_CONFIG[trans.to] || SCENE_CONFIG[0];
 
-  const GLOBAL_MAX_LEN = 22; 
+  const GLOBAL_MAX_LEN = 22;
   const fromChars = padCenter(fromConf.text, GLOBAL_MAX_LEN).split('');
   const toChars = padCenter(toConf.text, GLOBAL_MAX_LEN).split('');
 
@@ -137,23 +141,36 @@ function GlobalHeadline({ scene }: { scene: number }) {
 
   const baseFontSize = `clamp(14px, 4.5vw, 55px)`;
 
+  // Flip duration + per-letter stagger. Kept deliberately tight so the
+  // LAST letter's flip finishes at (FLIP_DURATION + 21 * STAGGER) ≈ 0.78s,
+  // comfortably inside the 0.85s scene-fade window. This is what keeps
+  // the headline change in sync with the new world appearing, instead of
+  // lagging behind it.
+  const FLIP_DURATION = 0.45;
+  const STAGGER_S = 0.015; // 15ms per letter
+
   return (
-    <div style={{
-      position: 'absolute',
-      top: 'clamp(6%, 7.5vh, 8%)',
-      left: '50%',
-      transform: 'translateX(-50%) translateZ(100px)',
-      zIndex: 9999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      whiteSpace: 'nowrap',
-      width: 'max-content',
-      maxWidth: '96vw',
-      color: '#FFFFFF',
-      pointerEvents: 'none',
-      WebkitFontSmoothing: 'antialiased',
-    }}>
+    <div
+      // Remounting the whole headline on every scene transition guarantees
+      // there's no leftover per-letter animation/font state bleeding over
+      // from the previous transition (the cause of "previous font" ghosts).
+      key={`headline-${trans.key}`}
+      style={{
+        position: 'absolute',
+        top: 'clamp(6%, 7.5vh, 8%)',
+        left: '50%',
+        transform: 'translateX(-50%) translateZ(100px)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        whiteSpace: 'nowrap',
+        width: 'max-content',
+        maxWidth: '96vw',
+        color: '#FFFFFF',
+        pointerEvents: 'none',
+        WebkitFontSmoothing: 'antialiased',
+      }}>
 
       {/* Cinematic Fog Bloom exclusively for Space Scene */}
       <motion.div
@@ -172,10 +189,9 @@ function GlobalHeadline({ scene }: { scene: number }) {
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         {toChars.map((char, i) => {
           const prevChar = fromChars[i] ?? ' ';
-          const isAnimating = trans.from !== trans.to && prevChar !== char;
+          const charIsAnimating = trans.from !== trans.to && prevChar !== char;
 
-          // Faster, snappier delay to prevent overlap glitches
-          const animDelay = (i * 30) / 1000;
+          const animDelay = i * STAGGER_S;
 
           return (
             <div key={`wrap-${i}`} style={{
@@ -186,30 +202,30 @@ function GlobalHeadline({ scene }: { scene: number }) {
               perspective: '1000px',
               flexShrink: 0,
             }}>
-              
+
               {/* CSS GRID ANCHOR: The safest cross-browser way to ensure cells never squish or overlap */}
               <div style={{ display: 'grid', visibility: 'hidden', padding: '0 0.02em' }}>
-                <span style={{ 
-                  gridArea: '1/1', 
-                  fontFamily: fromConf.font, 
-                  fontSize: `calc(${baseFontSize} * ${fromConf.scale})`, 
+                <span style={{
+                  gridArea: '1/1',
+                  fontFamily: fromConf.font,
+                  fontSize: `calc(${baseFontSize} * ${fromConf.scale})`,
                   whiteSpace: 'pre',
-                  ...fromConf.style 
+                  ...fromConf.style
                 }}>
                   {prevChar}
                 </span>
-                <span style={{ 
-                  gridArea: '1/1', 
-                  fontFamily: toConf.font, 
-                  fontSize: `calc(${baseFontSize} * ${toConf.scale})`, 
+                <span style={{
+                  gridArea: '1/1',
+                  fontFamily: toConf.font,
+                  fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
                   whiteSpace: 'pre',
-                  ...toConf.style 
+                  ...toConf.style
                 }}>
                   {char}
                 </span>
               </div>
 
-              {isAnimating ? (
+              {charIsAnimating ? (
                 <motion.div
                   key={`flip-${trans.key}-${i}`}
                   style={{
@@ -220,7 +236,7 @@ function GlobalHeadline({ scene }: { scene: number }) {
                   initial={{ rotateX: 0 }}
                   animate={{ rotateX: flipTo }}
                   transition={{
-                    duration: 0.5, // Faster rotation
+                    duration: FLIP_DURATION,
                     delay: animDelay,
                     ease: [0.65, 0.05, 0.36, 1]
                   }}
@@ -251,7 +267,7 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     justifyContent: 'center',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
-                    transform: `rotateX(${backRotation}deg) translateZ(0.4em)`, 
+                    transform: `rotateX(${backRotation}deg) translateZ(0.4em)`,
                     fontFamily: toConf.font,
                     fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
                     whiteSpace: 'pre',
@@ -301,6 +317,9 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const wheelActive = useRef(false)
   const wheelTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hasReleased = useRef(false)
+  // Accumulates small/fractional deltaY from trackpads so gentle scrolls
+  // on scenes 1-4 still register instead of feeling "stuck".
+  const wheelAccum  = useRef(0)
 
   const canvasRef   = useRef<HTMLCanvasElement>(null)
   const imagesRef   = useRef<(HTMLImageElement | null)[]>([])
@@ -454,7 +473,15 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         }, 150)
         return
       }
-      if (Math.abs(e.deltaY) > 15) snapTo(sceneRef.current + (down ? 1 : -1))
+
+      // Scenes 1-4: accumulate deltaY so light/fractional trackpad scrolls
+      // (which previously fell under the |deltaY| > 15 threshold and did
+      // nothing — feeling "stuck") still eventually trigger a snap.
+      wheelAccum.current += e.deltaY
+      if (Math.abs(wheelAccum.current) > 12) {
+        snapTo(sceneRef.current + (wheelAccum.current > 0 ? 1 : -1))
+        wheelAccum.current = 0
+      }
     }
 
     let ty0 = 0, tyLast = 0, tvY = 0, ttLast = 0
@@ -501,14 +528,14 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     position: 'absolute', inset: 0,
     opacity: scene === i ? 1 : 0,
     pointerEvents: scene === i ? 'auto' : 'none',
-    transition: 'opacity 0.85s cubic-bezier(0.65,0.35,1)',
+    transition: `opacity ${SCENE_FADE_S}s cubic-bezier(0.65,0.35,1)`,
     zIndex: scene === i ? 10 : 0,
     willChange: 'opacity',
   })
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020202' }}>
-      
+
       {/* GLOBAL HEADLINE OVERLAY */}
       <GlobalHeadline scene={scene} />
 
@@ -516,7 +543,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block', width: '100vw', height: '100dvh' }} />
 
-        <div 
+        <div
           ref={palaceTextRef}
           style={{
             position: 'absolute',
@@ -554,7 +581,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           }}/>
         </div>
 
-        <div 
+        <div
           ref={palaceGlowRef}
           style={{
             position: 'absolute',
