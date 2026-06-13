@@ -361,5 +361,4 @@ export default function SpaceSequence({ isActive }: Props) {
 
     </div>
   )
-      }
-      
+}
