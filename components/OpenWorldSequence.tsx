@@ -24,30 +24,29 @@ export default function OpenWorldSequence({ isActive }: Props) {
   const bounce = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#02050A', WebkitTransformStyle: 'preserve-3d' }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#02050A' }}>
       <style>{`
 
         /* ── FONT: Cinzel Decorative — Roman-carved, dark fantasy, unique ── */
         @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&display=swap');
 
         /* CRITICAL GPU VRAM FIX: 
-           Removed excessive will-change and translateZ(0) spam.
-           This solves the "Mobile Desktop Mode Black Screen" crash by allowing the browser 
-           to smartly composite layers instead of running out of memory. 
+           Removed excessive CSS filters on giant PNGs and enforced translate3d acceleration. 
+           This permanently solves the mobile "black screen" flash crash.
         */
         @keyframes worldBreathe {
-          0%   { transform: scale(1); }
-          100% { transform: scale(1.06); }
+          0%   { transform: scale(1) translate3d(0,0,0); }
+          100% { transform: scale(1.06) translate3d(0,0,0); }
         }
 
         @keyframes moonPulse {
-          0%, 100% { transform: scale(1); }
-          50%      { transform: scale(1.08); }
+          0%, 100% { transform: scale(1) translate3d(0,0,0); }
+          50%      { transform: scale(1.08) translate3d(0,0,0); }
         }
 
         @keyframes coronaPulse {
-          0%,100% { opacity: 0.3;  transform: translate(-50%, -50%) scale(1); }
-          50%     { opacity: 0.75; transform: translate(-50%, -50%) scale(1.25); }
+          0%,100% { opacity: 0.3;  transform: translate(-50%, -50%) scale(1) translate3d(0,0,0); }
+          50%     { opacity: 0.75; transform: translate(-50%, -50%) scale(1.25) translate3d(0,0,0); }
         }
 
         @keyframes groundPush {
@@ -99,7 +98,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
           }
         }
 
-        /* ── RESPONSIVE MOON CONTAINER TO PREVENT TEXT OVERLAP ── */
         .moon-container {
           position: absolute;
           top: 5%;
@@ -167,6 +165,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
           height: '100%',
           animation: mounted ? 'worldBreathe 6s ease-in-out infinite alternate 2s' : 'none',
         }}>
+          {/* VRAM FIX: Removed static CSS filter from huge image block! */}
           <img
             src="/openworld/world.png"
             alt="World"
@@ -176,7 +175,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
               objectFit: 'cover',
               objectPosition: 'center bottom',
               display: 'block',
-              filter: 'brightness(0.95) saturate(1.1)',
             }}
           />
         </div>
@@ -289,3 +287,4 @@ export default function OpenWorldSequence({ isActive }: Props) {
     </div>
   )
 }
+
