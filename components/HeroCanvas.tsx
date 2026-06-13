@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
@@ -45,49 +44,52 @@ interface Props {
 }
 
 // ------------------------------------------------------------------
-// GLOBAL HEADLINE SYSTEM (Replaces external ChainHeadline)
+// GLOBAL HEADLINE SYSTEM (GLITCH-FREE FIXED WIDTH LAYOUT)
 // ------------------------------------------------------------------
-const SCENE_CONFIG: Record<number, { text: string, font: string, style: React.CSSProperties, variant: 'chain' | 'fade-up' }> = {
+const SCENE_CONFIG: Record<number, { text: string, font: string, style: React.CSSProperties }> = {
   0: { 
     text: "                      ", 
     font: "var(--font-bebas, 'Bebas Neue', sans-serif)", 
-    variant: 'chain', 
     style: {} 
   },
   1: { 
     text: "PIXELS NEVER DIE", 
     font: "'Press Start 2P', cursive", 
-    variant: 'chain', 
     style: { 
-      textShadow: "0 0 10px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.2)",
-      fontWeight: 400
+      fontWeight: 400,
+      backgroundImage: 'linear-gradient(180deg, #FFD400 0%, #FF3300 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      color: 'transparent',
+      filter: 'drop-shadow(0px 4px 0px rgba(0,0,0,0.8))', // Drop shadow instead of text-shadow for gradient text
+      letterSpacing: '0.05em'
     } 
   },
   2: { 
     text: "CHASE THE HORIZON", 
     font: "'Bebas Neue', sans-serif", 
-    variant: 'chain', 
     style: { 
       textShadow: "0 4px 20px rgba(0,0,0,0.6)",
-      fontWeight: 800
+      fontWeight: 800,
+      letterSpacing: '0.02em'
     } 
   },
   3: { 
     text: "WONDER WITHOUT LIMITS", 
     font: "'Cinzel Decorative', serif", 
-    variant: 'chain', 
     style: { 
       textShadow: "0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)",
-      fontWeight: 900
+      fontWeight: 900,
+      letterSpacing: '0.04em'
     } 
   },
   4: { 
     text: "IMAGINE BEYOND GRAVITY", 
     font: "'Orbitron', sans-serif", 
-    variant: 'fade-up', 
     style: { 
       textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.35), 0 0 120px rgba(255,255,255,.15)",
-      fontWeight: 700
+      fontWeight: 700,
+      letterSpacing: '0.08em'
     } 
   }
 };
@@ -110,17 +112,21 @@ function GlobalHeadline({ scene }: { scene: number }) {
   const fromChars = padStr(fromConf.text).split('');
   const toChars = padStr(toConf.text).split('');
 
+  // Directional Animation logic
   const isForward = trans.to >= trans.from;
+  // Forward (swipe up) rotates upwards (-90), Reverse (swipe down) twists downwards (90)
   const flipTo = isForward ? -90 : 90;
   const backRotation = isForward ? 90 : -90;
 
-  // Mathematically safe responsive font size that guarantees 1 line
-  const responsiveFontSize = `min(clamp(1.4rem, 4.5vw, 3.8rem), calc(90vw / ${maxLen}))`;
+  // Deterministic cell width and font size to completely eliminate layout collapse/glitching
+  const cellWidth = `calc(90vw / ${maxLen})`;
+  // Increased base font size heavily (+10 equivalent), scaled by vw, capped by cell width height ratio to prevent wrapping
+  const responsiveFontSize = `min(clamp(32px, 7vw, 75px), calc(90vw / ${maxLen} * 1.6))`;
 
   return (
     <div style={{
       position: 'absolute',
-      top: 'clamp(7%, 7.5vh, 8%)',
+      top: 'clamp(6%, 7vh, 8%)',
       left: '50%',
       transform: 'translateX(-50%)',
       zIndex: 200,
@@ -128,9 +134,7 @@ function GlobalHeadline({ scene }: { scene: number }) {
       alignItems: 'center',
       justifyContent: 'center',
       whiteSpace: 'nowrap',
-      flexWrap: 'nowrap',
-      width: 'max-content',
-      maxWidth: '90vw',
+      width: '90vw',
       color: '#FFFFFF',
       pointerEvents: 'none',
     }}>
@@ -149,66 +153,36 @@ function GlobalHeadline({ scene }: { scene: number }) {
         }}
       />
 
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
         {toChars.map((char, i) => {
           const prevChar = fromChars[i] ?? ' ';
-
-          // VARIANT: Fade Up Reveal (Space Scene)
-          if (toConf.variant === 'fade-up' && trans.to === 4) {
-            return (
-              <motion.div
-                key={`fade-${trans.key}-${i}`}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.8,
-                  delay: 2.0 + (i * 0.05), // Waits for Earth sequence before animating
-                  ease: [0.215, 0.61, 0.355, 1]
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '0.78em',
-                  fontFamily: toConf.font,
-                  fontSize: responsiveFontSize,
-                  ...toConf.style,
-                  willChange: 'transform, opacity'
-                }}
-              >
-                {char === ' ' ? '\u00A0' : char}
-              </motion.div>
-            )
-          }
-
-          // VARIANT: Chain Flip Mechanism
           const isAnimating = trans.from !== trans.to && prevChar !== char;
 
           return (
             <div key={`wrap-${i}`} style={{
               position: 'relative',
-              width: '0.78em',
-              height: '1.2em',
+              width: cellWidth,
+              height: '1.4em', // Fixed height based on em
               display: 'flex',
-              alignItems: 'center',
               justifyContent: 'center',
-              perspective: '1000px',
+              alignItems: 'center',
+              perspective: '1200px',
               flexShrink: 0
             }}>
+              
               {isAnimating ? (
                 <motion.div
                   key={`flip-${trans.key}-${i}`}
                   style={{
-                    position: 'relative',
-                    width: '100%',
-                    height: '100%',
+                    position: 'absolute',
+                    inset: 0,
                     transformStyle: 'preserve-3d',
                     willChange: 'transform'
                   }}
                   initial={{ rotateX: 0 }}
                   animate={{ rotateX: flipTo }}
                   transition={{
-                    duration: 0.6,
+                    duration: 0.7, // Smoother timing
                     delay: (i * 40) / 1000,
                     ease: [0.65, 0.05, 0.36, 1]
                   }}
@@ -222,9 +196,10 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     justifyContent: 'center',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
-                    transform: 'translateZ(0.28em)',
+                    transform: 'translateZ(0.35em)',
                     fontFamily: fromConf.font,
                     fontSize: responsiveFontSize,
+                    paddingBottom: '0.1em', // prevents descender clipping on gradients
                     ...fromConf.style
                   }}>
                     {prevChar === ' ' ? '\u00A0' : prevChar}
@@ -239,9 +214,10 @@ function GlobalHeadline({ scene }: { scene: number }) {
                     justifyContent: 'center',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
-                    transform: `rotateX(${backRotation}deg) translateZ(0.28em)`,
+                    transform: `rotateX(${backRotation}deg) translateZ(0.35em)`,
                     fontFamily: toConf.font,
                     fontSize: responsiveFontSize,
+                    paddingBottom: '0.1em',
                     ...toConf.style
                   }}>
                     {char === ' ' ? '\u00A0' : char}
@@ -249,13 +225,14 @@ function GlobalHeadline({ scene }: { scene: number }) {
                 </motion.div>
               ) : (
                 <div style={{
+                  position: 'absolute',
+                  inset: 0,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '100%',
-                  height: '100%',
                   fontFamily: toConf.font,
                   fontSize: responsiveFontSize,
+                  paddingBottom: '0.1em',
                   ...toConf.style
                 }}>
                   {char === ' ' ? '\u00A0' : char}
@@ -483,7 +460,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020202' }}>
       
-      {/* GLOBAL HEADLINE OVERLAY (Handles all text animations seamlessly across scenes) */}
+      {/* GLOBAL HEADLINE OVERLAY */}
       <GlobalHeadline scene={scene} />
 
       {/* Scene 0 — Palace */}
@@ -558,7 +535,5 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       </div>
     </div>
   )
-}
-
-
-                                 
+    }
+          
