@@ -83,7 +83,7 @@ export default function ChainHeadline({
     >
       {chars.map((char, index) => {
         const prevChar = prevChars[index] || ''
-        const isDifferent = prevChar !== char
+        const isDifferent = !!previousText && prevChar !== char
 
         return (
           <motion.div
