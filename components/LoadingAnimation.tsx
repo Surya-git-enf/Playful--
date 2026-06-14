@@ -90,7 +90,7 @@ export default function LoadingAnimation({ progress }: Props) {
       // When fall completes (settled), go to step 1
       const timer = setTimeout(() => {
         setStep(1); // Settled after bounce
-      }, 800); // Approximate time for fall+bounce
+      }, 600); // Approximate time for fall+bounce (reduced for mobile)
       return () => clearTimeout(timer);
     }
 
@@ -100,7 +100,7 @@ export default function LoadingAnimation({ progress }: Props) {
       // After ring animation, start crossfade
       const timer = setTimeout(() => {
         setStep(2); // Crossfade
-      }, 400);
+      }, 200); // Further reduced for mobile
       return () => clearTimeout(timer);
     }
 
@@ -111,7 +111,7 @@ export default function LoadingAnimation({ progress }: Props) {
         setCurrentIndex(prev => (prev + 1) % ICONS.length);
         setStep(0);
         setShowRing(false); // Clean up the ring for the next cycle
-      }, 200); // Duration of crossfade
+      }, 150); // Reduced crossfade duration for mobile
       return () => clearTimeout(timer);
     }
   }, [step]);

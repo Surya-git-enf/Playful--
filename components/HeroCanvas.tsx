@@ -310,7 +310,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const palaceGlowRef = useRef<HTMLDivElement>(null)
 
   const sceneRef    = useRef(0)
-  const frameFloat  = useRef(0)
+  const frameFloat  = useRef(1)
   const frameDrawn  = useRef(-1)
   const velocity    = useRef(0)
   const snapLocked  = useRef(false)
@@ -483,7 +483,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       // never crossed the threshold and the page felt permanently stuck
       // on Space. snapLocked's 900ms window already prevents double-fires
       // within a single gesture, so no accumulation is needed.)
-      if (Math.abs(e.deltaY) > 2) {
+      if (Math.abs(e.deltaY) > 1) {
         snapTo(sceneRef.current + (e.deltaY > 0 ? 1 : -1))
       }
     }
@@ -616,6 +616,75 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
       {/* Scene 4 — Space */}
       <div style={gs(4)}>
         <SpaceSequence isActive={scene === 4} />
+      </div>
+
+      {/* SCROLL ARROWS - Visible initially to indicate scrolling down starts the experience */}
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '2px',
+        pointerEvents: 'none',
+        zIndex: 9999,
+        animation: 'blurIn .8s ease .6s both',
+        opacity: scene === 0 ? 1 : 0, // Only show in palace scene
+        transition: 'opacity 0.5s ease'
+      }}>
+        <style>{`
+          @keyframes blurIn {
+            from { opacity: 0; filter: blur(8px); transform: translateY(10px); }
+            to { opacity: 1; filter: blur(0px); transform: translateY(0); }
+          }
+
+          .scroll-arrow {
+            width: 28px;
+            height: 16px;
+            position: relative;
+            opacity: 0;
+          }
+
+          .scroll-arrow::before,
+          .scroll-arrow::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 2.5px;
+            background: #ffe000;
+            border-radius: 2px;
+            top: 50%;
+          }
+
+          .scroll-arrow::before {
+            left: 0;
+            transform-origin: right center;
+            transform: translateY(-50%) rotate(35deg);
+            box-shadow: 0 0 8px #ffe000, 0 0 18px rgba(255,224,0,0.6);
+          }
+
+          .scroll-arrow::after {
+            right: 0;
+            transform-origin: left center;
+            transform: translateY(-50%) rotate(-35deg);
+            box-shadow: 0 0 8px #ffe000, 0 0 18px rgba(255,224,0,0.6);
+          }
+
+          /* Each arrow pulses in sequence with a stagger */
+          @keyframes arrowGlow {
+            0%, 100% { opacity: 0.15; filter: drop-shadow(0 0 2px #ffe000); }
+            50%       { opacity: 1;    filter: drop-shadow(0 0 10px #ffe000) drop-shadow(0 0 22px rgba(255,224,0,0.8)); }
+          }
+
+          .scroll-arrow:nth-child(1) { animation: arrowGlow 1.4s ease-in-out infinite 0s; }
+          .scroll-arrow:nth-child(2) { animation: arrowGlow 1.4s ease-in-out infinite 0.28s; }
+          .scroll-arrow:nth-child(3) { animation: arrowGlow 1.4s ease-in-out infinite 0.56s; }
+        `}</style>
+        <div className="scroll-arrow" />
+        <div className="scroll-arrow" />
+        <div className="scroll-arrow" />
       </div>
     </div>
   )
