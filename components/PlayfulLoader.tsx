@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-type Phase = 'falling' | 'squash' | 'bounce' | 'settling' | 'idle' | 'morphing'
+type Phase = 'falling' | 'squash' | 'bounce' | 'idle' | 'morphing'
 type ObjIndex = 0 | 1 | 2 | 3 | 4
 
 const ICON_SIZE = 140
@@ -385,13 +385,13 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
         if (nextIndex === 4) {
           setIsComplete(true)
         }
-      }, MORPH_DURATION * 1000 + 150)
+      }, MORPH_DURATION * 1000 + 100)
     }
   }, [objIndex])
 
   useEffect(() => {
     if (phase === 'falling') {
-      const t = setTimeout(() => setPhase('squash'), 420)
+      const t = setTimeout(() => setPhase('squash'), 400)
       return () => clearTimeout(t)
     }
     if (phase === 'squash') {
@@ -399,19 +399,11 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
       const t = setTimeout(() => {
         setPhase('bounce')
         setShowImpact(false)
-      }, 180)
+      }, 160)
       return () => clearTimeout(t)
     }
-    if (phase === 'bounce') {
-      const t = setTimeout(() => setPhase('settling'), 280)
-      return () => clearTimeout(t)
-    }
-    if (phase === 'settling') {
-      const t = setTimeout(() => setPhase('idle'), 180)
-      return () => clearTimeout(t)
-    }
-    if (phase === 'idle' && objIndex < 4) {
-      const t = setTimeout(advance, 700)
+    if (phase === 'bounce' && objIndex < 4) {
+      const t = setTimeout(advance, 100)
       return () => clearTimeout(t)
     }
   }, [phase, objIndex, advance])
@@ -427,8 +419,6 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
         return { y: 0, rotate: 0, scale: 1, scaleX: 1.12, scaleY: 0.85 }
       case 'bounce':
         return { y: -45, rotate: 0, scale: 1, scaleX: 0.95, scaleY: 1.06 }
-      case 'settling':
-        return { y: -8, rotate: 0, scale: 1, scaleX: 1.02, scaleY: 0.98 }
       default:
         return { y: 0, rotate: 0, scale: 1, scaleX: 1, scaleY: 1 }
     }
@@ -437,8 +427,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
   const getTransition = () => {
     if (phase === 'falling') return { type: 'spring' as const, stiffness: 280, damping: 22, mass: 0.9 }
     if (phase === 'squash') return { duration: 0.1, ease: [0.36, 0, 0.66, -0.56] as [number, number, number, number] }
-    if (phase === 'bounce') return { duration: 0.25, ease: EASE_BOUNCE }
-    if (phase === 'settling') return { duration: 0.15, ease: EASE_OUT }
+    if (phase === 'bounce') return { duration: 0.2, ease: EASE_BOUNCE }
     return { duration: 0.2, ease: EASE_OUT }
   }
 
