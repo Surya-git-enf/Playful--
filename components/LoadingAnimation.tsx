@@ -42,7 +42,7 @@ const ICONS: IconData[] = [
   },
 ];
 
-export default function LoadingAnimation({ progress }: LoadingAnimationProps): JSX.Element {
+export default function LoadingAnimation({ progress }: LoadingAnimationProps): React.ReactElement {
   const controls = useAnimation();
   const [idx, setIdx] = useState<number>(0);
 
