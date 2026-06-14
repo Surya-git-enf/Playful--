@@ -21,6 +21,7 @@ No test suite exists. No CI workflows. No formatter configured.
 - **`app/layout.tsx`** — Root layout loading 6 Google Fonts (Orbitron, Space Mono, Instrument Serif, Press Start 2P, Bebas Neue, Cinzel Decorative) as CSS variables.
 - **`components/HeroCanvas.tsx`** — Core canvas renderer (~690 lines). Drives 5 scenes: Palace (image sequence, 145 frames), Retro, Racing, Open World, Space. Controls scroll-snap release to `SnapCards`.
 - **`components/SnapCards.tsx`** — Post-hero scroll sections (video cards + arc cards). Becomes scrollable after hero release.
+- **`components/PlayfulLoader.tsx`** — Animated loading screen (SVG icon morphing). Used by `page.tsx` during asset preload.
 - **`components/PromptPanel.tsx`** — Rotating placeholder textarea (not currently wired into main page).
 - **`hooks/`** — `useImageSequence`, `useSceneManager`, `useSnapScroll`.
 - **`styles/globals.css`** — ~875 lines of CSS custom properties, keyframes, and utility classes. Design tokens defined in `:root`.
@@ -51,6 +52,7 @@ components/
   HeroCanvas.tsx      # Canvas-based scene renderer
   SnapCards.tsx        # Post-hero scroll sections
   PalaceScene.tsx      # Frame-based palace scene
+  PalaceSequence.tsx   # Palace frame sequence (used by SceneManager only)
   RetroSequence.tsx    # Retro platformer scene
   RacingSequence.tsx   # Racing scene
   OpenWorldSequence.tsx# Open world scene

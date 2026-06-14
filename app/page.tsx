@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import LoadingAnimation from '../components/LoadingAnimation'
+import PlayfulLoader from '../components/PlayfulLoader'
 
 const HeroCanvas = dynamic(() => import('../components/HeroCanvas'), { ssr: false })
 const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: false })
@@ -276,7 +276,7 @@ export default function Home() {
           transition: 'opacity 0.6s ease',
           pointerEvents: loadingOut ? 'none' : 'auto',
         }}>
-          <LoadingAnimation progress={progress} />
+          <PlayfulLoader />
         </div>
       )}
     </>
