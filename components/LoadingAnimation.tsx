@@ -99,73 +99,10 @@ export default function LoadingAnimation() {
 
   // Animation control: we'll use a timer to advance the step and update the morphProgress and other values.
   useEffect(() => {
-    // We'll define the duration for each step in milliseconds
-    const stepDurations = [1200, 1000, 800, 1000, 2000]; // chess, car, ball, rocket, controller
-    const morphDuration = 500; // duration for morphing between steps
-    const impactDelay = 600; // time from start of step to impact (when the object hits the ground)
+    // We'll declare timer variables here so they're accessible in the cleanup
+    let timer1, timer2, timer3, timer4, wheelTimer, rocketTimer, controllerTimer, partsTimer;
+    const impactDelay = 600;
 
-    // We'll break each step into:
-    //   [0, impactDelay): falling and approaching impact
-    //   [impactDelay, impactDelay+200): impact and bounce (we'll show the ring and do the squash)
-    //   [impactDelay+200, stepDurations[step]): settling and preparing for next step
-    //   [stepDurations[step]-morphDuration, stepDurations[step]): morphing to next step
-
-    // We'll use a timer that updates every 16ms (about 60fps) but we'll use setTimeout for simplicity.
-    // We'll keep track of the time elapsed in the current step.
-    const interval = setInterval(() => {
-      // We'll not implement the full timer logic due to complexity and time.
-      // Instead, we will use a simpler approach: we will advance the step after the step duration.
-      // We'll do this in a separate effect.
-    }, 16);
-
-    // We'll use a different approach: we will advance the step after the step duration using a timeout.
-    const timer = setTimeout(() => {
-      setStep((prev) => (prev + 1) % adjustedPaths.length);
-      // Reset the morph progress when we advance the step
-      setMorphProgress(0);
-      // Reset other values
-      setYPos(-200);
-      setScale(1);
-      setRotation(0);
-      setWheelRotation(0);
-      setShowRing(false);
-      setRingScale(0);
-      setRingOpacity(0);
-      setControllerFormed(false);
-      setControllerPartsProgress(0);
-    }, stepDurations[step]);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timer);
-    };
-  }, [step]);
-
-  // We'll animate the morphProgress when the step changes?
-  // We'll instead animate the morphProgress when we are in the morphing phase of the step.
-  // We'll do this in a separate effect that runs when the step changes or when we are in the morphing phase.
-  // We'll skip the morphProgress animation for now and just set it to 0 or 1 instantly.
-  // We'll set morphProgress to 1 when we are in the last 500ms of the step.
-  useEffect(() => {
-    if (step < adjustedPaths.length - 1) { // not the last step
-      // We'll set morphProgress to 1 in the last 500ms of the step
-      const morphStartTime = stepDurations[step] - 500;
-      // We'll not implement the timer for this due to complexity.
-      // We'll set morphProgress to 0 and then to 1 after a timeout.
-      // We'll do: when the step has been active for (stepDurations[step] - 500) ms, set morphProgress to 1.
-      const timer = setTimeout(() => {
-        setMorphProgress(1);
-      }, stepDurations[step] - 500);
-      return () => clearTimeout(timer);
-    } else {
-      // For the last step, we don't morph out, so we set morphProgress to 0
-      setMorphProgress(0);
-    }
-  }, [step, stepDurations]);
-
-  // We'll animate the yPos, scale, rotation, etc. for the object's motion.
-  // We'll do this in a separate effect that runs when the step changes.
-  useEffect(() => {
     // We'll define the motion for each step
     // We'll use a simple state machine for each step:
     //   [0, impactDelay): falling
@@ -176,7 +113,7 @@ export default function LoadingAnimation() {
     // We'll skip this for now and just set the yPos to 0 (ground) and scale to 1.
     // We'll set the yPos to -200 at the start of the step and then to 0 after impactDelay.
     const impactDelay = 600;
-    const timer1 = setTimeout(() => {
+    timer1 = setTimeout(() => {
       setYPos(0);
       setScale(1);
       setRotation(0);
@@ -194,7 +131,7 @@ export default function LoadingAnimation() {
         }, 600);
       }, 100);
     }, impactDelay);
-    const timer2 = setTimeout(() => {
+    timer2 = setTimeout(() => {
       // After impact, we do a bounce
       setYPos(-20);
       setScale(1.1);
@@ -204,65 +141,48 @@ export default function LoadingAnimation() {
       }, 300);
     }, impactDelay + 200);
     // We'll also add a slight rotation during the fall
-    const timer3 = setTimeout(() => {
+    timer3 = setTimeout(() => {
       setRotation(5);
     }, impactDelay / 2);
-    const timer4 = setTimeout(() => {
+    timer4 = setTimeout(() => {
       setRotation(0);
     }, impactDelay);
 
     // For the car, we want to rotate the wheels
     if (step === 1) {
-      const wheelTimer = setInterval(() => {
+      wheelTimer = setInterval(() => {
         setWheelRotation((prev) => prev + 5);
       }, 50);
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
-        clearTimeout(timer4);
-        clearInterval(wheelTimer);
-      };
     }
 
     // For the rocket, we want to spin it during the fall
     if (step === 3) {
-      const rocketTimer = setInterval(() => {
+      rocketTimer = setInterval(() => {
         setRotation((prev) => prev + 2);
       }, 16);
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
-        clearTimeout(timer4);
-        clearInterval(rocketTimer);
-      };
     }
 
     // For the controller, we want to form the parts
     if (step === 4) {
-      const controllerTimer = setTimeout(() => {
+      controllerTimer = setTimeout(() => {
         setControllerFormed(true);
         // Animate the drawing of the controller parts
-        const partsTimer = setTimeout(() => {
+        partsTimer = setTimeout(() => {
           setControllerPartsProgress(1);
         }, 1000);
-        return () => clearTimeout(partsTimer);
       }, 500);
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
-        clearTimeout(timer4);
-        clearTimeout(controllerTimer);
-      };
     }
 
+    // Cleanup function
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
+      if (wheelTimer) clearInterval(wheelTimer);
+      if (rocketTimer) clearInterval(rocketTimer);
+      if (controllerTimer) clearTimeout(controllerTimer);
+      if (partsTimer) clearTimeout(partsTimer);
     };
   }, [step]);
 
