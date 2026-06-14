@@ -373,25 +373,19 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
   const [objIndex, setObjIndex] = useState<ObjIndex>(0)
   const [phase, setPhase] = useState<Phase>('falling')
   const [showImpact, setShowImpact] = useState(false)
-  const [isComplete, setIsComplete] = useState(false)
 
   const advance = useCallback(() => {
-    if (objIndex < 4) {
-      setPhase('morphing')
-      const nextIndex = (objIndex + 1) as ObjIndex
-      setTimeout(() => {
-        setObjIndex(nextIndex)
-        setPhase('falling')
-        if (nextIndex === 4) {
-          setIsComplete(true)
-        }
-      }, MORPH_DURATION * 1000 + 100)
-    }
+    setPhase('morphing')
+    const nextIndex = ((objIndex + 1) % 5) as ObjIndex
+    setTimeout(() => {
+      setObjIndex(nextIndex)
+      setPhase('falling')
+    }, MORPH_DURATION * 1000 + 80)
   }, [objIndex])
 
   useEffect(() => {
     if (phase === 'falling') {
-      const t = setTimeout(() => setPhase('squash'), 400)
+      const t = setTimeout(() => setPhase('squash'), 380)
       return () => clearTimeout(t)
     }
     if (phase === 'squash') {
@@ -399,17 +393,16 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
       const t = setTimeout(() => {
         setPhase('bounce')
         setShowImpact(false)
-      }, 160)
+      }, 140)
       return () => clearTimeout(t)
     }
-    if (phase === 'bounce' && objIndex < 4) {
-      const t = setTimeout(advance, 100)
+    if (phase === 'bounce') {
+      const t = setTimeout(advance, 80)
       return () => clearTimeout(t)
     }
-  }, [phase, objIndex, advance])
+  }, [phase, advance])
 
   const isRocket = objIndex === 3
-  const isLast = objIndex === 4 && isComplete
 
   const getObjectTransform = () => {
     switch (phase) {
@@ -431,17 +424,9 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
     return { duration: 0.2, ease: EASE_OUT }
   }
 
-  const getIdleAnimate = () => {
-    return { y: [0, -6, 0], scale: [1, 1.02, 1] }
-  }
-
-  const getIdleTransition = () => {
-    return { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }
-  }
-
-  const rocketTransition = useMemo(() => ({ type: 'spring' as const, stiffness: 200, damping: 20, mass: 1.0 }), [])
-
   const transform = getObjectTransform()
+
+  const nextIdx = ((objIndex + 1) % 5) as ObjIndex
 
   return (
     <div
@@ -488,16 +473,16 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
             </div>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <AssembleSVG
-                paths={ALL_PATHS[objIndex + 1]}
-                config={SVG_CONFIGS[objIndex + 1]}
-                targets={SCATTER_TARGETS[objIndex + 1]}
+                paths={ALL_PATHS[nextIdx]}
+                config={SVG_CONFIGS[nextIdx]}
+                targets={SCATTER_TARGETS[nextIdx]}
               />
             </div>
           </div>
         ) : (
           <AnimatePresence mode="wait">
             <motion.div
-              key={isLast ? 'last-done' : `${objIndex}`}
+              key={`${objIndex}`}
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -508,14 +493,14 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
               initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
+              transition={{ duration: 0.1 }}
             >
               <motion.div
-                animate={phase === 'idle' ? getIdleAnimate() : transform}
-                transition={(phase === 'idle' ? getIdleTransition() : getTransition()) as any}
+                animate={transform}
+                transition={getTransition() as any}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                {objIndex === 0 && !isComplete ? (
+                {objIndex === 0 ? (
                   <DrawSVG paths={ALL_PATHS[0]} config={SVG_CONFIGS[0]} />
                 ) : (
                   <StaticSVG paths={ALL_PATHS[objIndex]} config={SVG_CONFIGS[objIndex]} />
