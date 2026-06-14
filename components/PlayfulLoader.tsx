@@ -369,7 +369,7 @@ function BackgroundParticles() {
   )
 }
 
-export default function PlayfulLoader() {
+export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
   const [objIndex, setObjIndex] = useState<ObjIndex>(0)
   const [phase, setPhase] = useState<Phase>('falling')
   const [showImpact, setShowImpact] = useState(false)
@@ -381,11 +381,9 @@ export default function PlayfulLoader() {
       const nextIndex = (objIndex + 1) as ObjIndex
       setTimeout(() => {
         setObjIndex(nextIndex)
+        setPhase('falling')
         if (nextIndex === 4) {
           setIsComplete(true)
-          setPhase('idle')
-        } else {
-          setPhase('falling')
         }
       }, MORPH_DURATION * 1000 + 150)
     }
@@ -419,7 +417,7 @@ export default function PlayfulLoader() {
   }, [phase, objIndex, advance])
 
   const isRocket = objIndex === 3
-  const isController = objIndex === 4 && isComplete
+  const isLast = objIndex === 4 && isComplete
 
   const getObjectTransform = () => {
     switch (phase) {
@@ -445,12 +443,10 @@ export default function PlayfulLoader() {
   }
 
   const getIdleAnimate = () => {
-    if (isController) return { y: [0, -5, 0], scale: [1, 1.02, 1] }
     return { y: [0, -6, 0], scale: [1, 1.02, 1] }
   }
 
   const getIdleTransition = () => {
-    if (isController) return { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }
     return { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }
   }
 
@@ -512,7 +508,7 @@ export default function PlayfulLoader() {
         ) : (
           <AnimatePresence mode="wait">
             <motion.div
-              key={isController ? 'controller-done' : `${objIndex}`}
+              key={isLast ? 'last-done' : `${objIndex}`}
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -552,23 +548,50 @@ export default function PlayfulLoader() {
         )}
       </AnimatePresence>
 
-      {isController && (
-        <motion.div
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 180,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 10,
+        }}
+      >
+        <div
           style={{
-            position: 'absolute',
-            bottom: '12%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 120,
-            height: 2,
-            borderRadius: 1,
-            background: 'rgba(255,255,255,0.12)',
-            pointerEvents: 'none',
+            width: '100%',
+            height: 3,
+            borderRadius: 2,
+            background: 'rgba(255,255,255,0.1)',
+            overflow: 'hidden',
           }}
-          animate={{ opacity: [0.12, 0.3, 0.12] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      )}
+        >
+          <motion.div
+            style={{
+              height: '100%',
+              borderRadius: 2,
+              background: 'rgba(255,255,255,0.7)',
+            }}
+            initial={{ width: '0%' }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          />
+        </div>
+        <span
+          style={{
+            fontFamily: 'var(--font-mono, monospace)',
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.4)',
+            letterSpacing: '0.15em',
+          }}
+        >
+          {progress}%
+        </span>
+      </div>
     </div>
   )
 }

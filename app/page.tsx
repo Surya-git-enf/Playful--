@@ -42,6 +42,7 @@ function buildAssetList(): { images: string[]; videos: string[] } {
     '/racing/car.png',
     '/racing/road.png',
   )
+  videos.push('/racing/racing.mp4')
 
   // Open World scene
   images.push(
@@ -276,7 +277,7 @@ export default function Home() {
           transition: 'opacity 0.6s ease',
           pointerEvents: loadingOut ? 'none' : 'auto',
         }}>
-          <PlayfulLoader />
+          <PlayfulLoader progress={progress} />
         </div>
       )}
     </>
