@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-type Phase = 'falling' | 'squash' | 'bounce' | 'idle' | 'morphing'
+type Phase = 'falling' | 'squash' | 'morphing'
 type ObjIndex = 0 | 1 | 2 | 3 | 4
 
 const ICON_SIZE = 140
@@ -380,7 +380,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
     setTimeout(() => {
       setObjIndex(nextIndex)
       setPhase('falling')
-    }, MORPH_DURATION * 1000 + 80)
+    }, MORPH_DURATION * 1000 + 100)
   }, [objIndex])
 
   useEffect(() => {
@@ -391,13 +391,9 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
     if (phase === 'squash') {
       setShowImpact(true)
       const t = setTimeout(() => {
-        setPhase('bounce')
         setShowImpact(false)
-      }, 140)
-      return () => clearTimeout(t)
-    }
-    if (phase === 'bounce') {
-      const t = setTimeout(advance, 80)
+        advance()
+      }, 160)
       return () => clearTimeout(t)
     }
   }, [phase, advance])
@@ -410,8 +406,6 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
         return { y: isRocket ? -220 : -180, rotate: isRocket ? -120 : 0, scale: isRocket ? 0.8 : 1, scaleX: 1, scaleY: 1 }
       case 'squash':
         return { y: 0, rotate: 0, scale: 1, scaleX: 1.12, scaleY: 0.85 }
-      case 'bounce':
-        return { y: -45, rotate: 0, scale: 1, scaleX: 0.95, scaleY: 1.06 }
       default:
         return { y: 0, rotate: 0, scale: 1, scaleX: 1, scaleY: 1 }
     }
@@ -420,11 +414,8 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
   const getTransition = () => {
     if (phase === 'falling') return { type: 'spring' as const, stiffness: 280, damping: 22, mass: 0.9 }
     if (phase === 'squash') return { duration: 0.1, ease: [0.36, 0, 0.66, -0.56] as [number, number, number, number] }
-    if (phase === 'bounce') return { duration: 0.2, ease: EASE_BOUNCE }
     return { duration: 0.2, ease: EASE_OUT }
   }
-
-  const transform = getObjectTransform()
 
   const nextIdx = ((objIndex + 1) % 5) as ObjIndex
 
@@ -463,7 +454,12 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
 
       <div style={{ position: 'relative', width: ICON_SIZE, height: ICON_SIZE * 1.4 }}>
         {phase === 'morphing' ? (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <motion.div
+            style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            initial={{ y: 0 }}
+            animate={{ y: isRocket ? -220 : -180 }}
+            transition={{ duration: MORPH_DURATION, ease: EASE_OUT }}
+          >
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ScatterSVG
                 paths={ALL_PATHS[objIndex]}
@@ -478,7 +474,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
                 targets={SCATTER_TARGETS[nextIdx]}
               />
             </div>
-          </div>
+          </motion.div>
         ) : (
           <AnimatePresence mode="wait">
             <motion.div
@@ -496,7 +492,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
               transition={{ duration: 0.1 }}
             >
               <motion.div
-                animate={transform}
+                animate={getObjectTransform()}
                 transition={getTransition() as any}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
