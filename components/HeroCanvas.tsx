@@ -375,7 +375,8 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const doRelease = useCallback(() => {
     if (hasReleased.current) return
     hasReleased.current = true
-    document.body.style.overflow = 'auto'
+    // Don't touch body overflow — page.tsx's #scroll-root container
+    // switches to overflow:scroll when heroReleased flips to true.
     onRelease()
   }, [onRelease])
 
@@ -384,6 +385,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     velocity.current = 0
     if (next > TOTAL_SCENES) {
       snapLocked.current = true
+      wheelAccum.current = 0
       doRelease()
       setTimeout(() => { snapLocked.current = false }, SNAP_LOCK_MS)
       return
@@ -474,13 +476,15 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         return
       }
 
-      // Scenes 1-4: accumulate deltaY so light/fractional trackpad scrolls
-      // (which previously fell under the |deltaY| > 15 threshold and did
-      // nothing — feeling "stuck") still eventually trigger a snap.
-      wheelAccum.current += e.deltaY
-      if (Math.abs(wheelAccum.current) > 12) {
-        snapTo(sceneRef.current + (wheelAccum.current > 0 ? 1 : -1))
-        wheelAccum.current = 0
+      // Scenes 1-4: fire on the first sufficiently-large wheel tick.
+      // (Previously this accumulated deltaY across events, but inertial/
+      // momentum scrolling sends a MIX of positive and negative deltas —
+      // those can cancel each other out indefinitely, so "doom scrolling"
+      // never crossed the threshold and the page felt permanently stuck
+      // on Space. snapLocked's 900ms window already prevents double-fires
+      // within a single gesture, so no accumulation is needed.)
+      if (Math.abs(e.deltaY) > 2) {
+        snapTo(sceneRef.current + (e.deltaY > 0 ? 1 : -1))
       }
     }
 
