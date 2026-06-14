@@ -109,6 +109,8 @@ export default function Home() {
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
+    // Keep body itself non-scrollable at all times — all scrolling
+    // is handled by the #scroll-root container above.
     document.body.style.overflow = 'hidden'
     window.scrollTo(0, 0)
   }, [])
@@ -147,25 +149,33 @@ export default function Home() {
     if (heroReleasedRef.current) return
     heroReleasedRef.current = true
     setHeroReleased(true)
-    setTimeout(() => {
-      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
-    }, 80)
+    // Wait two frames — first for React to re-render the container
+    // with overflow:scroll, second for the browser to recognise it —
+    // then programmatically snap to the first card section.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const root = document.getElementById('scroll-root')
+        if (root) root.scrollTo({ top: root.clientHeight, behavior: 'smooth' })
+      })
+    })
   }, [])
 
-  // Smoothed out scroll-back logic
+  // Scroll-back: when user scrolls the snap container back to top,
+  // re-lock the hero so HeroCanvas takes over again.
   useEffect(() => {
     if (!heroReleased) return
+    const root = document.getElementById('scroll-root')
+    if (!root) return
     const onScroll = () => {
-      if (window.scrollY <= 10) {
+      if (root.scrollTop <= 10) {
         heroReleasedRef.current = false
         setHeroReleased(false)
-        document.body.style.overflow = 'hidden'
-        // Using 'instant' prevents layout shifting/jumping
-        window.scrollTo({ top: 0, behavior: 'instant' })
+        // Instantly snap container back to top (no visible jump)
+        root.scrollTo({ top: 0, behavior: 'instant' })
       }
     }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    root.addEventListener('scroll', onScroll, { passive: true })
+    return () => root.removeEventListener('scroll', onScroll)
   }, [heroReleased])
 
   // NEW: Show navbar if released OR if we are on Space (Scene 4)
@@ -218,10 +228,39 @@ export default function Home() {
         />
       </div>
 
-      <div style={{ height: '100vh', scrollSnapAlign: 'start' }} aria-hidden="true" />
+      {/* ── SCROLLABLE SNAP CONTAINER ──────────────────────────────
+          This wrapper is the scroll-snap root. It only becomes
+          scrollable once heroReleased flips to true (overflow hidden
+          → scroll). The fixed HeroCanvas sits behind it visually
+          because its z-index (100) is below the nav (2000) but the
+          container itself is transparent until the placeholder div.
+      ─────────────────────────────────────────────────────────── */}
+      <div
+        id="scroll-root"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 150,
+          overflowY: heroReleased ? 'scroll' : 'hidden',
+          overflowX: 'hidden',
+          scrollSnapType: 'y mandatory',
+          scrollBehavior: 'smooth',
+          // Transparent until content below the hero placeholder
+          // becomes visible — the HeroCanvas shows through.
+          background: 'transparent',
+          // Pointer events only when released so HeroCanvas wheel
+          // events still fire during the hero experience.
+          pointerEvents: heroReleased ? 'auto' : 'none',
+        }}
+      >
+        {/* Hero placeholder — same height as the viewport, acts as
+            the first snap stop. The HeroCanvas is fixed behind it. */}
+        <div style={{ height: '100vh', flexShrink: 0, scrollSnapAlign: 'start' }} aria-hidden="true" />
 
-      <div style={{ position: 'relative', zIndex: 200 }}>
-        <SnapCards isActive={heroReleased} />
+        {/* All card sections */}
+        <div style={{ position: 'relative', zIndex: 200, background: '#020510' }}>
+          <SnapCards isActive={heroReleased} />
+        </div>
       </div>
 
       {/* ---------------------------------------------------------- */}
@@ -242,5 +281,5 @@ export default function Home() {
       )}
     </>
   )
-    }
-      
+        }
+
