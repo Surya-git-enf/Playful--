@@ -42,7 +42,6 @@ function buildAssetList(): { images: string[]; videos: string[] } {
     '/racing/car.png',
     '/racing/road.png',
   )
-  videos.push('/racing/racing.mp4')
 
   // Open World scene
   images.push(
