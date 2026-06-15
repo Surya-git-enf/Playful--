@@ -75,29 +75,29 @@ const ALL_PATHS: string[][] = [
     'M36 74 L28 80',
     'M64 74 L72 80',
   ],
-  // Rocket 🚀 - detailed with fins, window, flame lines
+  // Rocket 🚀 - upside down (nose pointing down), no rotation during fall
   [
-    'M50 4 Q52 4 54 12 L56 30',
-    'M50 4 Q48 4 46 12 L44 30',
-    'M46 12 L38 24 L36 44 L36 56',
-    'M54 12 L62 24 L64 44 L64 56',
-    'M36 56 L34 70 L30 78 L26 82',
-    'M64 56 L66 70 L70 78 L74 82',
-    'M30 78 L38 86',
-    'M70 78 L62 86',
-    'M38 86 L44 90 L44 86',
-    'M62 86 L56 90 L56 86',
-    'M50 30 a10 10 0 1 1 0 20 a10 10 0 1 1 0 -20',
-    'M50 30 a6 6 0 1 1 0 12 a6 6 0 1 1 0 -12',
-    'M36 56 L22 64 L20 72 L26 76 L36 70',
-    'M64 56 L78 64 L80 72 L74 76 L64 70',
-    'M44 86 L50 98 L56 86',
-    'M47 92 L50 106 L53 92',
-    'M50 100 L46 108',
-    'M50 100 L54 108',
-    'M50 100 L50 110',
-    'M38 36 L46 36',
-    'M62 36 L54 36',
+    'M50 110 Q52 110 54 102 L56 84',
+    'M50 110 Q48 110 46 102 L44 84',
+    'M46 102 L38 90 L36 70 L36 58',
+    'M54 102 L62 90 L64 70 L64 58',
+    'M36 58 L34 44 L30 36 L26 32',
+    'M64 58 L66 44 L70 36 L74 32',
+    'M30 36 L38 28',
+    'M70 36 L62 28',
+    'M38 28 L44 24 L44 28',
+    'M62 28 L56 24 L56 28',
+    'M50 84 a10 10 0 1 1 0 -20 a10 10 0 1 1 0 20',
+    'M50 84 a6 6 0 1 1 0 -12 a6 6 0 1 1 0 12',
+    'M36 58 L22 50 L20 42 L26 38 L36 44',
+    'M64 58 L78 50 L80 42 L74 38 L64 44',
+    'M44 28 L50 16 L56 28',
+    'M47 22 L50 8 L53 22',
+    'M50 14 L46 6',
+    'M50 14 L54 6',
+    'M50 14 L50 4',
+    'M38 78 L46 78',
+    'M62 78 L54 78',
   ],
   // Game Controller 🎮 - detailed with D-pad, buttons, triggers
   [
@@ -403,7 +403,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
   const getObjectTransform = () => {
     switch (phase) {
       case 'falling':
-        return { y: isRocket ? -220 : -180, rotate: isRocket ? -120 : 0, scale: isRocket ? 0.8 : 1, scaleX: 1, scaleY: 1 }
+        return { y: isRocket ? -220 : -180, rotate: 0, scale: isRocket ? 0.8 : 1, scaleX: 1, scaleY: 1 }
       case 'squash':
         return { y: 0, rotate: 0, scale: 1, scaleX: 1.12, scaleY: 0.85 }
       default:
