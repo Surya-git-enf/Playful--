@@ -20,9 +20,6 @@ function buildAssetList(): { images: string[]; videos: string[] } {
   const images: string[] = []
   const videos: string[] = []
 
-  // Chess King SVG for loader
-  images.push('/king.svg')
-
   // Palace canvas scrub sequence (0-144)
   for (let i = 0; i <= 144; i++) {
     images.push(`/palace/palace-frame_${pad(i)}.webp`)
