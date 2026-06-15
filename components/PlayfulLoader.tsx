@@ -12,31 +12,8 @@ const EASE_BOUNCE: [number, number, number, number] = [0.34, 1.56, 0.64, 1]
 const MORPH_DURATION = 0.7
 
 const ALL_PATHS: string[][] = [
-  // Chess Queen 👑 - detailed with crown points and jewels
-  [
-    'M50 4 L48 2 L52 2 Z',
-    'M38 8 L36 4 L40 4 Z',
-    'M62 8 L60 4 L64 4 Z',
-    'M30 14 L28 8 L34 10 Z',
-    'M70 14 L66 10 L72 8 Z',
-    'M26 22 L24 14 L30 16 Z',
-    'M74 22 L70 16 L76 14 Z',
-    'M34 18 Q50 14 66 18',
-    'M32 24 Q50 20 68 24',
-    'M36 30 Q50 26 64 30',
-    'M38 36 Q50 32 62 36',
-    'M40 42 Q50 38 60 42',
-    'M42 48 Q50 44 58 48',
-    'M44 54 Q50 50 56 54',
-    'M46 60 Q50 56 54 60',
-    'M48 66 Q50 62 52 66',
-    'M50 70 L50 100',
-    'M40 100 Q50 108 60 100',
-    'M36 106 Q50 114 64 106',
-    'M32 112 Q50 120 68 112',
-    'M28 118 Q50 126 72 118',
-    'M24 124 L22 134 L78 134 L76 124',
-  ],
+  // Chess King 👑 - loaded from /king.svg (user's custom SVG)
+  [],
   // Race Car 🏎️ - detailed side profile with wheels
   [
     'M8 72 L18 72 L22 62 L32 58 L48 56 L72 56 L82 62 L92 64 L96 72 L8 72',
@@ -125,7 +102,7 @@ const ALL_PATHS: string[][] = [
 ]
 
 const SVG_CONFIGS: { viewBox: string; width: number; height: number }[] = [
-  { viewBox: '0 0 100 140', width: ICON_SIZE, height: ICON_SIZE * 1.4 },
+  { viewBox: '0 0 1254 1254', width: ICON_SIZE, height: ICON_SIZE },
   { viewBox: '0 0 100 86', width: ICON_SIZE, height: ICON_SIZE * 0.86 },
   { viewBox: '0 0 100 92', width: ICON_SIZE, height: ICON_SIZE * 0.92 },
   { viewBox: '0 0 100 114', width: ICON_SIZE, height: ICON_SIZE * 1.14 },
@@ -176,6 +153,18 @@ function StaticSVG({ paths, config }: { paths: string[]; config: typeof SVG_CONF
         />
       ))}
     </svg>
+  )
+}
+
+function KingImage({ config }: { config: typeof SVG_CONFIGS[number] }) {
+  return (
+    <img
+      src="/king.svg"
+      alt="Chess King"
+      width={config.width}
+      height={config.height}
+      style={{ filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.4))' }}
+    />
   )
 }
 
@@ -457,7 +446,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
       <Scanline />
       <BackgroundParticles />
 
-      <div style={{ position: 'relative', width: ICON_SIZE, height: ICON_SIZE * 1.4 }}>
+      <div style={{ position: 'relative', width: ICON_SIZE, height: ICON_SIZE }}>
         {phase === 'morphing' ? (
           <motion.div
             style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -466,18 +455,44 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
             transition={{ duration: MORPH_DURATION, ease: EASE_OUT }}
           >
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ScatterSVG
-                paths={ALL_PATHS[objIndex]}
-                config={SVG_CONFIGS[objIndex]}
-                targets={SCATTER_TARGETS[objIndex]}
-              />
+              {objIndex === 0 ? (
+                <motion.img
+                  src="/king.svg"
+                  alt="Chess King"
+                  width={SVG_CONFIGS[0].width}
+                  height={SVG_CONFIGS[0].height}
+                  initial={{ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 }}
+                  animate={{ x: 100, y: -100, rotate: 45, scale: 0.2, opacity: 0 }}
+                  transition={{ duration: MORPH_DURATION, ease: EASE_OUT }}
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.4))' }}
+                />
+              ) : (
+                <ScatterSVG
+                  paths={ALL_PATHS[objIndex]}
+                  config={SVG_CONFIGS[objIndex]}
+                  targets={SCATTER_TARGETS[objIndex]}
+                />
+              )}
             </div>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <AssembleSVG
-                paths={ALL_PATHS[nextIdx]}
-                config={SVG_CONFIGS[nextIdx]}
-                targets={SCATTER_TARGETS[nextIdx]}
-              />
+              {nextIdx === 0 ? (
+                <motion.img
+                  src="/king.svg"
+                  alt="Chess King"
+                  width={SVG_CONFIGS[0].width}
+                  height={SVG_CONFIGS[0].height}
+                  initial={{ x: -100, y: 100, rotate: -45, scale: 0.2, opacity: 0 }}
+                  animate={{ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 }}
+                  transition={{ duration: MORPH_DURATION * 0.8, delay: MORPH_DURATION * 0.15, ease: EASE_BOUNCE }}
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.4))' }}
+                />
+              ) : (
+                <AssembleSVG
+                  paths={ALL_PATHS[nextIdx]}
+                  config={SVG_CONFIGS[nextIdx]}
+                  targets={SCATTER_TARGETS[nextIdx]}
+                />
+              )}
             </div>
           </motion.div>
         ) : (
@@ -502,7 +517,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 {objIndex === 0 ? (
-                  <DrawSVG paths={ALL_PATHS[0]} config={SVG_CONFIGS[0]} />
+                  <KingImage config={SVG_CONFIGS[0]} />
                 ) : (
                   <StaticSVG paths={ALL_PATHS[objIndex]} config={SVG_CONFIGS[objIndex]} />
                 )}
