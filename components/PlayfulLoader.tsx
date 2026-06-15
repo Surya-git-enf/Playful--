@@ -12,40 +12,60 @@ const EASE_BOUNCE: [number, number, number, number] = [0.34, 1.56, 0.64, 1]
 const MORPH_DURATION = 0.7
 
 const ALL_PATHS: string[][] = [
-  // Chess King 👑 - detailed with cross, crown points, body, base
+  // Chess King 👑 - highly detailed with cross, crown, body, base
   [
-    // Cross on top
-    'M50 2 L50 18',
-    'M42 10 L58 10',
-    'M46 6 L50 2 L54 6',
-    // Crown points (5尖)
-    'M28 28 L24 18 L32 22 Z',
-    'M38 24 L36 14 L42 18 Z',
-    'M50 22 L50 12 L50 22',
-    'M62 24 L58 18 L64 14 Z',
-    'M72 28 L68 22 L76 18 Z',
-    // Crown band
-    'M26 32 Q50 26 74 32',
-    'M28 38 Q50 32 72 38',
-    // Crown body curves
-    'M30 44 Q50 38 70 44',
-    'M34 52 Q50 46 66 52',
-    'M38 60 Q50 54 62 60',
-    // Neck
-    'M42 68 Q50 62 58 68',
-    'M44 76 Q50 70 56 76',
-    // Body
-    'M40 84 Q50 78 60 84',
-    'M36 92 Q50 86 64 92',
-    'M32 100 Q50 94 68 100',
-    // Base
-    'M28 108 Q50 102 72 108',
-    'M24 116 Q50 110 76 116',
-    'M20 124 L18 134 L82 134 L80 124',
-    // Cross ornament details
-    'M48 14 L52 14',
-    'M44 8 L44 12',
-    'M56 8 L56 12',
+    // Cross vertical stem
+    'M50 0 L50 24',
+    // Cross horizontal bar
+    'M40 8 L60 8',
+    // Cross top ornament
+    'M46 0 Q50 -4 54 0',
+    'M44 4 L48 0 L52 0 L56 4',
+    // Cross ball ornaments
+    'M50 12 a3 3 0 1 1 0 6 a3 3 0 1 1 0 -6',
+    // Crown points (7 points for detailed crown)
+    'M22 36 L18 20 L26 26 L30 16 L34 24 L38 12 L42 22 L46 8 L50 18',
+    'M50 18 L54 8 L58 22 L62 12 L66 24 L70 16 L74 26 L78 20 L78 36',
+    // Crown left side
+    'M22 36 L26 40 L30 38',
+    // Crown right side
+    'M78 36 L74 40 L70 38',
+    // Crown band top
+    'M24 42 Q50 34 76 42',
+    // Crown band bottom
+    'M26 48 Q50 40 74 48',
+    // Crown jewels (3 jewels)
+    'M36 44 a2 2 0 1 1 0 4 a2 2 0 1 1 0 -4',
+    'M50 42 a2 2 0 1 1 0 4 a2 2 0 1 1 0 -4',
+    'M64 44 a2 2 0 1 1 0 4 a2 2 0 1 1 0 -4',
+    // Crown body upper curve
+    'M28 56 Q50 48 72 56',
+    // Crown body mid curve
+    'M32 64 Q50 56 68 64',
+    // Crown body lower curve
+    'M36 72 Q50 64 64 72',
+    // Neck upper
+    'M40 80 Q50 72 60 80',
+    // Neck lower
+    'M42 88 Q50 80 58 88',
+    // Body upper
+    'M38 96 Q50 88 62 96',
+    // Body mid
+    'M34 104 Q50 96 66 104',
+    // Body lower
+    'M30 112 Q50 104 70 112',
+    // Base upper
+    'M26 120 Q50 112 74 120',
+    // Base mid
+    'M22 128 Q50 120 78 128',
+    // Base bottom
+    'M18 134 L16 140 L84 140 L82 134',
+    // Base detail lines
+    'M20 130 L80 130',
+    'M24 126 L76 126',
+    // Cross shadow details
+    'M48 16 L52 16',
+    'M46 20 L54 20',
   ],
   // Race Car 🏎️ - detailed side profile with wheels
   [
@@ -135,7 +155,7 @@ const ALL_PATHS: string[][] = [
 ]
 
 const SVG_CONFIGS: { viewBox: string; width: number; height: number }[] = [
-  { viewBox: '0 0 100 140', width: ICON_SIZE, height: ICON_SIZE * 1.4 },
+  { viewBox: '0 0 100 144', width: ICON_SIZE, height: ICON_SIZE * 1.44 },
   { viewBox: '0 0 100 86', width: ICON_SIZE, height: ICON_SIZE * 0.86 },
   { viewBox: '0 0 100 92', width: ICON_SIZE, height: ICON_SIZE * 0.92 },
   { viewBox: '0 0 100 114', width: ICON_SIZE, height: ICON_SIZE * 1.14 },
@@ -467,7 +487,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
       <Scanline />
       <BackgroundParticles />
 
-      <div style={{ position: 'relative', width: ICON_SIZE, height: ICON_SIZE * 1.4 }}>
+      <div style={{ position: 'relative', width: ICON_SIZE, height: ICON_SIZE * 1.44 }}>
         {phase === 'morphing' ? (
           <motion.div
             style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
