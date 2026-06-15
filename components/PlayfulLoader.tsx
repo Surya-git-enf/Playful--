@@ -107,7 +107,7 @@ const ALL_PATHS: string[][] = [
 ]
 
 const SVG_CONFIGS: { viewBox: string; width: number; height: number }[] = [
-  { viewBox: '-222 -5 510 1165', width: ICON_SIZE, height: ICON_SIZE * 2.2 },
+  { viewBox: '370 40 520 1170', width: ICON_SIZE, height: ICON_SIZE * 2.2 },
   { viewBox: '0 0 100 86', width: ICON_SIZE, height: ICON_SIZE * 0.86 },
   { viewBox: '0 0 100 92', width: ICON_SIZE, height: ICON_SIZE * 0.92 },
   { viewBox: '0 0 100 114', width: ICON_SIZE, height: ICON_SIZE * 1.14 },
@@ -146,7 +146,7 @@ const STABLE_BG_DOTS = Array.from({ length: 30 }, (_, i) => ({
 function KingSVG({ opacity = 1, style = {} }: { opacity?: number; style?: React.CSSProperties }) {
   return (
     <svg
-      viewBox="-222 -5 510 1165"
+      viewBox="370 40 520 1170"
       width={ICON_SIZE}
       height={ICON_SIZE * 2.2}
       style={{ opacity, ...style }}
