@@ -211,59 +211,130 @@ function BackgroundParticles() {
 }
 
 export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
+  const [phase, setPhase] = useState<'dropping' | 'morphing'>('dropping')
   const [objIndex, setObjIndex] = useState<ObjIndex>(0)
-  const [phase, setPhase] = useState<'falling' | 'rising'>('falling')
-  const [showImpact, setShowImpact] = useState(false)
   const [morphProgress, setMorphProgress] = useState(0)
+  const [showImpact, setShowImpact] = useState(false)
   const [cycle, setCycle] = useState(0)
-  const cycleRef = useRef(0)
 
   const nextIdx = ((objIndex + 1) % 5) as ObjIndex
 
-  useEffect(() => {
-    if (phase !== 'rising') return
-    const start = Date.now()
-    let raf: number
-    let cancelled = false
+  const iconWrapRef = useRef<HTMLDivElement>(null)
+  const posY = useRef(-550)
+  const velY = useRef(0)
+  const squashX = useRef(1)
+  const squashY = useRef(1)
+  const lastTime = useRef(0)
+  const rafId = useRef(0)
+  const bounceCount = useRef(0)
+  const settled = useRef(false)
+  const morphStart = useRef(0)
+  const cancelledRef = useRef(false)
 
-    const tick = () => {
-      if (cancelled) return
-      const elapsed = Date.now() - start
-      const t = Math.min(elapsed / (RISE_DURATION * 1000), 1)
-      setMorphProgress(t)
-      if (t < 1) {
-        raf = requestAnimationFrame(tick)
-      } else {
-        setMorphProgress(0)
-        setObjIndex(prev => ((prev + 1) % 5) as ObjIndex)
-        setPhase('falling')
-        cycleRef.current += 1
-        setCycle(cycleRef.current)
+  const GRAVITY = 2800
+  const RESTITUTION = 0.52
+  const GROUND_Y = 0
+  const START_Y = -550
+  const BOUNCE_V_THRESH = 35
+  const RISE_MS = 1400
+
+  useEffect(() => {
+    cancelledRef.current = false
+    lastTime.current = 0
+
+    const tick = (now: number) => {
+      if (cancelledRef.current) return
+      if (lastTime.current === 0) { lastTime.current = now; rafId.current = requestAnimationFrame(tick); return }
+      const dt = Math.min((now - lastTime.current) / 1000, 0.05)
+      lastTime.current = now
+
+      if (phase === 'dropping') {
+        velY.current += GRAVITY * dt
+        posY.current += velY.current * dt
+
+        if (posY.current >= GROUND_Y) {
+          posY.current = GROUND_Y
+          const impactSpeed = Math.abs(velY.current)
+          velY.current = -velY.current * RESTITUTION
+          bounceCount.current++
+          const sq = Math.min(impactSpeed / 1800, 0.28)
+          squashX.current = 1 + sq
+          squashY.current = 1 - sq
+          if (bounceCount.current === 1) {
+            setShowImpact(true)
+            setTimeout(() => setShowImpact(false), 400)
+          }
+        }
+
+        if (velY.current > 150) {
+          const st = Math.min(velY.current / 4000, 0.06)
+          if (squashX.current > 1 - st) squashX.current = 1 - st
+          if (squashY.current < 1 + st) squashY.current = 1 + st
+        }
+
+        squashX.current += (1 - squashX.current) * 8 * dt
+        squashY.current += (1 - squashY.current) * 8 * dt
+
+        if (Math.abs(velY.current) < BOUNCE_V_THRESH && posY.current >= GROUND_Y - 2) {
+          posY.current = GROUND_Y
+          velY.current = 0
+          squashX.current = 1
+          squashY.current = 1
+          if (!settled.current) {
+            settled.current = true
+            setTimeout(() => {
+              if (!cancelledRef.current) {
+                setPhase('morphing')
+                morphStart.current = performance.now()
+              }
+            }, 250)
+          }
+        }
+
+        if (iconWrapRef.current) {
+          iconWrapRef.current.style.transform = `translateY(${posY.current}px) scaleX(${squashX.current}) scaleY(${squashY.current})`
+        }
+
+        rafId.current = requestAnimationFrame(tick)
+      }
+
+      if (phase === 'morphing') {
+        const elapsed = now - morphStart.current
+        const t = Math.min(elapsed / RISE_MS, 1)
+        posY.current = GROUND_Y + (START_Y * 0.75) * t
+
+        squashX.current += (1 - squashX.current) * 12 * dt
+        squashY.current += (1 - squashY.current) * 12 * dt
+
+        if (iconWrapRef.current) {
+          iconWrapRef.current.style.transform = `translateY(${posY.current}px) scaleX(${squashX.current}) scaleY(${squashY.current})`
+        }
+
+        setMorphProgress(t)
+
+        if (t >= 1) {
+          setMorphProgress(0)
+          setObjIndex(prev => ((prev + 1) % 5) as ObjIndex)
+          setPhase('dropping')
+          posY.current = START_Y
+          velY.current = 0
+          bounceCount.current = 0
+          settled.current = false
+          lastTime.current = 0
+          setCycle(c => c + 1)
+          return
+        }
+
+        rafId.current = requestAnimationFrame(tick)
       }
     }
 
-    raf = requestAnimationFrame(tick)
-    return () => { cancelled = true; cancelAnimationFrame(raf) }
-  }, [phase])
-
-  useEffect(() => {
-    if (phase !== 'falling') return
-    let innerTimer: ReturnType<typeof setTimeout>
-    const outerTimer = setTimeout(() => {
-      setShowImpact(true)
-      innerTimer = setTimeout(() => {
-        setShowImpact(false)
-        setPhase('rising')
-      }, 200)
-    }, FALL_SETTLE_MS)
-
-    return () => { clearTimeout(outerTimer); clearTimeout(innerTimer) }
+    rafId.current = requestAnimationFrame(tick)
+    return () => { cancelledRef.current = true; cancelAnimationFrame(rafId.current) }
   }, [phase, cycle])
 
-  const morphBlur = phase === 'rising'
-    ? (morphProgress < 0.5
-      ? morphProgress * 2 * MORPH_BLUR_MAX
-      : (1 - morphProgress) * 2 * MORPH_BLUR_MAX)
+  const morphBlur = phase === 'morphing'
+    ? (morphProgress < 0.5 ? morphProgress * 2 * MORPH_BLUR_MAX : (1 - morphProgress) * 2 * MORPH_BLUR_MAX)
     : 0
 
   const renderIcon = (idx: ObjIndex) => {
@@ -275,32 +346,27 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
     <div style={{ position: "fixed", inset: 0, background: "#05060B", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", zIndex: 9999 }}>
       <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.03) 0%, transparent 60%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 80%, rgba(100,120,255,0.02) 0%, transparent 50%)", pointerEvents: "none" }} />
-
       <Scanline />
       <BackgroundParticles />
 
       <div style={{ position: "relative", width: ICON_SIZE, height: ICON_SIZE * 2.2 }}>
-        <motion.div
-          key={`morph-${cycle}-${phase}`}
-          style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
-          initial={phase === 'falling' ? { y: '-70vh', opacity: 0 } : { y: 0, opacity: 1 }}
-          animate={phase === 'falling' ? { y: 0, opacity: 1 } : { y: '-38vh', opacity: 1 }}
-          transition={
-            phase === 'falling'
-              ? { type: 'spring', stiffness: 300, damping: 26, mass: 0.8, opacity: { duration: 0.15 } }
-              : { duration: RISE_DURATION, ease: EASE_OUT }
-          }
+        <div
+          ref={iconWrapRef}
+          style={{
+            position: "absolute", inset: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            willChange: "transform",
+          }}
         >
           <div style={{
             position: "absolute", inset: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-            opacity: phase === 'rising' ? 1 - morphProgress : 1,
+            opacity: phase === 'morphing' ? 1 - morphProgress : 1,
             filter: morphBlur > 0 ? `blur(${morphBlur}px)` : undefined,
           }}>
             {renderIcon(objIndex)}
           </div>
-
-          {phase === 'rising' && (
+          {phase === 'morphing' && (
             <div style={{
               position: "absolute", inset: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -310,7 +376,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
               {renderIcon(nextIdx)}
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
 
       <AnimatePresence>
