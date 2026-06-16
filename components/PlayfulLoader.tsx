@@ -15,7 +15,7 @@ const ICON_SIZE = 120
 const DROP_HEIGHT = 260
 const FALL_MS = 420
 const RISE_MS = 420
-const WIPE_MS = 400
+const WIPE_MS = 380
 
 const ALL_ASSETS = [
   '/svg/chess.png', '/svg/car.png', '/svg/ball.png', '/svg/rocket.png', '/svg/controller.png',
@@ -54,8 +54,8 @@ function preloadAssets(onProgress: (p: number) => void) {
 export default function PlayfulLoader({ progress: externalProgress }: { progress?: number }) {
   const [idx, setIdx] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [wipeProgress, setWipeProgress] = useState(0)
-  const [isWiping, setIsWiping] = useState(false)
+  const [showNext, setShowNext] = useState(false)
+  const [wipePct, setWipePct] = useState(0)
   const timers = useRef<NodeJS.Timeout[]>([])
 
   const y = useSpring(-DROP_HEIGHT, { stiffness: 120, damping: 13, mass: 1 })
@@ -79,32 +79,37 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
     clearTimers()
     sx.set(1)
     sy.set(1)
+    setShowNext(false)
+    setWipePct(0)
 
-    // 1. Fall to bar
+    // 1. Fall to bar + squash
     y.set(0)
     sx.set(1.2)
     sy.set(0.78)
 
-    // 2. Squash recover + bounce back to top
+    // 2. Recover + rise back to top
     schedule(() => {
       sx.set(1)
       sy.set(1)
       y.set(-DROP_HEIGHT)
     }, FALL_MS)
 
-    // 3. At top: wipe to next icon
+    // 3. At top: wipe next icon IN from right
     schedule(() => {
-      setIsWiping(true)
-      setWipeProgress(100)
+      setShowNext(true)
+      setWipePct(0)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setWipePct(100))
+      })
 
+      // 4. After wipe done: swap icon, hide overlay, fall again
       schedule(() => {
         setIdx((p) => (p + 1) % ICONS.length)
-        setWipeProgress(0)
-        setIsWiping(false)
+        setShowNext(false)
+        setWipePct(0)
 
-        // 4. Fall again with new icon
-        schedule(bounce, 80)
-      }, WIPE_MS)
+        schedule(bounce, 60)
+      }, WIPE_MS + 40)
     }, FALL_MS + RISE_MS)
   }, [y, sx, sy])
 
@@ -114,6 +119,7 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
   }, [bounce])
 
   const pct = externalProgress ?? progress
+  const nextIdx = (idx + 1) % ICONS.length
 
   return (
     <div
@@ -142,48 +148,40 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
           borderRadius: 18,
         }}
       >
-        <div
+        <img
+          src={ICONS[idx].src}
+          alt={ICONS[idx].alt}
+          draggable={false}
           style={{
-            width: ICON_SIZE,
-            height: ICON_SIZE,
-            position: "absolute",
-            inset: 0,
-            clipPath: `inset(0 ${wipeProgress}% 0 0)`,
-            transition: isWiping ? `clip-path ${WIPE_MS}ms cubic-bezier(0.4,0,0.2,1)` : 'none',
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
           }}
-        >
-          <img
-            src={ICONS[(idx + 1) % ICONS.length].src}
-            alt={ICONS[(idx + 1) % ICONS.length].alt}
-            draggable={false}
+        />
+
+        {showNext && (
+          <div
             style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
+              position: "absolute",
+              inset: 0,
+              clipPath: `inset(0 ${100 - wipePct}% 0 0)`,
+              transition: `clip-path ${WIPE_MS}ms cubic-bezier(0.4,0,0.2,1)`,
             }}
-          />
-        </div>
-        <div
-          style={{
-            width: ICON_SIZE,
-            height: ICON_SIZE,
-            position: "absolute",
-            inset: 0,
-          }}
-        >
-          <img
-            src={ICONS[idx].src}
-            alt={ICONS[idx].alt}
-            draggable={false}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-            }}
-          />
-        </div>
+          >
+            <img
+              src={ICONS[nextIdx].src}
+              alt={ICONS[nextIdx].alt}
+              draggable={false}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
+              }}
+            />
+          </div>
+        )}
       </motion.div>
 
       <div
@@ -195,19 +193,6 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
           gap: 14,
         }}
       >
-        <span
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: 14,
-            fontWeight: 800,
-            color: "#ffffff",
-            minWidth: 40,
-            textAlign: "right",
-            letterSpacing: "0.05em",
-          }}
-        >
-          {pct}%
-        </span>
         <div
           style={{
             width: 200,
@@ -229,6 +214,19 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
             transition={{ type: "spring", stiffness: 80, damping: 20 }}
           />
         </div>
+        <span
+          style={{
+            fontFamily: "var(--font-mono, monospace)",
+            fontSize: 14,
+            fontWeight: 800,
+            color: "#ffffff",
+            minWidth: 40,
+            textAlign: "left",
+            letterSpacing: "0.05em",
+          }}
+        >
+          {pct}%
+        </span>
       </div>
     </div>
   )
