@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion, useSpring } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, useSpring, animate } from 'framer-motion'
 
 const ICONS = [
   { src: '/svg/chess.png', alt: 'Chess' },
@@ -12,10 +12,7 @@ const ICONS = [
 ]
 
 const ICON_SIZE = 120
-const DROP_HEIGHT = 260
-const FALL_MS = 420
-const RISE_MS = 420
-const WIPE_MS = 380
+const DROP = 260
 
 const ALL_ASSETS = [
   '/svg/chess.png', '/svg/car.png', '/svg/ball.png', '/svg/rocket.png', '/svg/controller.png',
@@ -28,98 +25,73 @@ const ALL_ASSETS = [
   '/cards/bang.mp4', '/cards/lego.mp4', '/cards/play.mp4',
 ]
 
-function preloadAssets(onProgress: (p: number) => void) {
+function preloadAssets(onDone: (p: number) => void) {
   let loaded = 0
   const total = ALL_ASSETS.length
-  const mark = () => {
-    loaded++
-    onProgress(Math.min(Math.round((loaded / total) * 100), 100))
-  }
-  ALL_ASSETS.forEach((src) => {
-    if (src.endsWith('.mp4')) {
-      const v = document.createElement('video')
-      v.preload = 'metadata'
-      v.onloadedmetadata = mark
-      v.onerror = mark
-      v.src = src
-    } else {
-      const img = new Image()
-      img.onload = mark
-      img.onerror = mark
-      img.src = src
-    }
+  const tick = () => { loaded++; onDone(Math.min(Math.round((loaded / total) * 100), 100)) }
+  ALL_ASSETS.forEach((s) => {
+    if (s.endsWith('.mp4')) { const v = document.createElement('video'); v.preload = 'metadata'; v.onloadedmetadata = tick; v.onerror = tick; v.src = s }
+    else { const i = new Image(); i.onload = tick; i.onerror = tick; i.src = s }
   })
 }
 
-export default function PlayfulLoader({ progress: externalProgress }: { progress?: number }) {
-  const [idx, setIdx] = useState(0)
+export default function PlayfulLoader({ progress: ext }: { progress?: number }) {
+  const [curIdx, setCurIdx] = useState(0)
+  const [nextIdx, setNextIdx] = useState(1)
   const [progress, setProgress] = useState(0)
-  const [showNext, setShowNext] = useState(false)
-  const [wipePct, setWipePct] = useState(0)
-  const timers = useRef<NodeJS.Timeout[]>([])
+  const [wipeIn, setWipeIn] = useState(0)
+  const [wipeOut, setWipeOut] = useState(100)
+  const running = useRef(true)
 
-  const y = useSpring(-DROP_HEIGHT, { stiffness: 120, damping: 13, mass: 1 })
+  const y = useSpring(-DROP, { stiffness: 120, damping: 13, mass: 1 })
   const sx = useSpring(1, { stiffness: 500, damping: 12 })
   const sy = useSpring(1, { stiffness: 500, damping: 12 })
 
+  useEffect(() => { preloadAssets(setProgress) }, [])
+
+  const pct = ext ?? progress
+
   useEffect(() => {
-    preloadAssets(setProgress)
-  }, [])
+    let timers: NodeJS.Timeout[] = []
+    const wait = (ms: number) => new Promise<void>((r) => { const t = setTimeout(r, ms); timers.push(t) })
 
-  const clearTimers = () => {
-    timers.current.forEach(clearTimeout)
-    timers.current = []
-  }
+    const run = async () => {
+      while (running.current) {
+        // 1. Set next icon
+        const ni = (curIdx + 1) % ICONS.length
+        setNextIdx(ni)
+        setWipeIn(0)
+        setWipeOut(100)
 
-  const schedule = (fn: () => void, ms: number) => {
-    timers.current.push(setTimeout(fn, ms))
-  }
+        // 2. Fall
+        await wait(60)
+        y.set(0)
+        sx.set(1.2)
+        sy.set(0.78)
+        await wait(400)
 
-  const bounce = useCallback(() => {
-    clearTimers()
-    sx.set(1)
-    sy.set(1)
-    setShowNext(false)
-    setWipePct(0)
+        // 3. Squash recover + rise
+        sx.set(1)
+        sy.set(1)
+        y.set(-DROP)
+        await wait(420)
 
-    // 1. Fall to bar + squash
-    y.set(0)
-    sx.set(1.2)
-    sy.set(0.78)
+        // 4. Wipe: current OUT + next IN simultaneously
+        setWipeOut(0)
+        setWipeIn(100)
+        await wait(400)
 
-    // 2. Recover + rise back to top
-    schedule(() => {
-      sx.set(1)
-      sy.set(1)
-      y.set(-DROP_HEIGHT)
-    }, FALL_MS)
+        // 5. Swap
+        setCurIdx(ni)
+        setWipeIn(0)
+        setWipeOut(100)
+        await wait(60)
+      }
+    }
 
-    // 3. At top: wipe next icon IN from right
-    schedule(() => {
-      setShowNext(true)
-      setWipePct(0)
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setWipePct(100))
-      })
-
-      // 4. After wipe done: swap icon, hide overlay, fall again
-      schedule(() => {
-        setIdx((p) => (p + 1) % ICONS.length)
-        setShowNext(false)
-        setWipePct(0)
-
-        schedule(bounce, 60)
-      }, WIPE_MS + 40)
-    }, FALL_MS + RISE_MS)
+    run()
+    return () => { running.current = false; timers.forEach(clearTimeout) }
   }, [y, sx, sy])
-
-  useEffect(() => {
-    const t = setTimeout(bounce, 300)
-    return () => { clearTimers(); clearTimeout(t) }
-  }, [bounce])
-
-  const pct = externalProgress ?? progress
-  const nextIdx = (idx + 1) % ICONS.length
 
   return (
     <div
@@ -148,40 +120,39 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
           borderRadius: 18,
         }}
       >
-        <img
-          src={ICONS[idx].src}
-          alt={ICONS[idx].alt}
-          draggable={false}
+        {/* Current: wipes OUT to right */}
+        <div
           style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
+            position: "absolute",
+            inset: 0,
+            clipPath: `inset(0 0 0 ${wipeOut}%)`,
+            transition: "clip-path 0.38s cubic-bezier(0.4,0,0.2,1)",
           }}
-        />
+        >
+          <img
+            src={ICONS[curIdx].src}
+            alt={ICONS[curIdx].alt}
+            draggable={false}
+            style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))" }}
+          />
+        </div>
 
-        {showNext && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              clipPath: `inset(0 ${100 - wipePct}% 0 0)`,
-              transition: `clip-path ${WIPE_MS}ms cubic-bezier(0.4,0,0.2,1)`,
-            }}
-          >
-            <img
-              src={ICONS[nextIdx].src}
-              alt={ICONS[nextIdx].alt}
-              draggable={false}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-              }}
-            />
-          </div>
-        )}
+        {/* Next: wipes IN from right */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            clipPath: `inset(0 ${100 - wipeIn}% 0 0)`,
+            transition: "clip-path 0.38s cubic-bezier(0.4,0,0.2,1)",
+          }}
+        >
+          <img
+            src={ICONS[nextIdx].src}
+            alt={ICONS[nextIdx].alt}
+            draggable={false}
+            style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))" }}
+          />
+        </div>
       </motion.div>
 
       <div
@@ -221,7 +192,6 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
             fontWeight: 800,
             color: "#ffffff",
             minWidth: 40,
-            textAlign: "left",
             letterSpacing: "0.05em",
           }}
         >
