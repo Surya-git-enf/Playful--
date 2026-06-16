@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion, AnimatePresence, useSpring } from 'framer-motion'
+import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
 
 const ICONS = [
   { src: '/svg/chess.png', alt: 'Chess' },
@@ -12,8 +12,7 @@ const ICONS = [
 ]
 
 const ICON_SIZE = 120
-const BOUNCE_HEIGHT = 220
-const BOUNCE_MS = 500
+const DROP_HEIGHT = 260
 
 const ALL_ASSETS = [
   '/svg/chess.png', '/svg/car.png', '/svg/ball.png', '/svg/rocket.png', '/svg/controller.png',
@@ -52,12 +51,12 @@ function preloadAssets(onProgress: (p: number) => void) {
 export default function PlayfulLoader({ progress: externalProgress }: { progress?: number }) {
   const [idx, setIdx] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [wipeX, setWipeX] = useState(0)
+  const [phase, setPhase] = useState<'falling' | 'rising' | 'wiping'>('falling')
   const timers = useRef<NodeJS.Timeout[]>([])
 
-  const springY = useSpring(-BOUNCE_HEIGHT, { stiffness: 160, damping: 16, mass: 1.1 })
-  const scaleX = useSpring(1, { stiffness: 400, damping: 12 })
-  const scaleY = useSpring(1, { stiffness: 400, damping: 12 })
+  const y = useSpring(-DROP_HEIGHT, { stiffness: 120, damping: 13, mass: 1 })
+  const sx = useSpring(1, { stiffness: 500, damping: 12 })
+  const sy = useSpring(1, { stiffness: 500, damping: 12 })
 
   useEffect(() => {
     preloadAssets(setProgress)
@@ -68,38 +67,43 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
     timers.current = []
   }
 
-  const cycle = useCallback(() => {
+  const schedule = (fn: () => void, ms: number) => {
+    timers.current.push(setTimeout(fn, ms))
+  }
+
+  const bounce = useCallback(() => {
     clearTimers()
+    sx.set(1)
+    sy.set(1)
 
-    springY.set(-BOUNCE_HEIGHT)
-    scaleX.set(1)
-    scaleY.set(1)
-    setWipeX(0)
+    setPhase('falling')
+    y.set(0)
+    sx.set(1.2)
+    sy.set(0.78)
 
-    requestAnimationFrame(() => springY.set(0))
+    schedule(() => {
+      sx.set(1)
+      sy.set(1)
+      setPhase('rising')
+      y.set(-DROP_HEIGHT)
+    }, 380)
 
-    timers.current.push(setTimeout(() => {
-      scaleX.set(1.18)
-      scaleY.set(0.8)
-    }, BOUNCE_MS))
-
-    timers.current.push(setTimeout(() => {
-      scaleX.set(1)
-      scaleY.set(1)
-      setWipeX(100)
-    }, BOUNCE_MS + 80))
-
-    timers.current.push(setTimeout(() => {
-      setIdx((p) => (p + 1) % ICONS.length)
-      setWipeX(0)
-      timers.current.push(setTimeout(cycle, 60))
-    }, BOUNCE_MS + 80 + 420))
-  }, [springY, scaleX, scaleY])
+    schedule(() => {
+      setPhase('wiping')
+      schedule(() => {
+        setIdx((p) => (p + 1) % ICONS.length)
+        schedule(() => {
+          setPhase('falling')
+          bounce()
+        }, 50)
+      }, 400)
+    }, 380 + 420)
+  }, [y, sx, sy])
 
   useEffect(() => {
-    const t = setTimeout(cycle, 400)
+    const t = setTimeout(bounce, 300)
     return () => { clearTimers(); clearTimeout(t) }
-  }, [cycle])
+  }, [bounce])
 
   const pct = externalProgress ?? progress
 
@@ -119,9 +123,9 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
     >
       <motion.div
         style={{
-          y: springY,
-          scaleX,
-          scaleY,
+          y,
+          scaleX: sx,
+          scaleY: sy,
           width: ICON_SIZE,
           height: ICON_SIZE,
           willChange: "transform",
@@ -133,11 +137,16 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
         <AnimatePresence mode="wait">
           <motion.div
             key={idx}
-            initial={{ clipPath: `inset(0 100% 0 0)` }}
-            animate={{ clipPath: `inset(0 ${wipeX}% 0 0)` }}
-            exit={{ clipPath: `inset(0 0 0 100%)` }}
-            transition={{ duration: 0.42, ease: [0.4, 0, 0.2, 1] }}
-            style={{ width: ICON_SIZE, height: ICON_SIZE, position: "absolute", inset: 0 }}
+            style={{
+              width: ICON_SIZE,
+              height: ICON_SIZE,
+              position: "absolute",
+              inset: 0,
+            }}
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            animate={{ clipPath: "inset(0 0% 0 0)" }}
+            exit={{ clipPath: "inset(0 0 0 100%)" }}
+            transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
           >
             <img
               src={ICONS[idx].src}
@@ -147,7 +156,7 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
                 width: "100%",
                 height: "100%",
                 objectFit: "contain",
-                filter: "drop-shadow(0 0 14px rgba(255,138,0,0.25))",
+                filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
               }}
             />
           </motion.div>
@@ -158,16 +167,27 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
         style={{
           position: "absolute",
           bottom: "18%",
-          width: 200,
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
-          gap: 12,
+          gap: 14,
         }}
       >
+        <span
+          style={{
+            fontFamily: "var(--font-mono, monospace)",
+            fontSize: 14,
+            fontWeight: 800,
+            color: "#ffffff",
+            minWidth: 40,
+            textAlign: "right",
+            letterSpacing: "0.05em",
+          }}
+        >
+          {pct}%
+        </span>
         <div
           style={{
-            width: "100%",
+            width: 200,
             height: 3,
             borderRadius: 2,
             background: "rgba(255,255,255,0.08)",
@@ -186,16 +206,6 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
             transition={{ type: "spring", stiffness: 80, damping: 20 }}
           />
         </div>
-        <span
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: 11,
-            color: "rgba(255,255,255,0.35)",
-            letterSpacing: "0.16em",
-          }}
-        >
-          {pct}%
-        </span>
       </div>
     </div>
   )
