@@ -33,7 +33,7 @@ const SVG_SHAPES = [
   },
   {
     name: 'controller',
-    paths: ['M20,40 Q20,25 35,25 L65,25 Q80,25 80,40 L80,60 Q80,75 65,75 L35,75 Q20,75 20,60 Z M40,35 L40,45 L50,45 L50,35 M35,40 L45,40 M40,45 L40,55 M60,35 A5,5 0 1,1 60,45 M70,40 A5,5 0 1,1 70,50'],
+    paths: ['M20,40 Q20,25 35,25 L65,25 Q80,25 80,40 L80,60 Q80,75 65,75 L35,75 Q20,75 20,60 Z M40,35 L40,45 L50,45 L50,35 M35,40 L45,40 M40,45 L40,55 M60,35 A5,5 0 1,1 60,45 M70,40 A5,5 0 1,1 70,[...]'],
     viewBox: '0 0 100 100',
   },
 ]
@@ -110,7 +110,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
       style={{
         position: 'fixed',
         inset: 0,
-        background: '#ffffff',
+        background: '#000000',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -133,7 +133,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
             width: '100%',
             height: 6,
             borderRadius: 3,
-            background: '#e0e0e0',
+            background: '#333333',
             overflow: 'hidden',
           }}
         >
@@ -141,7 +141,8 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
             style={{
               height: '100%',
               borderRadius: 3,
-              background: '#000000',
+              background: '#ffffff',
+              fontWeight: 'bold',
             }}
             initial={{ width: '0%' }}
             animate={{ width: `${progress}%` }}
