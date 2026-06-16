@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { motion, AnimatePresence, useSpring, useMotionValueEvent } from 'framer-motion'
+import { motion, useSpring } from 'framer-motion'
 
 const ICONS = [
   { src: '/svg/chess.png', alt: 'Chess' },
@@ -13,6 +13,9 @@ const ICONS = [
 
 const ICON_SIZE = 120
 const DROP_HEIGHT = 260
+const FALL_MS = 420
+const RISE_MS = 420
+const WIPE_MS = 400
 
 const ALL_ASSETS = [
   '/svg/chess.png', '/svg/car.png', '/svg/ball.png', '/svg/rocket.png', '/svg/controller.png',
@@ -51,7 +54,8 @@ function preloadAssets(onProgress: (p: number) => void) {
 export default function PlayfulLoader({ progress: externalProgress }: { progress?: number }) {
   const [idx, setIdx] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [phase, setPhase] = useState<'falling' | 'rising' | 'wiping'>('falling')
+  const [wipeProgress, setWipeProgress] = useState(0)
+  const [isWiping, setIsWiping] = useState(false)
   const timers = useRef<NodeJS.Timeout[]>([])
 
   const y = useSpring(-DROP_HEIGHT, { stiffness: 120, damping: 13, mass: 1 })
@@ -76,28 +80,32 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
     sx.set(1)
     sy.set(1)
 
-    setPhase('falling')
+    // 1. Fall to bar
     y.set(0)
     sx.set(1.2)
     sy.set(0.78)
 
+    // 2. Squash recover + bounce back to top
     schedule(() => {
       sx.set(1)
       sy.set(1)
-      setPhase('rising')
       y.set(-DROP_HEIGHT)
-    }, 380)
+    }, FALL_MS)
 
+    // 3. At top: wipe to next icon
     schedule(() => {
-      setPhase('wiping')
+      setIsWiping(true)
+      setWipeProgress(100)
+
       schedule(() => {
         setIdx((p) => (p + 1) % ICONS.length)
-        schedule(() => {
-          setPhase('falling')
-          bounce()
-        }, 50)
-      }, 400)
-    }, 380 + 420)
+        setWipeProgress(0)
+        setIsWiping(false)
+
+        // 4. Fall again with new icon
+        schedule(bounce, 80)
+      }, WIPE_MS)
+    }, FALL_MS + RISE_MS)
   }, [y, sx, sy])
 
   useEffect(() => {
@@ -134,33 +142,48 @@ export default function PlayfulLoader({ progress: externalProgress }: { progress
           borderRadius: 18,
         }}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={idx}
+        <div
+          style={{
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+            position: "absolute",
+            inset: 0,
+            clipPath: `inset(0 ${wipeProgress}% 0 0)`,
+            transition: isWiping ? `clip-path ${WIPE_MS}ms cubic-bezier(0.4,0,0.2,1)` : 'none',
+          }}
+        >
+          <img
+            src={ICONS[(idx + 1) % ICONS.length].src}
+            alt={ICONS[(idx + 1) % ICONS.length].alt}
+            draggable={false}
             style={{
-              width: ICON_SIZE,
-              height: ICON_SIZE,
-              position: "absolute",
-              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
             }}
-            initial={{ clipPath: "inset(0 100% 0 0)" }}
-            animate={{ clipPath: "inset(0 0% 0 0)" }}
-            exit={{ clipPath: "inset(0 0 0 100%)" }}
-            transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <img
-              src={ICONS[idx].src}
-              alt={ICONS[idx].alt}
-              draggable={false}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-              }}
-            />
-          </motion.div>
-        </AnimatePresence>
+          />
+        </div>
+        <div
+          style={{
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+            position: "absolute",
+            inset: 0,
+          }}
+        >
+          <img
+            src={ICONS[idx].src}
+            alt={ICONS[idx].alt}
+            draggable={false}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
+            }}
+          />
+        </div>
       </motion.div>
 
       <div
