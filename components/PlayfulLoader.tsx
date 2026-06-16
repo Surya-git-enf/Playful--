@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, useSpring, animate } from 'framer-motion'
+import { motion, useSpring } from 'framer-motion'
 
 const ICONS = [
   { src: '/svg/chess.png', alt: 'Chess' },
@@ -40,8 +40,9 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
   const [nextIdx, setNextIdx] = useState(1)
   const [progress, setProgress] = useState(0)
   const [wipeIn, setWipeIn] = useState(0)
-  const [wipeOut, setWipeOut] = useState(100)
-  const running = useRef(true)
+  const [wipeOut, setWipeOut] = useState(0)
+  const [transitioning, setTransitioning] = useState(false)
+  const idxRef = useRef(0)
 
   const y = useSpring(-DROP, { stiffness: 120, damping: 13, mass: 1 })
   const sx = useSpring(1, { stiffness: 500, damping: 12 })
@@ -52,45 +53,53 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
   const pct = ext ?? progress
 
   useEffect(() => {
-    let timers: NodeJS.Timeout[] = []
-    const wait = (ms: number) => new Promise<void>((r) => { const t = setTimeout(r, ms); timers.push(t) })
+    let alive = true
+    const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 
     const run = async () => {
-      while (running.current) {
-        // 1. Set next icon
-        const ni = (curIdx + 1) % ICONS.length
+      await wait(300)
+
+      while (alive) {
+        const ci = idxRef.current
+        const ni = (ci + 1) % ICONS.length
+
+        // Prepare next
         setNextIdx(ni)
         setWipeIn(0)
-        setWipeOut(100)
+        setWipeOut(0)
+        setTransitioning(false)
 
-        // 2. Fall
-        await wait(60)
+        // 1. Fall
+        await wait(50)
         y.set(0)
         sx.set(1.2)
         sy.set(0.78)
         await wait(400)
 
-        // 3. Squash recover + rise
+        // 2. Recover + rise
         sx.set(1)
         sy.set(1)
         y.set(-DROP)
         await wait(420)
 
-        // 4. Wipe: current OUT + next IN simultaneously
-        setWipeOut(0)
-        setWipeIn(100)
-        await wait(400)
-
-        // 5. Swap
-        setCurIdx(ni)
-        setWipeIn(0)
+        // 3. At top: wipe current OUT, next IN simultaneously
+        setTransitioning(true)
         setWipeOut(100)
-        await wait(60)
+        setWipeIn(100)
+        await wait(420)
+
+        // 4. Done — swap
+        idxRef.current = ni
+        setCurIdx(ni)
+        setWipeOut(0)
+        setWipeIn(0)
+        setTransitioning(false)
+        await wait(50)
       }
     }
 
     run()
-    return () => { running.current = false; timers.forEach(clearTimeout) }
+    return () => { alive = false }
   }, [y, sx, sy])
 
   return (
@@ -120,39 +129,41 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
           borderRadius: 18,
         }}
       >
-        {/* Current: wipes OUT to right */}
-        <div
+        {/* Current image — always visible, wipes OUT when transitioning */}
+        <img
+          src={ICONS[curIdx].src}
+          alt={ICONS[curIdx].alt}
+          draggable={false}
           style={{
             position: "absolute",
             inset: 0,
-            clipPath: `inset(0 0 0 ${wipeOut}%)`,
-            transition: "clip-path 0.38s cubic-bezier(0.4,0,0.2,1)",
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
+            clipPath: transitioning ? `inset(0 0 0 ${wipeOut}%)` : "none",
+            transition: "clip-path 0.4s cubic-bezier(0.4,0,0.2,1)",
           }}
-        >
-          <img
-            src={ICONS[curIdx].src}
-            alt={ICONS[curIdx].alt}
-            draggable={false}
-            style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))" }}
-          />
-        </div>
+        />
 
-        {/* Next: wipes IN from right */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            clipPath: `inset(0 ${100 - wipeIn}% 0 0)`,
-            transition: "clip-path 0.38s cubic-bezier(0.4,0,0.2,1)",
-          }}
-        >
+        {/* Next image — hidden, wipes IN when transitioning */}
+        {transitioning && (
           <img
             src={ICONS[nextIdx].src}
             alt={ICONS[nextIdx].alt}
             draggable={false}
-            style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))" }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
+              clipPath: `inset(0 ${100 - wipeIn}% 0 0)`,
+              transition: "clip-path 0.4s cubic-bezier(0.4,0,0.2,1)",
+            }}
           />
-        </div>
+        )}
       </motion.div>
 
       <div
