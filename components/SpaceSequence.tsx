@@ -86,7 +86,7 @@ export default function SpaceSequence({ isActive }: Props) {
             filter: drop-shadow(0 0 40px rgba(80, 160, 255, 0.18)) drop-shadow(0 0 80px rgba(60, 120, 255, 0.08));
           }
           50% {
-            transform: translateX(-50%) scale(1.08);
+            transform: translateX(-50%) scale(1.5);
             filter: drop-shadow(0 0 70px rgba(90, 175, 255, 0.34)) drop-shadow(0 0 120px rgba(70, 140, 255, 0.16));
           }
         }
@@ -204,7 +204,7 @@ export default function SpaceSequence({ isActive }: Props) {
         opacity: mounted ? 1 : 0,
         transition: `opacity 0.3s ${premiumEase}`,
         animation: mounted
-          ? 'earthBreathe 1.5s ease-in-out infinite 0.3s'
+          ? 'earthBreathe 2s ease-in-out infinite 0.3s'
           : 'none',
       }}>
         <div style={{ position: 'relative' }}>
