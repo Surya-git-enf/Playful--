@@ -152,17 +152,17 @@ function ArcFooterSection() {
 
   return (
     <section ref={secRef} className="final-section" style={{
-      padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)',
-      justifyContent: 'space-between',
+      padding: '8px 16px', borderTop: '1px solid rgba(255,255,255,0.05)',
+      justifyContent: 'space-between', gap: 0,
     }}>
-      <div className="card-side" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
+      <div className="card-side" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 2 }}>
           <div style={{ width: 24, height: 1, background: 'rgba(255,255,255,.16)' }} />
           <span style={{ fontSize: '.55rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>Select Your Universe</span>
           <div style={{ width: 24, height: 1, background: 'rgba(255,255,255,.16)' }} />
         </div>
 
-        <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           {ARC_CARDS.map((c, i) => (
             <div key={i} className="arc-card" style={{
               position: 'absolute', top: '50%', left: '50%',
@@ -183,8 +183,8 @@ function ArcFooterSection() {
       </div>
 
       <div className="info-side" style={{ width: '100%' }}>
-        <footer style={{ width: '100%', paddingTop: 10, borderTop: '1px solid rgba(255,255,255,.05)' }}>
-          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%', display: 'flex', flexWrap: 'wrap' as const, justifyContent: 'space-between', gap: 16, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <footer style={{ width: '100%', paddingTop: 6, borderTop: '1px solid rgba(255,255,255,.05)' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%', display: 'flex', flexWrap: 'wrap' as const, justifyContent: 'space-between', gap: 12, paddingBottom: 6, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ maxWidth: 280 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <img src="/logo.png" alt="Playful" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover' as const }} />
@@ -206,7 +206,7 @@ function ArcFooterSection() {
               ))}
             </div>
           </div>
-          <div style={{ maxWidth: 900, margin: '6px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.55rem', color: 'rgba(255,255,255,0.2)' }}>© 2026 Playful</div>
+          <div style={{ maxWidth: 900, margin: '4px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.55rem', color: 'rgba(255,255,255,0.2)' }}>© 2026 Playful</div>
         </footer>
       </div>
     </section>
