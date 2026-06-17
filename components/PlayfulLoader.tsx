@@ -12,7 +12,7 @@ const ICONS = [
 ]
 
 const ICON_SIZE = 120
-const DROP = 180
+const DROP = 100
 
 const ALL_ASSETS = [
   '/svg/chess.png', '/svg/car.png', '/svg/ball.png', '/svg/rocket.png', '/svg/controller.png',
