@@ -159,17 +159,15 @@ export default function Home() {
     })
   }, [])
 
-  // Scroll-back: when user scrolls the snap container back to top,
-  // re-lock the hero so HeroCanvas takes over again.
+  // Scroll-back: when user scrolls to top, re-lock hero
   useEffect(() => {
     if (!heroReleased) return
     const root = document.getElementById('scroll-root')
     if (!root) return
     const onScroll = () => {
-      if (root.scrollTop <= 50) {
+      if (root.scrollTop <= 5) {
         heroReleasedRef.current = false
         setHeroReleased(false)
-        root.scrollTo({ top: 0, behavior: 'instant' })
       }
     }
     root.addEventListener('scroll', onScroll, { passive: true })
@@ -215,9 +213,9 @@ export default function Home() {
 
       <div style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        // FIX: Removed the opacity fade entirely to prevent the black screen flash.
-        // By just toggling pointerEvents, the canvas stays visually fixed in the background smoothly.
+        opacity: heroReleased ? 0 : 1,
         pointerEvents: heroReleased ? 'none' : 'auto',
+        transition: 'opacity 0.5s ease',
       }}>
         <HeroCanvas
           onRelease={handleRelease}
@@ -243,7 +241,7 @@ export default function Home() {
           overflowX: 'hidden',
           scrollSnapType: 'y proximity',
           scrollBehavior: 'smooth',
-          background: 'transparent',
+          background: heroReleased ? '#020510' : 'transparent',
           pointerEvents: heroReleased ? 'auto' : 'none',
         }}
       >
