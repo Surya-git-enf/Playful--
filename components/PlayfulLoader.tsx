@@ -169,7 +169,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
       <div
         style={{
           position: "absolute",
-          bottom: "48%",
+          bottom: "47%",
           display: "flex",
           alignItems: "center",
           gap: 14,
