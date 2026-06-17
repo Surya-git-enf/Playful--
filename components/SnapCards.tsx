@@ -219,7 +219,7 @@ function ArcAndFooterSection() {
           <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
         </div>
 
-        <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {ARC_CARDS.map((c, i) => (
             <div key={i} className="arc-card" style={{
               position: 'absolute', top: '50%', left: '50%',
