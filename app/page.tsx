@@ -215,7 +215,6 @@ export default function Home() {
         position: 'fixed', inset: 0, zIndex: 100,
         opacity: heroReleased ? 0 : 1,
         pointerEvents: heroReleased ? 'none' : 'auto',
-        transition: 'opacity 0.5s ease',
       }}>
         <HeroCanvas
           onRelease={handleRelease}

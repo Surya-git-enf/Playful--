@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 const CARDS = [
   { title: 'Lego of Logic',  src: '/cards/lego.mp4',  accent: '#a855f7', label: 'Generating Assets...' },
   { title: 'Big Bang',       src: '/cards/bang.mp4',  accent: '#00eaff', label: 'Simulating Physics...' },
+  { title: 'Instant Arena',  src: '/cards/play.mp4',  accent: '#ff4b91', label: 'Loading Environment...' },
 ]
 
 const ARC_CARDS = [
@@ -58,7 +59,7 @@ export default function SnapCards({ isActive }: Props) {
 
       <div className="snap-page">
         {CARDS.map((c, i) => <CardSection key={i} card={c} />)}
-        <FinalSection />
+        <ArcFooterSection />
       </div>
     </>
   )
@@ -121,7 +122,7 @@ function CardSection({ card }: { card: typeof CARDS[number] }) {
   )
 }
 
-function FinalSection() {
+function ArcFooterSection() {
   const stageRef = useRef<HTMLDivElement>(null)
   const secRef = useRef<HTMLElement>(null)
   const centerRef = useRef(0)
@@ -152,23 +153,16 @@ function FinalSection() {
   return (
     <section ref={secRef} className="final-section" style={{
       padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)',
-      justifyContent: 'space-between', gap: 0,
+      justifyContent: 'space-between',
     }}>
-      {/* Left: card-side with title + carousel */}
       <div className="card-side" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <h2 className="snap-heading show" style={{
-          fontFamily: 'var(--font-serif,Instrument Serif,serif)', fontStyle: 'italic', fontWeight: 400,
-          fontSize: 'clamp(2rem,5vw,4.5rem)', lineHeight: 1, color: '#fff', margin: '0 0 8px',
-          textShadow: '0 10px 30px rgba(0,0,0,0.8)',
-        }}>Instant Arena</h2>
-
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
           <div style={{ width: 24, height: 1, background: 'rgba(255,255,255,.16)' }} />
           <span style={{ fontSize: '.55rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>Select Your Universe</span>
           <div style={{ width: 24, height: 1, background: 'rgba(255,255,255,.16)' }} />
         </div>
 
-        <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           {ARC_CARDS.map((c, i) => (
             <div key={i} className="arc-card" style={{
               position: 'absolute', top: '50%', left: '50%',
@@ -188,7 +182,6 @@ function FinalSection() {
         </div>
       </div>
 
-      {/* Right: footer */}
       <div className="info-side" style={{ width: '100%' }}>
         <footer style={{ width: '100%', paddingTop: 10, borderTop: '1px solid rgba(255,255,255,.05)' }}>
           <div style={{ maxWidth: 900, margin: '0 auto', width: '100%', display: 'flex', flexWrap: 'wrap' as const, justifyContent: 'space-between', gap: 16, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
