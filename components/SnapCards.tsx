@@ -5,7 +5,6 @@ import { useEffect, useRef } from 'react'
 const CARDS = [
   { title: 'Lego of Logic',  src: '/cards/lego.mp4',  accent: '#a855f7', label: 'Generating Assets...' },
   { title: 'Big Bang',       src: '/cards/bang.mp4',  accent: '#00eaff', label: 'Simulating Physics...' },
-  { title: 'Instant Arena',  src: '/cards/play.mp4',  accent: '#ff4b91', label: 'Loading Environment...' },
 ]
 
 const ARC_CARDS = [
@@ -50,15 +49,16 @@ export default function SnapCards({ isActive }: Props) {
         .arc-card { transition: all 0.6s cubic-bezier(0.25,1,0.5,1); }
         @media (min-width: 1024px) {
           .snap-tile { width: 50% !important; max-width: 900px !important; aspect-ratio: 16/10 !important; height: auto !important; }
-          .last-section { flex-direction: row !important; gap: 30px !important; padding: 20px 40px !important; }
-          .last-section .carousel-wrap { width: 55% !important; height: 100% !important; }
-          .last-section .footer-wrap { width: 40% !important; }
+          .final-section { flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; gap: 20px !important; padding: 15px 30px !important; }
+          .final-section .card-side { width: 45% !important; }
+          .final-section .info-side { width: 50% !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
         }
+        .soc-link:hover { background:rgba(0,234,255,.1)!important; border-color:#00eaff!important; }
       `}</style>
 
       <div className="snap-page">
         {CARDS.map((c, i) => <CardSection key={i} card={c} />)}
-        <LastSection />
+        <FinalSection />
       </div>
     </>
   )
@@ -73,11 +73,7 @@ function CardSection({ card }: { card: typeof CARDS[number] }) {
 
   useEffect(() => {
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        headRef.current?.classList.add('show')
-        tileRef.current?.classList.add('show')
-        vidRef.current?.play().catch(() => {})
-      }
+      if (e.isIntersecting) { headRef.current?.classList.add('show'); tileRef.current?.classList.add('show'); vidRef.current?.play().catch(() => {}) }
     }, { threshold: 0.3 })
     if (ref.current) io.observe(ref.current)
     return () => io.disconnect()
@@ -96,10 +92,10 @@ function CardSection({ card }: { card: typeof CARDS[number] }) {
 
   return (
     <section ref={ref} style={{ padding: '50px 20px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
         <h2 ref={headRef} className="snap-heading" style={{
           fontFamily: 'var(--font-serif,Instrument Serif,serif)', fontStyle: 'italic', fontWeight: 400,
-          fontSize: 'clamp(3rem,7vw,7rem)', lineHeight: 1, color: '#fff',
+          fontSize: 'clamp(2.5rem,6vw,6rem)', lineHeight: 1, color: '#fff',
           textShadow: '0 10px 30px rgba(0,0,0,0.8)', margin: 0,
         }}>{card.title}</h2>
       </div>
@@ -125,7 +121,7 @@ function CardSection({ card }: { card: typeof CARDS[number] }) {
   )
 }
 
-function LastSection() {
+function FinalSection() {
   const stageRef = useRef<HTMLDivElement>(null)
   const secRef = useRef<HTMLElement>(null)
   const centerRef = useRef(0)
@@ -135,7 +131,7 @@ function LastSection() {
       const cards = stageRef.current?.querySelectorAll<HTMLDivElement>('.arc-card')
       if (!cards) return
       const total = ARC_CARDS.length, c = centerRef.current
-      const xStep = window.innerWidth < 600 ? 80 : 130
+      const xStep = window.innerWidth < 600 ? 70 : 120
       if (secRef.current) secRef.current.style.background = `radial-gradient(circle at top,${ARC_CARDS[c].color} 0%,#020510 70%)`
       cards.forEach((card, i) => {
         let diff = (i - c) % total
@@ -143,7 +139,7 @@ function LastSection() {
         if (diff < -total / 2) diff += total
         const abs = Math.abs(diff)
         if (abs > 2) { card.style.opacity = '0'; return }
-        card.style.transform = `translate(calc(-50% + ${diff * xStep}px),calc(-50% + ${abs * 15}px)) scale(${1 - abs * 0.12}) rotate(${diff * 6}deg)`
+        card.style.transform = `translate(calc(-50% + ${diff * xStep}px),calc(-50% + ${abs * 12}px)) scale(${1 - abs * 0.1}) rotate(${diff * 5}deg)`
         card.style.zIndex = String(10 - abs)
         card.style.opacity = String(1 - abs * 0.3)
       })
@@ -154,59 +150,72 @@ function LastSection() {
   }, [])
 
   return (
-    <section ref={secRef} className="last-section" style={{ justifyContent: 'flex-start', padding: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
-        <div style={{ width: 30, height: 1, background: 'rgba(255,255,255,.16)' }} />
-        <span style={{ fontSize: '.6rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>Select Your Universe</span>
-        <div style={{ width: 30, height: 1, background: 'rgba(255,255,255,.16)' }} />
+    <section ref={secRef} className="final-section" style={{
+      padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.05)',
+      justifyContent: 'space-between', gap: 0,
+    }}>
+      {/* Left: card-side with title + carousel */}
+      <div className="card-side" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <h2 className="snap-heading show" style={{
+          fontFamily: 'var(--font-serif,Instrument Serif,serif)', fontStyle: 'italic', fontWeight: 400,
+          fontSize: 'clamp(2rem,5vw,4.5rem)', lineHeight: 1, color: '#fff', margin: '0 0 8px',
+          textShadow: '0 10px 30px rgba(0,0,0,0.8)',
+        }}>Instant Arena</h2>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
+          <div style={{ width: 24, height: 1, background: 'rgba(255,255,255,.16)' }} />
+          <span style={{ fontSize: '.55rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>Select Your Universe</span>
+          <div style={{ width: 24, height: 1, background: 'rgba(255,255,255,.16)' }} />
+        </div>
+
+        <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {ARC_CARDS.map((c, i) => (
+            <div key={i} className="arc-card" style={{
+              position: 'absolute', top: '50%', left: '50%',
+              width: 'clamp(130px,25vw,200px)', aspectRatio: '4/5' as any,
+              borderRadius: 12, background: 'rgba(2,5,16,0.6)', backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', textAlign: 'center' as const, padding: 10,
+              boxShadow: '0 12px 24px rgba(0,0,0,0.5)',
+            }}>
+              <div style={{ width: '65%', aspectRatio: '1' as any, borderRadius: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,rgba(255,255,255,0.05),transparent)' }}>
+                <span style={{ fontSize: '1.8rem' }}>{c.e}</span>
+              </div>
+              <div style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontSize: '0.7rem', fontWeight: 700, marginBottom: 3 }}>{c.n}</div>
+              <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.2 }}>{c.d}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div ref={stageRef} className="carousel-wrap" style={{ position: 'relative', width: '100%', height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        {ARC_CARDS.map((c, i) => (
-          <div key={i} className="arc-card" style={{
-            position: 'absolute', top: '50%', left: '50%',
-            width: 'clamp(150px,28vw,220px)', aspectRatio: '4/5' as any,
-            borderRadius: 14, background: 'rgba(2,5,16,0.6)', backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', textAlign: 'center' as const, padding: 12,
-            boxShadow: '0 15px 30px rgba(0,0,0,0.5)',
-          }}>
-            <div style={{ width: '70%', aspectRatio: '1' as any, borderRadius: 10, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,rgba(255,255,255,0.05),transparent)' }}>
-              <span style={{ fontSize: '2.2rem' }}>{c.e}</span>
+      {/* Right: footer */}
+      <div className="info-side" style={{ width: '100%' }}>
+        <footer style={{ width: '100%', paddingTop: 10, borderTop: '1px solid rgba(255,255,255,.05)' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%', display: 'flex', flexWrap: 'wrap' as const, justifyContent: 'space-between', gap: 16, paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ maxWidth: 280 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <img src="/logo.png" alt="Playful" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover' as const }} />
+                <span style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontWeight: 900, fontSize: '.8rem', letterSpacing: '.2em' }}>PLAYFUL</span>
+              </div>
+              <p style={{ fontSize: '.65rem', color: 'rgba(255,255,255,.35)', lineHeight: 1.3, marginBottom: 8 }}>Turn your words into worlds. Get a playable game in seconds.</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {['I', 'D'].map(l => (
+                  <a key={l} href="#" style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none', fontSize: '.5rem', color: 'rgba(255,255,255,0.5)' }}>{l}</a>
+                ))}
+              </div>
             </div>
-            <div style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontSize: '0.8rem', fontWeight: 700, marginBottom: 4 }}>{c.n}</div>
-            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.3 }}>{c.d}</div>
-          </div>
-        ))}
-      </div>
-
-      <footer className="footer-wrap" style={{ width: '100%', marginTop: 'auto', paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.05)' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', width: '100%', display: 'flex', flexWrap: 'wrap' as const, justifyContent: 'space-between', gap: 20, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ maxWidth: 300 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <img src="/logo.png" alt="Playful" style={{ width: 26, height: 26, borderRadius: 6, objectFit: 'cover' as const }} />
-              <span style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontWeight: 900, fontSize: '.85rem', letterSpacing: '.2em' }}>PLAYFUL</span>
-            </div>
-            <p style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.35)', lineHeight: 1.4, marginBottom: 12 }}>Turn your words into worlds. Type a prompt, get a playable game.</p>
-            <div style={{ display: 'flex', gap: 10 }}>
-              {['Instagram', 'Discord'].map(l => (
-                <a key={l} href="#" style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none' }}>
-                  <span style={{ fontSize: '.55rem', color: 'rgba(255,255,255,0.5)' }}>{l[0]}</span>
-                </a>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' as const }}>
+              {[{ h: 'PLATFORM', l: ['About', 'Showcase'] }, { h: 'SUPPORT', l: ['Contact', 'Docs'] }].map(({ h, l }) => (
+                <div key={h} style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
+                  <h4 style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', color: '#fff', fontSize: '.6rem', letterSpacing: '.05em' }}>{h}</h4>
+                  {l.map(t => <a key={t} href="#" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none', fontSize: '.6rem' }}>{t}</a>)}
+                </div>
               ))}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 30, flexWrap: 'wrap' as const }}>
-            {[{ h: 'PLATFORM', l: ['About', 'Showcase'] }, { h: 'SUPPORT', l: ['Contact', 'Docs'] }].map(({ h, l }) => (
-              <div key={h} style={{ display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
-                <h4 style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', color: '#fff', fontSize: '.7rem', letterSpacing: '.05em' }}>{h}</h4>
-                {l.map(t => <a key={t} href="#" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none', fontSize: '.7rem' }}>{t}</a>)}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{ maxWidth: 1000, margin: '8px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.6rem', color: 'rgba(255,255,255,0.2)' }}>© 2026 Playful</div>
-      </footer>
+          <div style={{ maxWidth: 900, margin: '6px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.55rem', color: 'rgba(255,255,255,0.2)' }}>© 2026 Playful</div>
+        </footer>
+      </div>
     </section>
   )
 }
