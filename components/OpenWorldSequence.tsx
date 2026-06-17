@@ -36,7 +36,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         */
         @keyframes worldBreathe {
           0%   { transform: scale(1) translate3d(0,0,0); }
-          100% { transform: scale(1.06) translate3d(0,0,0); }
+          100% { transform: scale(1.08) translate3d(0,0,0); }
         }
 
         @keyframes moonPulse {
@@ -163,7 +163,7 @@ export default function OpenWorldSequence({ isActive }: Props) {
         <div style={{
           width: '100%',
           height: '100%',
-          animation: mounted ? 'worldBreathe 3s ease-in-out infinite alternate 2s' : 'none',
+          animation: mounted ? 'worldBreathe 2s ease-in-out infinite alternate 2s' : 'none',
         }}>
           {/* VRAM FIX: Removed static CSS filter from huge image block! */}
           <img

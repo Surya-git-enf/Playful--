@@ -565,12 +565,12 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
             fontFamily: 'var(--font-serif,"Instrument Serif",serif)',
             fontStyle: 'italic',
             fontWeight: 400,
-            fontSize: 'clamp(2.6rem, 7vw, 6.5rem)',
+            fontSize: 'clamp(2rem, 5.5vw, 6.5rem)',
             color: '#fff',
             margin: 0,
             textShadow: '0 4px 40px rgba(0,0,0,0.8), 0 0 80px rgba(255,255,255,0.2)',
             letterSpacing: '0.02em',
-            maxWidth: '92vw',
+            whiteSpace: 'nowrap',
           }}>
             Step into the Kingdom
           </h2>

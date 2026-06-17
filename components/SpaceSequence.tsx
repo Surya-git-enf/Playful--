@@ -86,7 +86,7 @@ export default function SpaceSequence({ isActive }: Props) {
             filter: drop-shadow(0 0 40px rgba(80, 160, 255, 0.18)) drop-shadow(0 0 80px rgba(60, 120, 255, 0.08));
           }
           50% {
-            transform: translateX(-50%) scale(1.045);
+            transform: translateX(-50%) scale(1.08);
             filter: drop-shadow(0 0 70px rgba(90, 175, 255, 0.34)) drop-shadow(0 0 120px rgba(70, 140, 255, 0.16));
           }
         }
@@ -107,16 +107,16 @@ export default function SpaceSequence({ isActive }: Props) {
           100% { transform: translateX(200%) skewX(-15deg); }
         }
         @media (max-width: 1366px) {
-          .space-earth { width: clamp(180px, 32vw, 500px) !important; }
+          .space-earth { width: clamp(220px, 36vw, 550px) !important; }
           .space-astronaut { left: 55% !important; height: 18vh !important; }
         }
         @media (max-width: 768px) {
-          .space-earth { width: clamp(150px, 40vw, 300px) !important; top: 10% !important; }
+          .space-earth { width: clamp(180px, 42vw, 350px) !important; top: 10% !important; }
           .space-astronaut { left: 50% !important; height: 15vh !important; bottom: 12% !important; }
           .space-prompt-panel { top: 68% !important; }
         }
         @media (max-width: 480px) {
-          .space-earth { width: clamp(130px, 50vw, 220px) !important; top: 12% !important; }
+          .space-earth { width: clamp(150px, 50vw, 260px) !important; top: 12% !important; }
           .space-astronaut { left: 48% !important; height: 12vh !important; bottom: 14% !important; }
           .space-prompt-panel { top: 62% !important; width: min(95vw, 660px) !important; }
         }
@@ -198,13 +198,13 @@ export default function SpaceSequence({ isActive }: Props) {
         position: 'absolute',
         top: '8%',
         left: '50%',
-        width: 'clamp(200px, 36vw, 620px)',
+        width: 'clamp(280px, 42vw, 700px)',
         zIndex: 3,
         transform: 'translateX(-50%)',
         opacity: mounted ? 1 : 0,
         transition: `opacity 0.3s ${premiumEase}`,
         animation: mounted
-          ? 'earthBreathe 4s ease-in-out infinite 0.3s'
+          ? 'earthBreathe 1.5s ease-in-out infinite 0.3s'
           : 'none',
       }}>
         <div style={{ position: 'relative' }}>
