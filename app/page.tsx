@@ -241,7 +241,7 @@ export default function Home() {
           zIndex: 150,
           overflowY: heroReleased ? 'scroll' : 'hidden',
           overflowX: 'hidden',
-          scrollSnapType: 'y mandatory',
+          scrollSnapType: 'y proximity',
           scrollBehavior: 'smooth',
           background: 'transparent',
           pointerEvents: heroReleased ? 'auto' : 'none',

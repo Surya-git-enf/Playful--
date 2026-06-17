@@ -35,9 +35,8 @@ export default function SnapCards({ isActive }: Props) {
         }
         .sc-section {
           scroll-snap-align: start;
-          scroll-snap-stop: always;
           width: 100%;
-          height: 100dvh;
+          min-height: 100dvh;
           flex-shrink: 0;
           display: flex;
           flex-direction: column;
