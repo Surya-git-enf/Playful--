@@ -84,6 +84,16 @@ export default function SnapCards({ isActive }: Props) {
         /* ── Arc cards ── */
         .arc-card { transition: all 0.6s cubic-bezier(0.25,1,0.5,1); }
 
+        /* ── Laptop: bigger card ── */
+        @media (min-width: 1024px) {
+          .sc-tile {
+            width: 50% !important;
+            max-width: 900px !important;
+            aspect-ratio: 16/10 !important;
+            height: auto !important;
+          }
+        }
+
         /* ── Footer hovers ── */
         .soc-link:hover { background:rgba(0,234,255,.1)!important; border-color:#00eaff!important; transform:translateY(-3px); }
         .soc-link:hover svg { fill:#fff!important; }
@@ -157,8 +167,8 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
 
       {/* Card — original maxWidth + aspectRatio, fixed so it never grows beyond 1000px */}
       <div ref={tileRef} className="sc-tile" style={{
-        width: '100%',
-        maxWidth: '1000px',
+        width: '92%',
+        maxWidth: '480px',
         aspectRatio: '7/10',
         position: 'relative',
         borderRadius: '20px',
