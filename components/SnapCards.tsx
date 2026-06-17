@@ -201,13 +201,13 @@ function ArcAndFooterSection() {
   return (
     <section ref={sectionRef} className="sc-section" style={{
       ...snapSection,
-      justifyContent: 'flex-start',
-      padding: 'clamp(60px,10vh,100px) 0 0',
+      justifyContent: 'space-between',
+      padding: 'clamp(40px,8vh,80px) 0 0',
       overflow: 'hidden',
       borderTop: '1px solid rgba(255,255,255,0.05)',
       transition: 'background 1s ease-in-out',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 60 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 40 }}>
         <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
         <span style={{ fontSize: '.7rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>
           Select Your Universe
