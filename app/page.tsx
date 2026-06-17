@@ -149,13 +149,12 @@ export default function Home() {
     if (heroReleasedRef.current) return
     heroReleasedRef.current = true
     setHeroReleased(true)
-    // Wait two frames — first for React to re-render the container
-    // with overflow:scroll, second for the browser to recognise it —
-    // then programmatically snap to the first card section.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const root = document.getElementById('scroll-root')
-        if (root) root.scrollTo({ top: root.clientHeight, behavior: 'smooth' })
+        if (root) {
+          root.scrollTo({ top: root.clientHeight, behavior: 'smooth' })
+        }
       })
     })
   }, [])
@@ -167,10 +166,9 @@ export default function Home() {
     const root = document.getElementById('scroll-root')
     if (!root) return
     const onScroll = () => {
-      if (root.scrollTop <= 10) {
+      if (root.scrollTop <= 50) {
         heroReleasedRef.current = false
         setHeroReleased(false)
-        // Instantly snap container back to top (no visible jump)
         root.scrollTo({ top: 0, behavior: 'instant' })
       }
     }
@@ -245,16 +243,11 @@ export default function Home() {
           overflowX: 'hidden',
           scrollSnapType: 'y mandatory',
           scrollBehavior: 'smooth',
-          // Transparent until content below the hero placeholder
-          // becomes visible — the HeroCanvas shows through.
           background: 'transparent',
-          // Pointer events only when released so HeroCanvas wheel
-          // events still fire during the hero experience.
           pointerEvents: heroReleased ? 'auto' : 'none',
         }}
       >
-        {/* Hero placeholder — same height as the viewport, acts as
-            the first snap stop. The HeroCanvas is fixed behind it. */}
+        {/* Hero placeholder — same height as the viewport */}
         <div style={{ height: '100vh', flexShrink: 0, scrollSnapAlign: 'start' }} aria-hidden="true" />
 
         {/* All card sections */}

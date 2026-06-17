@@ -22,10 +22,15 @@ interface Props { isActive: boolean }
 
 /* shared snap section style */
 const snapSection: React.CSSProperties = {
-  scrollSnapAlign: 'start',
+  scrollSnapAlign: 'center',
   scrollSnapStop: 'always',
-  minHeight: '100vh',
+  height: '100vh',
+  width: '100%',
   flexShrink: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
 }
 
 export default function SnapCards({ isActive }: Props) {
@@ -112,23 +117,21 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
   return (
     <section ref={secRef} style={{
       ...snapSection,
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '100px 20px',
-      borderBottom: '1px solid rgba(255,255,255,0.04)',
+      padding: '0 20px',
     }}>
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <h2 ref={headRef} className="sc-heading" style={{
           fontFamily: 'var(--font-serif,Instrument Serif,serif)',
           fontStyle: 'italic', fontWeight: 400,
-          fontSize: 'clamp(3.5rem,8vw,7.5rem)',
+          fontSize: 'clamp(2.5rem,6vw,5rem)',
           lineHeight: 1, color: '#fff',
           textShadow: '0 10px 30px rgba(0,0,0,0.8)', margin: 0,
         }}>{card.title}</h2>
       </div>
 
       <div ref={tileRef} className="sc-tile" style={{
-        width: '100%', maxWidth: '1000px', aspectRatio: '7/10' as any,
+        width: '100%', maxWidth: '420px',
+        height: 'min(60vh, 500px)',
         position: 'relative', borderRadius: '20px',
         background: 'rgba(2,5,16,0.8)',
         border: '1px solid rgba(255,255,255,0.1)',
@@ -201,8 +204,8 @@ function ArcAndFooterSection() {
   return (
     <section ref={sectionRef} style={{
       ...snapSection,
-      display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
-      padding: 'clamp(60px,10vh,100px) 0 0',
+      justifyContent: 'flex-start',
+      padding: 'clamp(40px,8vh,80px) 0 0',
       overflow: 'hidden',
       borderTop: '1px solid rgba(255,255,255,0.05)',
       transition: 'background 1s ease-in-out',
