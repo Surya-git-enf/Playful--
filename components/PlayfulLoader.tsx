@@ -12,7 +12,7 @@ const ICONS = [
 ]
 
 const ICON_SIZE = 120
-const DROP = 100
+const DROP = 180
 
 const ALL_ASSETS = [
   '/svg/chess.png', '/svg/car.png', '/svg/ball.png', '/svg/rocket.png', '/svg/controller.png',
@@ -169,7 +169,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
       <div
         style={{
           position: "absolute",
-          bottom: "18%",
+          bottom: "25%",
           display: "flex",
           alignItems: "center",
           gap: 14,
