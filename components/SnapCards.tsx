@@ -20,17 +20,11 @@ const ARC_CARDS = [
 
 interface Props { isActive: boolean }
 
-/* shared snap section style */
 const snapSection: React.CSSProperties = {
-  scrollSnapAlign: 'center',
+  scrollSnapAlign: 'start',
   scrollSnapStop: 'always',
-  height: '100vh',
-  width: '100%',
+  minHeight: '100vh',
   flexShrink: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
 }
 
 export default function SnapCards({ isActive }: Props) {
@@ -55,7 +49,7 @@ export default function SnapCards({ isActive }: Props) {
         }
         @media (min-width: 1024px) {
           .sc-tile {
-            max-width: 600px !important;
+            max-width: 650px !important;
             aspect-ratio: 16/10 !important;
             height: auto !important;
           }
@@ -70,10 +64,6 @@ export default function SnapCards({ isActive }: Props) {
 
         {CARDS.map((c, i) => <VideoSection key={i} card={c} />)}
 
-        {/* Arc carousel + footer now live inside ONE snap section, so
-            swiping away from the last video lands on a single screen
-            that contains the universe-select carousel with the footer
-            directly below it — not as two separate snap stops. */}
         <ArcAndFooterSection />
 
       </div>
@@ -81,7 +71,6 @@ export default function SnapCards({ isActive }: Props) {
   )
 }
 
-/* ── Video Section ── */
 function VideoSection({ card }: { card: typeof CARDS[number] }) {
   const secRef    = useRef<HTMLElement>(null)
   const headRef   = useRef<HTMLHeadingElement>(null)
@@ -124,28 +113,29 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
   return (
     <section ref={secRef} style={{
       ...snapSection,
-      padding: '0 20px',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '100px 20px',
+      borderBottom: '1px solid rgba(255,255,255,0.04)',
     }}>
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h2 ref={headRef} className="sc-heading" style={{
           fontFamily: 'var(--font-serif,Instrument Serif,serif)',
           fontStyle: 'italic', fontWeight: 400,
-          fontSize: 'clamp(2.5rem, 5vw, 6rem)',
+          fontSize: 'clamp(3.5rem,8vw,7.5rem)',
           lineHeight: 1, color: '#fff',
           textShadow: '0 10px 30px rgba(0,0,0,0.8)', margin: 0,
         }}>{card.title}</h2>
       </div>
 
       <div ref={tileRef} className="sc-tile" style={{
-        width: '100%', maxWidth: '420px',
-        aspectRatio: '7/10' as any,
+        width: '100%', maxWidth: '1000px', aspectRatio: '7/10' as any,
         position: 'relative', borderRadius: '20px',
         background: 'rgba(2,5,16,0.8)',
         border: '1px solid rgba(255,255,255,0.1)',
         overflow: 'hidden',
         boxShadow: '0 40px 80px rgba(0,0,0,0.8),0 0 40px rgba(0,234,255,0.4)',
       }}>
-        {/* Shimmer */}
         <div ref={loaderRef} style={{
           position: 'absolute', inset: 0, zIndex: 5,
           background: 'linear-gradient(90deg,rgba(2,5,16,1) 0%,rgba(15,35,70,1) 50%,rgba(2,5,16,1) 100%)',
@@ -175,7 +165,6 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
   )
 }
 
-/* ── Arc Carousel + Footer (combined single snap section) ── */
 function ArcAndFooterSection() {
   const stageRef   = useRef<HTMLDivElement>(null)
   const sectionRef = useRef<HTMLElement>(null)
@@ -211,15 +200,13 @@ function ArcAndFooterSection() {
   return (
     <section ref={sectionRef} style={{
       ...snapSection,
-      justifyContent: 'flex-start',
-      padding: 'clamp(40px,8vh,80px) 0 0',
+      display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
+      padding: 'clamp(60px,10vh,100px) 0 0',
       overflow: 'hidden',
       borderTop: '1px solid rgba(255,255,255,0.05)',
       transition: 'background 1s ease-in-out',
     }}>
-      {/* ── Arc carousel ── */}
       <div>
-        {/* Eyebrow */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 60 }}>
           <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
           <span style={{ fontSize: '.7rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>
@@ -249,13 +236,11 @@ function ArcAndFooterSection() {
         </div>
       </div>
 
-      {/* ── Footer (now directly below the carousel, same section) ── */}
       <FooterContent />
     </section>
   )
 }
 
-/* ── Footer content (no longer its own snap section) ── */
 const SOCIALS = [
   { label: 'Instagram', path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z' },
   { label: 'Facebook',  path: 'M22.675 0h-21.35C.597 0 0 .597 0 1.325v21.351C0 23.403.597 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.597 1.323-1.324V1.325C24 .597 23.403 0 22.675 0z' },
@@ -277,7 +262,6 @@ function FooterContent() {
         justifyContent: 'space-between', gap: 40,
         borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 40,
       }}>
-        {/* Brand */}
         <div style={{ maxWidth: 400 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <img src="/logo.png" alt="Playful" style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'cover' as const }} />
@@ -306,7 +290,6 @@ function FooterContent() {
           </div>
         </div>
 
-        {/* Links */}
         <div style={{ display: 'flex', gap: 60, flexWrap: 'wrap' as const }}>
           {[
             { h: 'PLATFORM', links: ['About Us', 'Game Showcase'] },
