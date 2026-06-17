@@ -30,6 +30,7 @@ export default function SnapCards({ isActive }: Props) {
         .snap-page { width: 100%; background: #020510; color: #fff; font-family: var(--font-mono, Space Mono, monospace); }
         .snap-page section {
           width: 100%; height: 100vh; flex-shrink: 0;
+          scroll-snap-align: start;
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           position: relative; overflow: hidden;
         }
