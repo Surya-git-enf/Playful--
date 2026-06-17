@@ -224,7 +224,7 @@ export default function RacingSequence({ isActive }: Props) {
           .title h2   { font-size: clamp(2.8rem, 13vw, 5.5rem); }
         }
         @media (max-width: 480px) {
-          .car-layer  { width: 86%; }
+          .car-layer  { width: 86%; margin-left: -43%; }
           .road-layer { height: 28%; }
           .title      { top: 6.5%; }
           .title h2   { font-size: clamp(2.5rem, 15vw, 4.6rem); }

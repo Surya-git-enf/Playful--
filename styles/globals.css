@@ -823,6 +823,18 @@ body::after {
   .foot-links-col { flex-wrap: wrap; gap: 30px; }
 }
 
+@media (max-width: 768px) {
+  .nbtn {
+    padding: 12px 20px;
+    min-height: 44px;
+    font-size: 0.75rem;
+  }
+  .soc-link {
+    width: 44px !important;
+    height: 44px !important;
+  }
+}
+
 /* =====================================================
    SNAP SCROLL - cards section (matches index.html)
    ===================================================== */

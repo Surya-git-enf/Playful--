@@ -106,6 +106,20 @@ export default function SpaceSequence({ isActive }: Props) {
           0% { transform: translateX(-100%) skewX(-15deg); }
           100% { transform: translateX(200%) skewX(-15deg); }
         }
+        @media (max-width: 1366px) {
+          .space-earth { width: clamp(180px, 32vw, 500px) !important; }
+          .space-astronaut { left: 55% !important; height: 18vh !important; }
+        }
+        @media (max-width: 768px) {
+          .space-earth { width: clamp(150px, 40vw, 300px) !important; top: 10% !important; }
+          .space-astronaut { left: 50% !important; height: 15vh !important; bottom: 12% !important; }
+          .space-prompt-panel { top: 68% !important; }
+        }
+        @media (max-width: 480px) {
+          .space-earth { width: clamp(130px, 50vw, 220px) !important; top: 12% !important; }
+          .space-astronaut { left: 48% !important; height: 12vh !important; bottom: 14% !important; }
+          .space-prompt-panel { top: 62% !important; width: min(95vw, 660px) !important; }
+        }
       `}</style>
 
       {/* ─── 1. SPACE BACKGROUND ─── */}
@@ -180,11 +194,11 @@ export default function SpaceSequence({ isActive }: Props) {
       </div>
 
       {/* ─── 2. EARTH (instant settle, continuous breathe in/out) ─── */}
-      <div style={{
+      <div className="space-earth" style={{
         position: 'absolute',
         top: '8%',
         left: '50%',
-        width: 'clamp(280px, 46vw, 620px)',
+        width: 'clamp(200px, 36vw, 620px)',
         zIndex: 3,
         transform: 'translateX(-50%)',
         opacity: mounted ? 1 : 0,
@@ -216,7 +230,7 @@ export default function SpaceSequence({ isActive }: Props) {
       </div>
 
       {/* ─── 4. ASTRONAUT — bottom 10%, left 60%, height 20vh, slides in from right ─── */}
-      <div style={{
+      <div className="space-astronaut" style={{
         position: 'absolute',
         bottom: '10%',
         left: '60%',
@@ -241,7 +255,7 @@ export default function SpaceSequence({ isActive }: Props) {
       }} />
 
       {/* ─── 6. PROMPT PANEL — refined UI/UX ─── */}
-      <div style={{
+      <div className="space-prompt-panel" style={{
         position: 'absolute', top: '80%', left: '50%',
         width: 'min(92vw, 660px)',
         zIndex: 20,
@@ -263,7 +277,7 @@ export default function SpaceSequence({ isActive }: Props) {
         }}>
 
           {!promptValue && (
-            <div style={{ position: 'absolute', left: '22px', right: '150px', top: '20px', pointerEvents: 'none', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', left: '22px', right: 'clamp(110px, 15vw, 170px)', top: '20px', pointerEvents: 'none', overflow: 'hidden' }}>
               <span key={phIdx} style={{
                 fontFamily: "'Space Mono', monospace", fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)',
                 color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, display: 'block',
@@ -291,7 +305,7 @@ export default function SpaceSequence({ isActive }: Props) {
 
           {/* Primary CTA — gradient, shine sweep */}
           <button style={{
-            flexShrink: 0, padding: '14px 30px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+            flexShrink: 0, padding: '14px 30px', minHeight: '44px', borderRadius: '12px', border: 'none', cursor: 'pointer',
             fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.85rem', color: '#0a0d16',
             background: 'linear-gradient(135deg, #ffffff 0%, #dce6ff 100%)',
             transition: `transform 0.25s ${premiumEase}, box-shadow 0.25s ${premiumEase}`,
@@ -326,7 +340,8 @@ export default function SpaceSequence({ isActive }: Props) {
             { icon: '🚀', label: 'Publish it' },
           ].map((item, i) => (
             <button key={item.label} style={{
-              padding: '10px 22px',
+              padding: '12px 24px',
+              minHeight: '44px',
               borderRadius: '99px',
               border: '1px solid rgba(255,255,255,0.10)',
               background: 'rgba(255,255,255,0.04)',

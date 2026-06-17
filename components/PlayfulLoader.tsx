@@ -121,8 +121,8 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
           y,
           scaleX: sx,
           scaleY: sy,
-          width: ICON_SIZE,
-          height: ICON_SIZE,
+          width: 'clamp(80px, 10vw, 140px)',
+          height: 'clamp(80px, 10vw, 140px)',
           willChange: "transform",
           position: "relative",
           overflow: "hidden",
@@ -177,7 +177,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
       >
         <div
           style={{
-            width: 200,
+            width: 'clamp(160px, 20vw, 280px)',
             height: 3,
             borderRadius: 2,
             background: "rgba(255,255,255,0.08)",
@@ -199,7 +199,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
         <span
           style={{
             fontFamily: "var(--font-mono, monospace)",
-            fontSize: 14,
+            fontSize: 'clamp(12px, 1.2vw, 16px)',
             fontWeight: 800,
             color: "#ffffff",
             minWidth: 40,

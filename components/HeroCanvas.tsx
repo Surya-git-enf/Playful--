@@ -569,8 +569,8 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
             color: '#fff',
             margin: 0,
             textShadow: '0 4px 40px rgba(0,0,0,0.8), 0 0 80px rgba(255,255,255,0.2)',
-            whiteSpace: 'nowrap',
             letterSpacing: '0.02em',
+            maxWidth: '92vw',
           }}>
             Step into the Kingdom
           </h2>

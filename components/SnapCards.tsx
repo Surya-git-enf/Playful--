@@ -115,7 +115,7 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
       ...snapSection,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      padding: '100px 20px',
+      padding: 'clamp(60px, 8vh, 100px) clamp(16px, 3vw, 20px)',
       borderBottom: '1px solid rgba(255,255,255,0.04)',
     }}>
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -177,7 +177,7 @@ function ArcAndFooterSection() {
       if (!cards) return
       const total = ARC_CARDS.length
       const c = centerRef.current
-      const xStep = window.innerWidth < 600 ? 90 : 150
+      const xStep = window.innerWidth < 375 ? 60 : window.innerWidth < 600 ? 90 : window.innerWidth < 1024 ? 120 : 150
       if (sectionRef.current) {
         sectionRef.current.style.background =
           `radial-gradient(circle at top,${ARC_CARDS[c].color} 0%,#020510 60%)`
@@ -187,7 +187,8 @@ function ArcAndFooterSection() {
         if (diff > Math.floor(total / 2)) diff -= total
         if (diff < -Math.floor(total / 2)) diff += total
         const abs = Math.abs(diff)
-        if (abs > 2) { card.style.opacity = '0'; return }
+        const maxVisible = window.innerWidth < 600 ? 1 : 2
+        if (abs > maxVisible) { card.style.opacity = '0'; return }
         card.style.transform = `translate(calc(-50% + ${diff * xStep}px),calc(-50% + ${abs * 20}px)) scale(${1 - abs * 0.15}) rotate(${diff * 8}deg)`
         card.style.zIndex    = String(10 - abs)
         card.style.opacity   = String(1 - abs * 0.3)
@@ -283,7 +284,7 @@ function FooterContent() {
           <div style={{ display: 'flex', gap: 10 }}>
             {SOCIALS.map(({ label, path }) => (
               <a key={label} href="#" className="soc-link" aria-label={label} style={{
-                width: 34, height: 34, borderRadius: '50%',
+                width: 44, height: 44, borderRadius: '50%',
                 background: 'rgba(255,255,255,0.05)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none',
