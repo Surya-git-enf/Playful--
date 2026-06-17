@@ -53,6 +53,18 @@ export default function SnapCards({ isActive }: Props) {
           opacity:1;
           box-shadow:0 20px 50px rgba(0,0,0,.8),0 0 60px rgba(168,85,247,.2);
         }
+        @media (min-width: 768px) and (orientation: landscape) {
+          .sc-tile {
+            width: min(50vw, 650px) !important;
+            height: min(70vh, 500px) !important;
+          }
+        }
+        @media (min-width: 1024px) {
+          .sc-tile {
+            width: min(45vw, 700px) !important;
+            height: min(65vh, 480px) !important;
+          }
+        }
         .arc-card { transition:all 0.6s cubic-bezier(0.25,1,0.5,1); }
         .soc-link:hover { background:rgba(0,234,255,.1)!important; border-color:#00eaff!important; transform:translateY(-3px); }
         .soc-link:hover svg { fill:#fff!important; }
@@ -130,8 +142,8 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
       </div>
 
       <div ref={tileRef} className="sc-tile" style={{
-        width: 'clamp(300px, 40vw, 600px)',
-        height: 'min(65vh, 550px)',
+        width: 'min(85vw, 420px)',
+        height: 'min(70vh, 580px)',
         position: 'relative', borderRadius: '20px',
         background: 'rgba(2,5,16,0.8)',
         border: '1px solid rgba(255,255,255,0.1)',
