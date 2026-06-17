@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface Props {
   isActive: boolean
@@ -15,6 +16,7 @@ const PROMPTS = [
 ]
 
 export default function SpaceSequence({ isActive }: Props) {
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [promptValue, setPromptValue] = useState('')
   const [phIdx, setPhIdx] = useState(0)
@@ -50,6 +52,13 @@ export default function SpaceSequence({ isActive }: Props) {
     const el = e.target
     el.style.height = 'auto'
     el.style.height = `${el.scrollHeight}px`
+  }
+
+  const navigateToAuth = () => {
+    if (promptValue.trim()) {
+      localStorage.setItem('playful_prompt', promptValue.trim())
+    }
+    router.push('/auth')
   }
 
   const premiumEase = 'cubic-bezier(0.16, 1, 0.3, 1)'
@@ -304,7 +313,7 @@ export default function SpaceSequence({ isActive }: Props) {
           />
 
           {/* Primary CTA — gradient, shine sweep */}
-          <button style={{
+          <button onClick={navigateToAuth} style={{
             flexShrink: 0, padding: '14px 30px', minHeight: '44px', borderRadius: '12px', border: 'none', cursor: 'pointer',
             fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.85rem', color: '#0a0d16',
             background: 'linear-gradient(135deg, #ffffff 0%, #dce6ff 100%)',
@@ -336,10 +345,10 @@ export default function SpaceSequence({ isActive }: Props) {
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '22px', flexWrap: 'wrap' }}>
           {[
             { icon: '🎤', label: 'Prompt it' },
-            { icon: '⚡', label: 'Build it' },
+            { icon: '⚡', label: 'Build it', action: navigateToAuth },
             { icon: '🚀', label: 'Publish it' },
           ].map((item, i) => (
-            <button key={item.label} style={{
+            <button key={item.label} onClick={(item as any).action} style={{
               padding: '12px 24px',
               minHeight: '44px',
               borderRadius: '99px',
