@@ -245,7 +245,7 @@ export default function Home() {
         }}
       >
         {/* Hero placeholder — same height as the viewport */}
-        <div style={{ height: '100vh', flexShrink: 0, scrollSnapAlign: 'start', background: '#020510' }} aria-hidden="true" />
+        <div style={{ height: '100vh', flexShrink: 0, scrollSnapAlign: 'start' }} aria-hidden="true" />
 
         {/* All card sections */}
         <div style={{ position: 'relative', zIndex: 200, background: '#020510' }}>
