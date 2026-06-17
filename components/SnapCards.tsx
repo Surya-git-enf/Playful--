@@ -20,13 +20,6 @@ const ARC_CARDS = [
 
 interface Props { isActive: boolean }
 
-const snapSection: React.CSSProperties = {
-  scrollSnapAlign: 'start',
-  scrollSnapStop: 'always',
-  minHeight: '100vh',
-  flexShrink: 0,
-}
-
 export default function SnapCards({ isActive }: Props) {
   return (
     <>
@@ -34,44 +27,90 @@ export default function SnapCards({ isActive }: Props) {
         @keyframes shimmerLoad { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         @keyframes blink { 50%{opacity:0} }
         @keyframes spinR { to{transform:rotate(360deg)} }
+
+        /* ── The ONE scroll container ── */
+        .sc-root {
+          width: 100%;
+          height: 100dvh;
+          overflow-y: scroll;
+          overflow-x: hidden;
+          scroll-snap-type: y mandatory;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          background: #020510;
+          color: #fff;
+          font-family: var(--font-mono, Space Mono, monospace);
+        }
+        .sc-root::-webkit-scrollbar { display: none; }
+
+        /* ── Video snap sections ── */
+        .sc-video-section {
+          scroll-snap-align: start;
+          scroll-snap-stop: always;
+          width: 100%;
+          height: 100dvh;
+          flex-shrink: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 100px 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          box-sizing: border-box;
+        }
+
+        /* ── Last section: snaps to top, scrollable inside ── */
+        .sc-last-section {
+          scroll-snap-align: start;
+          scroll-snap-stop: always;
+          width: 100%;
+          min-height: 100dvh;
+          flex-shrink: 0;
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          padding: clamp(60px,10vh,100px) 0 0;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          transition: background 1s ease-in-out;
+        }
+
+        /* ── Heading animation ── */
         .sc-heading { opacity:0; transform:translateY(-30px); transition:all 1s ease; }
         .sc-heading.rise { opacity:1; transform:translateY(0); }
+
+        /* ── Card flip-in ── */
         .sc-tile {
-          transform-origin:bottom center;
-          transform:perspective(1200px) rotateX(45deg) translateY(150px) scale(0.85);
-          opacity:0;
-          transition:transform 1.2s cubic-bezier(0.2,0.8,0.2,1),opacity 1s ease;
+          transform-origin: bottom center;
+          transform: perspective(1200px) rotateX(45deg) translateY(150px) scale(0.85);
+          opacity: 0;
+          transition: transform 1.2s cubic-bezier(0.2,0.8,0.2,1), opacity 1s ease;
         }
         .sc-tile.pop {
-          transform:perspective(1200px) rotateX(0deg) translateY(0) scale(1);
-          opacity:1;
-          box-shadow:0 20px 50px rgba(0,0,0,.8),0 0 60px rgba(168,85,247,.2);
+          transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
+          opacity: 1;
+          box-shadow: 0 20px 50px rgba(0,0,0,.8), 0 0 60px rgba(168,85,247,.2);
         }
-        @media (min-width: 1024px) {
-          .sc-tile {
-            width: 50% !important;
-            max-width: 900px !important;
-            aspect-ratio: 16/10 !important;
-            height: auto !important;
-          }
-        }
-        .arc-card { transition:all 0.6s cubic-bezier(0.25,1,0.5,1); }
+
+        /* ── Arc cards ── */
+        .arc-card { transition: all 0.6s cubic-bezier(0.25,1,0.5,1); }
+
+        /* ── Footer hover ── */
+        .soc-link { transition: all 0.3s ease; }
         .soc-link:hover { background:rgba(0,234,255,.1)!important; border-color:#00eaff!important; transform:translateY(-3px); }
         .soc-link:hover svg { fill:#fff!important; }
+        .foot-link { transition: color 0.2s; }
         .foot-link:hover { color:#00eaff!important; }
       `}</style>
 
-      <div style={{ background: '#020510', color: '#fff', fontFamily: 'var(--font-mono,Space Mono,monospace)' }}>
-
+      <div className="sc-root">
         {CARDS.map((c, i) => <VideoSection key={i} card={c} />)}
-
         <ArcAndFooterSection />
-
       </div>
     </>
   )
 }
 
+/* ── Video Section ── */
 function VideoSection({ card }: { card: typeof CARDS[number] }) {
   const secRef    = useRef<HTMLElement>(null)
   const headRef   = useRef<HTMLHeadingElement>(null)
@@ -80,6 +119,8 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
   const loaderRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    /* Use the sc-root as the intersection root so IO fires inside the snap container */
+    const root = document.querySelector('.sc-root') as Element | null
     const io = new IntersectionObserver(entries => {
       entries.forEach(en => {
         if (!en.isIntersecting) return
@@ -88,7 +129,7 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
         vidRef.current?.play().catch(() => {})
         io.unobserve(en.target)
       })
-    }, { threshold: 0.25 })
+    }, { threshold: 0.4, root })
     if (secRef.current) io.observe(secRef.current)
     return () => io.disconnect()
   }, [])
@@ -108,17 +149,12 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
     }
     vid.addEventListener('loadeddata', () => { ready = true; tryReveal() })
     if (vid.readyState >= 2) ready = true
-    setTimeout(() => { timerDone = true; tryReveal(); if (!ready) { loader.style.opacity = '0' } }, 1500)
+    const t = setTimeout(() => { timerDone = true; tryReveal(); if (!ready) loader.style.opacity = '0' }, 1500)
+    return () => clearTimeout(t)
   }, [])
 
   return (
-    <section ref={secRef} style={{
-      ...snapSection,
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '100px 20px',
-      borderBottom: '1px solid rgba(255,255,255,0.04)',
-    }}>
+    <section ref={secRef} className="sc-video-section">
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h2 ref={headRef} className="sc-heading" style={{
           fontFamily: 'var(--font-serif,Instrument Serif,serif)',
@@ -137,6 +173,7 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
         overflow: 'hidden',
         boxShadow: '0 40px 80px rgba(0,0,0,0.8),0 0 40px rgba(0,234,255,0.4)',
       }}>
+        {/* Shimmer */}
         <div ref={loaderRef} style={{
           position: 'absolute', inset: 0, zIndex: 5,
           background: 'linear-gradient(90deg,rgba(2,5,16,1) 0%,rgba(15,35,70,1) 50%,rgba(2,5,16,1) 100%)',
@@ -166,7 +203,7 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
   )
 }
 
-/* ── Arc Carousel + Footer (combined single snap section) ── */
+/* ── Arc Carousel + Footer — single snap section, no clipping ── */
 function ArcAndFooterSection() {
   const stageRef   = useRef<HTMLDivElement>(null)
   const sectionRef = useRef<HTMLElement>(null)
@@ -179,10 +216,12 @@ function ArcAndFooterSection() {
       const total = ARC_CARDS.length
       const c = centerRef.current
       const xStep = window.innerWidth < 600 ? 100 : 160
+
       if (sectionRef.current) {
         sectionRef.current.style.background =
           `radial-gradient(circle at top,${ARC_CARDS[c].color} 0%,#020510 70%)`
       }
+
       cards.forEach((card, i) => {
         let diff = (i - c) % total
         if (diff > Math.floor(total / 2)) diff -= total
@@ -194,59 +233,59 @@ function ArcAndFooterSection() {
         card.style.opacity   = String(1 - abs * 0.3)
       })
     }
+
     update()
-    const iv = setInterval(() => { centerRef.current = (centerRef.current + 1) % ARC_CARDS.length; update() }, 2500)
+    const iv = setInterval(() => {
+      centerRef.current = (centerRef.current + 1) % ARC_CARDS.length
+      update()
+    }, 2500)
     return () => clearInterval(iv)
   }, [])
 
   return (
-    <section ref={sectionRef} style={{
-      ...snapSection,
-      display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
-      padding: 'clamp(60px,10vh,100px) 0 0',
-      overflow: 'hidden',
-      borderTop: '1px solid rgba(255,255,255,0.05)',
-      transition: 'background 1s ease-in-out',
-    }}>
-      {/* ── Arc carousel ── */}
-      <div>
-        {/* Eyebrow */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 60 }}>
-          <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
-          <span style={{ fontSize: '.7rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>
-            Select Your Universe
-          </span>
-          <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
-        </div>
+    <section ref={sectionRef} className="sc-last-section">
 
-        <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {ARC_CARDS.map((c, i) => (
-            <div key={i} className="arc-card" style={{
-              position: 'absolute', top: '50%', left: '50%',
-              width: 'clamp(220px,45vw,300px)', aspectRatio: '4/5' as any,
-              borderRadius: 16, background: 'rgba(2,5,16,0.6)',
-              backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', textAlign: 'center' as const, padding: 20,
-              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-            }}>
-              <div style={{ width: '75%', aspectRatio: '1' as any, borderRadius: 12, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,rgba(255,255,255,0.05),transparent)' }}>
-                <span style={{ fontSize: '3.8rem' }}>{c.e}</span>
-              </div>
-              <div style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontSize: '1.1rem', fontWeight: 700, marginBottom: 8 }}>{c.n}</div>
-              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{c.d}</div>
-            </div>
-          ))}
-        </div>
+      {/* Eyebrow */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 60 }}>
+        <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
+        <span style={{ fontSize: '.7rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>
+          Select Your Universe
+        </span>
+        <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
       </div>
 
-      {/* ── Footer (now directly below the carousel, same section) ── */}
+      {/* Arc stage */}
+      <div ref={stageRef} style={{
+        position: 'relative', width: '100%', height: 350,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        {ARC_CARDS.map((c, i) => (
+          <div key={i} className="arc-card" style={{
+            position: 'absolute', top: '50%', left: '50%',
+            width: 'clamp(220px,45vw,300px)', aspectRatio: '4/5' as any,
+            borderRadius: 16, background: 'rgba(2,5,16,0.6)',
+            backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', textAlign: 'center' as const, padding: 20,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+          }}>
+            <div style={{ width: '75%', aspectRatio: '1' as any, borderRadius: 12, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,rgba(255,255,255,0.05),transparent)' }}>
+              <span style={{ fontSize: '3.8rem' }}>{c.e}</span>
+            </div>
+            <div style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontSize: '1.1rem', fontWeight: 700, marginBottom: 8 }}>{c.n}</div>
+            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{c.d}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer — grows to fill remaining space, always fully visible */}
       <FooterContent />
     </section>
   )
 }
 
-/* ── Footer content (no longer its own snap section) ── */
+/* ── Footer ── */
 const SOCIALS = [
   { label: 'Instagram', path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z' },
   { label: 'Facebook',  path: 'M22.675 0h-21.35C.597 0 0 .597 0 1.325v21.351C0 23.403.597 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.597 1.323-1.324V1.325C24 .597 23.403 0 22.675 0z' },
@@ -314,9 +353,8 @@ function FooterContent() {
       </div>
 
       <div style={{ maxWidth: 1200, margin: '30px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.85rem', color: 'rgba(255,255,255,0.5)' }}>
-       © Playful , Developed by <span style={{ fontFamily: "'Cinzel Decorative', serif", fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>SURYA</span> ✨
+        © Playful , Developed by <span style={{ fontFamily: "'Cinzel Decorative', serif", fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>SURYA</span> ✨
       </div>
     </footer>
-                
   )
-}
+                      }
