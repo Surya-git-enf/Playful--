@@ -201,13 +201,14 @@ function ArcAndFooterSection() {
   return (
     <section ref={sectionRef} className="sc-section" style={{
       ...snapSection,
-      justifyContent: 'space-between',
-      padding: 'clamp(40px,8vh,80px) 0 0',
+      justifyContent: 'flex-start',
+      padding: 'clamp(60px,10vh,100px) 0 0',
       overflow: 'hidden',
       borderTop: '1px solid rgba(255,255,255,0.05)',
       transition: 'background 1s ease-in-out',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 40 }}>
+      {/* Eyebrow */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 60 }}>
         <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
         <span style={{ fontSize: '.7rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>
           Select Your Universe
@@ -215,6 +216,7 @@ function ArcAndFooterSection() {
         <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
       </div>
 
+      {/* Arc stage */}
       <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {ARC_CARDS.map((c, i) => (
           <div key={i} className="arc-card" style={{
@@ -261,6 +263,7 @@ function FooterContent() {
         justifyContent: 'space-between', gap: 40,
         borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 40,
       }}>
+        {/* Brand */}
         <div style={{ maxWidth: 400 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <img src="/logo.png" alt="Playful" style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'cover' as const }} />
@@ -289,6 +292,7 @@ function FooterContent() {
           </div>
         </div>
 
+        {/* Links */}
         <div style={{ display: 'flex', gap: 60, flexWrap: 'wrap' as const }}>
           {[
             { h: 'PLATFORM', links: ['About Us', 'Game Showcase'] },
