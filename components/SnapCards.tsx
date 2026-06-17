@@ -123,15 +123,15 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
         <h2 ref={headRef} className="sc-heading" style={{
           fontFamily: 'var(--font-serif,Instrument Serif,serif)',
           fontStyle: 'italic', fontWeight: 400,
-          fontSize: 'clamp(2.5rem,6vw,5rem)',
+          fontSize: 'clamp(2.5rem, 5vw, 6rem)',
           lineHeight: 1, color: '#fff',
           textShadow: '0 10px 30px rgba(0,0,0,0.8)', margin: 0,
         }}>{card.title}</h2>
       </div>
 
       <div ref={tileRef} className="sc-tile" style={{
-        width: '100%', maxWidth: '420px',
-        height: 'min(60vh, 500px)',
+        width: 'clamp(300px, 40vw, 600px)',
+        height: 'min(65vh, 550px)',
         position: 'relative', borderRadius: '20px',
         background: 'rgba(2,5,16,0.8)',
         border: '1px solid rgba(255,255,255,0.1)',
