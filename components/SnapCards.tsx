@@ -28,20 +28,13 @@ export default function SnapCards({ isActive }: Props) {
         @keyframes blink { 50%{opacity:0} }
         @keyframes spinR { to{transform:rotate(360deg)} }
 
-        /* ── Scroll container: owns snap entirely ── */
+        /* ── Scroll container ── */
         .sc-root {
           width: 100%;
-          height: 100dvh;
-          overflow-y: scroll;
-          overflow-x: hidden;
-          scroll-snap-type: y mandatory;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
           background: #020510;
           color: #fff;
           font-family: var(--font-mono, Space Mono, monospace);
         }
-        .sc-root::-webkit-scrollbar { display: none; }
 
         /* ── Each snap section ── */
         .sc-section {
