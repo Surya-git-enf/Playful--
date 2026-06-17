@@ -49,7 +49,8 @@ export default function SnapCards({ isActive }: Props) {
         }
         @media (min-width: 1024px) {
           .sc-tile {
-            max-width: 750px !important;
+            width: 45% !important;
+            max-width: 800px !important;
             aspect-ratio: 16/10 !important;
             height: auto !important;
           }
@@ -129,7 +130,7 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
       </div>
 
       <div ref={tileRef} className="sc-tile" style={{
-        width: '100%', maxWidth: '420px', aspectRatio: '7/10' as any,
+        width: '85%', maxWidth: '420px', aspectRatio: '7/10' as any,
         position: 'relative', borderRadius: '20px',
         background: 'rgba(2,5,16,0.8)',
         border: '1px solid rgba(255,255,255,0.1)',
