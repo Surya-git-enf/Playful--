@@ -313,8 +313,8 @@ function FooterContent() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: '30px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.75rem', color: 'rgba(255,255,255,0.3)' }}>
-        © 2026 Playful. All rights reserved.
+      <div style={{ maxWidth: 1200, margin: '30px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.85rem', color: 'rgba(255,255,255,0.5)' }}>
+       © Playful , Developed by <span style={{ fontFamily: "'Cinzel Decorative', serif", fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>SURYA</span> ✨
       </div>
     </footer>
                 
