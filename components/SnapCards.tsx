@@ -204,7 +204,6 @@ function ArcAndFooterSection() {
       ...snapSection,
       height: '100vh',
       display: 'flex', flexDirection: 'column',
-      overflow: 'hidden',
       borderTop: '1px solid rgba(255,255,255,0.05)',
       transition: 'background 1s ease-in-out',
     }}>
@@ -257,65 +256,46 @@ function FooterContent() {
   return (
     <footer style={{
       background: '#040814',
-      padding: '30px 5% 20px',
+      padding: '20px 5% 16px',
       borderTop: '1px solid rgba(255,255,255,.05)',
       flexShrink: 0,
     }}>
       <div style={{
         maxWidth: 1200, margin: '0 auto', width: '100%',
         display: 'flex', flexWrap: 'wrap' as const,
-        justifyContent: 'space-between', gap: 24,
-        borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 20,
+        alignItems: 'center', justifyContent: 'space-between', gap: 16,
       }}>
-        {/* Brand */}
-        <div style={{ maxWidth: 400 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <img src="/logo.png" alt="Playful" style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'cover' as const }} />
-            <span style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontWeight: 900, fontSize: '1.2rem', letterSpacing: '.2em' }}>PLAYFUL</span>
-          </div>
-          <p style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.5)', lineHeight: 1.5, marginBottom: 16 }}>
-            Turn your words into worlds. Type a prompt, get a playable game in seconds. No code required. Built for creators.
-          </p>
-          <h4 style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', color: '#fff', fontSize: '.8rem', marginBottom: 10, letterSpacing: '.05em', textTransform: 'uppercase' as const }}>
-            Join our society
-          </h4>
-          <div style={{ display: 'flex', gap: 16 }}>
-            {SOCIALS.map(({ label, path }) => (
-              <a key={label} href="#" className="soc-link" aria-label={label} style={{
-                width: 40, height: 40, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none',
-                transition: 'all 0.3s ease',
-              }}>
-                <svg viewBox="0 0 24 24" style={{ width: 20, height: 20, fill: 'rgba(255,255,255,0.6)' }}>
-                  <path d={path} />
-                </svg>
-              </a>
-            ))}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/logo.png" alt="Playful" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'cover' as const }} />
+          <span style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontWeight: 900, fontSize: '.9rem', letterSpacing: '.2em' }}>PLAYFUL</span>
         </div>
 
-        {/* Links */}
-        <div style={{ display: 'flex', gap: 60, flexWrap: 'wrap' as const }}>
-          {[
-            { h: 'PLATFORM', links: ['About Us', 'Game Showcase'] },
-            { h: 'SUPPORT',  links: ['Contact Us', 'Documentation'] },
-          ].map(({ h, links }) => (
-            <div key={h} style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
-              <h4 style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', color: '#fff', fontSize: '.9rem', marginBottom: 8, letterSpacing: '.05em' }}>{h}</h4>
-              {links.map(l => (
-                <a key={l} href="#" className="foot-link" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '.85rem', transition: 'color 0.2s' }}>{l}</a>
-              ))}
-            </div>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' as const, alignItems: 'center' }}>
+          {['About Us', 'Game Showcase', 'Contact Us', 'Documentation'].map(l => (
+            <a key={l} href="#" className="foot-link" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'none', fontSize: '.75rem', transition: 'color 0.2s' }}>{l}</a>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 12 }}>
+          {SOCIALS.map(({ label, path }) => (
+            <a key={label} href="#" className="soc-link" aria-label={label} style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.05)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none',
+              transition: 'all 0.3s ease',
+            }}>
+              <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: 'rgba(255,255,255,0.6)' }}>
+                <path d={path} />
+              </svg>
+            </a>
           ))}
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: '16px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.8rem', color: 'rgba(255,255,255,0.5)' }}>
-       © Playful , Developed by <span style={{ fontFamily: "'Cinzel Decorative', serif", fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>SURYA</span> ✨
+      <div style={{ maxWidth: 1200, margin: '12px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.75rem', color: 'rgba(255,255,255,0.4)' }}>
+       © Playful · Developed by <span style={{ fontFamily: "'Cinzel Decorative', serif", fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>SURYA</span> ✨
       </div>
     </footer>
-                
   )
-            }
+}
