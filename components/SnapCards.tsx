@@ -21,20 +21,14 @@ const ARC_CARDS = [
 interface Props { isActive: boolean }
 
 export default function SnapCards({ isActive }: Props) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-
   return (
     <>
       <style>{`
-        /* ── Keyframes ── */
-        @keyframes shimmerLoad {
-          0%   { background-position: 200% 0 }
-          100% { background-position: -200% 0 }
-        }
-        @keyframes blink { 50% { opacity: 0 } }
-        @keyframes spinR { to { transform: rotate(360deg) } }
+        @keyframes shimmerLoad { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        @keyframes blink { 50%{opacity:0} }
+        @keyframes spinR { to{transform:rotate(360deg)} }
 
-        /* ── Scroll container ── */
+        /* ── Scroll container: owns snap entirely ── */
         .sc-root {
           width: 100%;
           height: 100dvh;
@@ -43,6 +37,9 @@ export default function SnapCards({ isActive }: Props) {
           scroll-snap-type: y mandatory;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
+          background: #020510;
+          color: #fff;
+          font-family: var(--font-mono, Space Mono, monospace);
         }
         .sc-root::-webkit-scrollbar { display: none; }
 
@@ -60,125 +57,40 @@ export default function SnapCards({ isActive }: Props) {
           position: relative;
         }
 
-        /* ── Heading animation ── */
+        /* ── Heading: original animation ── */
         .sc-heading {
           opacity: 0;
-          transform: translateY(-28px);
-          transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1),
-                      transform 0.9s cubic-bezier(0.16,1,0.3,1);
+          transform: translateY(-30px);
+          transition: all 1s ease;
         }
         .sc-heading.rise {
           opacity: 1;
           transform: translateY(0);
         }
 
-        /* ── Card flip-in animation ── */
+        /* ── Tile: original animation values ── */
         .sc-tile {
           transform-origin: bottom center;
-          transform: perspective(1400px) rotateX(40deg) translateY(10%) scale(0.88);
+          transform: perspective(1200px) rotateX(45deg) translateY(150px) scale(0.85);
           opacity: 0;
-          transition:
-            transform 1.15s cubic-bezier(0.16,1,0.3,1),
-            opacity   0.9s  cubic-bezier(0.16,1,0.3,1),
-            box-shadow 0.6s ease;
+          transition: transform 1.2s cubic-bezier(0.2,0.8,0.2,1), opacity 1s ease;
         }
         .sc-tile.pop {
-          transform: perspective(1400px) rotateX(0deg) translateY(0) scale(1);
+          transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
           opacity: 1;
-          box-shadow:
-            0 24px 60px rgba(0,0,0,0.85),
-            0 0  70px rgba(168,85,247,0.18);
+          box-shadow: 0 40px 80px rgba(0,0,0,0.8), 0 0 40px rgba(0,234,255,0.4);
         }
 
         /* ── Arc cards ── */
-        .arc-card {
-          transition: transform 0.55s cubic-bezier(0.25,1,0.5,1),
-                      opacity   0.55s cubic-bezier(0.25,1,0.5,1);
-          will-change: transform, opacity;
-        }
+        .arc-card { transition: all 0.6s cubic-bezier(0.25,1,0.5,1); }
 
-        /* ── Footer links ── */
-        .soc-link {
-          transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-        }
-        .soc-link:hover {
-          background: rgba(0,234,255,0.1) !important;
-          border-color: #00eaff !important;
-          transform: translateY(-3px);
-        }
-        .soc-link:hover svg { fill: #fff !important; }
-        .foot-link { transition: color 0.2s ease; }
-        .foot-link:hover { color: #00eaff !important; }
-
-        /* ── Responsive card sizing ── */
-
-        /* Mobile base */
-        .sc-video-card {
-          width: 88vw;
-          max-width: 420px;
-          aspect-ratio: 9 / 13;
-          border-radius: 20px;
-        }
-
-        /* Tablet */
-        @media (min-width: 640px) {
-          .sc-video-card {
-            width: 70vw;
-            max-width: 560px;
-            aspect-ratio: 3 / 4;
-            border-radius: 22px;
-          }
-        }
-
-        /* Desktop */
-        @media (min-width: 1024px) {
-          .sc-video-card {
-            width: 52vw;
-            max-width: 780px;
-            aspect-ratio: 16 / 10;
-            border-radius: 24px;
-          }
-          .sc-title {
-            font-size: clamp(4rem, 7vw, 8.5rem) !important;
-          }
-        }
-
-        /* Large desktop */
-        @media (min-width: 1440px) {
-          .sc-video-card {
-            width: 56vw;
-            max-width: 960px;
-          }
-        }
-
-        /* ── Arc stage height responsive ── */
-        .arc-stage {
-          position: relative;
-          width: 100%;
-          height: 300px;
-        }
-        @media (min-width: 640px)  { .arc-stage { height: 340px; } }
-        @media (min-width: 1024px) { .arc-stage { height: 400px; } }
-
-        /* Arc card size responsive */
-        .arc-card-inner {
-          width: clamp(180px, 38vw, 260px);
-          border-radius: 14px;
-        }
-        @media (min-width: 640px) {
-          .arc-card-inner { width: clamp(220px, 32vw, 300px); border-radius: 16px; }
-        }
-        @media (min-width: 1024px) {
-          .arc-card-inner { width: clamp(260px, 22vw, 340px); border-radius: 18px; }
-        }
+        /* ── Footer hovers ── */
+        .soc-link:hover { background:rgba(0,234,255,.1)!important; border-color:#00eaff!important; transform:translateY(-3px); }
+        .soc-link:hover svg { fill:#fff!important; }
+        .foot-link:hover { color:#00eaff!important; }
       `}</style>
 
-      {/* ── Single scrollable root ── */}
-      <div
-        ref={scrollRef}
-        className="sc-root"
-        style={{ background: '#020510', color: '#fff', fontFamily: 'var(--font-mono,Space Mono,monospace)' }}
-      >
+      <div className="sc-root">
         {CARDS.map((c, i) => <VideoSection key={i} card={c} />)}
         <ArcAndFooterSection />
       </div>
@@ -186,9 +98,7 @@ export default function SnapCards({ isActive }: Props) {
   )
 }
 
-/* ────────────────────────────────────────────────
-   Video Section
-──────────────────────────────────────────────── */
+/* ── Video Section ── */
 function VideoSection({ card }: { card: typeof CARDS[number] }) {
   const secRef    = useRef<HTMLElement>(null)
   const headRef   = useRef<HTMLHeadingElement>(null)
@@ -196,7 +106,6 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
   const vidRef    = useRef<HTMLVideoElement>(null)
   const loaderRef = useRef<HTMLDivElement>(null)
 
-  /* Trigger animations when section snaps into view */
   useEffect(() => {
     const io = new IntersectionObserver(entries => {
       entries.forEach(en => {
@@ -206,112 +115,90 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
         vidRef.current?.play().catch(() => {})
         io.unobserve(en.target)
       })
-    }, { threshold: 0.4, root: null })
-
+    }, { threshold: 0.25 })
     if (secRef.current) io.observe(secRef.current)
     return () => io.disconnect()
   }, [])
 
-  /* Reveal video after load */
   useEffect(() => {
-    const vid    = vidRef.current
+    const vid = vidRef.current
     const loader = loaderRef.current
     if (!vid || !loader) return
-
     let ready = false, timerDone = false
     const tryReveal = () => {
       if (!ready || !timerDone) return
       loader.style.opacity = '0'
       loader.style.pointerEvents = 'none'
-      vid.style.opacity   = '1'
-      vid.style.filter    = 'blur(0)'
+      vid.style.opacity = '1'
+      vid.style.filter = 'blur(0)'
       vid.style.transform = 'scale(1)'
     }
     vid.addEventListener('loadeddata', () => { ready = true; tryReveal() })
-    if (vid.readyState >= 2) { ready = true }
-    const t = setTimeout(() => { timerDone = true; tryReveal() }, 1500)
+    if (vid.readyState >= 2) ready = true
+    const t = setTimeout(() => { timerDone = true; tryReveal(); if (!ready) loader.style.opacity = '0' }, 1500)
     return () => clearTimeout(t)
   }, [])
 
   return (
-    <section
-      ref={secRef}
-      className="sc-section"
-      style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', gap: 'clamp(20px,3vh,40px)' }}
-    >
+    <section ref={secRef} className="sc-section" style={{
+      padding: '100px 20px',
+      borderBottom: '1px solid rgba(255,255,255,0.04)',
+    }}>
       {/* Title */}
-      <h2
-        ref={headRef}
-        className="sc-heading sc-title"
-        style={{
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <h2 ref={headRef} className="sc-heading" style={{
           fontFamily: 'var(--font-serif,Instrument Serif,serif)',
-          fontStyle: 'italic',
-          fontWeight: 400,
-          fontSize: 'clamp(3rem,7vw,7rem)',
-          lineHeight: 1,
-          color: '#fff',
-          textShadow: '0 10px 30px rgba(0,0,0,0.8)',
-          margin: 0,
-          textAlign: 'center',
-          padding: '0 20px',
-        }}
-      >
-        {card.title}
-      </h2>
+          fontStyle: 'italic', fontWeight: 400,
+          fontSize: 'clamp(3.5rem,8vw,7.5rem)',
+          lineHeight: 1, color: '#fff',
+          textShadow: '0 10px 30px rgba(0,0,0,0.8)', margin: 0,
+        }}>{card.title}</h2>
+      </div>
 
-      {/* Video card */}
-      <div
-        ref={tileRef}
-        className="sc-tile sc-video-card"
-        style={{
-          position: 'relative',
-          background: 'rgba(2,5,16,0.8)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          overflow: 'hidden',
-        }}
-      >
+      {/* Card — original maxWidth + aspectRatio, fixed so it never grows beyond 1000px */}
+      <div ref={tileRef} className="sc-tile" style={{
+        width: '100%',
+        maxWidth: '1000px',
+        aspectRatio: '7/10',
+        position: 'relative',
+        borderRadius: '20px',
+        background: 'rgba(2,5,16,0.8)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        overflow: 'hidden',
+        /* default shadow before .pop fires */
+        boxShadow: '0 20px 50px rgba(0,0,0,.8), 0 0 60px rgba(168,85,247,.2)',
+      }}>
         {/* Shimmer loader */}
         <div ref={loaderRef} style={{
           position: 'absolute', inset: 0, zIndex: 5,
           background: 'linear-gradient(90deg,rgba(2,5,16,1) 0%,rgba(15,35,70,1) 50%,rgba(2,5,16,1) 100%)',
-          backgroundSize: '200% 100%',
-          animation: 'shimmerLoad 2s infinite linear',
+          backgroundSize: '200% 100%', animation: 'shimmerLoad 2s infinite linear',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           transition: 'opacity 0.8s ease',
         }}>
           <div style={{
             width: 40, height: 40, borderRadius: '50%',
-            border: '2px solid rgba(0,234,255,0.1)',
-            borderTopColor: card.accent,
-            animation: 'spinR 1s linear infinite',
-            marginBottom: 12,
+            border: '2px solid rgba(0,234,255,0.1)', borderTopColor: card.accent,
+            animation: 'spinR 1s linear infinite', marginBottom: 12,
           }} />
           <span style={{
-            fontFamily: 'var(--font-mono,Space Mono,monospace)',
-            fontSize: '0.65rem', color: card.accent,
-            letterSpacing: '0.2em', textTransform: 'uppercase',
+            fontFamily: 'var(--font-mono,Space Mono,monospace)', fontSize: '0.65rem',
+            color: card.accent, letterSpacing: '0.2em', textTransform: 'uppercase' as const,
             animation: 'blink 1.2s step-end infinite',
           }}>{card.label}</span>
         </div>
 
-        <video
-          ref={vidRef}
-          src={card.src}
-          loop muted playsInline
-          style={{
-            width: '100%', height: '100%', objectFit: 'cover', zIndex: 2,
-            opacity: 0, filter: 'blur(10px)', transform: 'scale(1.05)',
-            transition: 'opacity 1s ease, filter 1s ease, transform 1s ease',
-          }}
-        />
+        <video ref={vidRef} src={card.src} loop muted playsInline style={{
+          width: '100%', height: '100%', objectFit: 'cover', zIndex: 2,
+          opacity: 0, filter: 'blur(10px)', transform: 'scale(1.05)',
+          transition: 'opacity 1s ease, filter 1s ease, transform 1s ease',
+        }} />
       </div>
     </section>
   )
 }
 
-/* ────────────────────────────────────────────────
-   Arc Carousel + Footer  (one snap section)
-──────────────────────────────────────────────── */
+/* ── Arc Carousel + Footer (one snap section) ── */
 function ArcAndFooterSection() {
   const stageRef   = useRef<HTMLDivElement>(null)
   const sectionRef = useRef<HTMLElement>(null)
@@ -321,108 +208,73 @@ function ArcAndFooterSection() {
     const update = () => {
       const cards = stageRef.current?.querySelectorAll<HTMLDivElement>('.arc-card')
       if (!cards) return
-      const total  = ARC_CARDS.length
-      const c      = centerRef.current
-      const xStep  = window.innerWidth < 600 ? 110 : window.innerWidth < 1024 ? 150 : 190
-
+      const total = ARC_CARDS.length
+      const c = centerRef.current
+      const xStep = window.innerWidth < 600 ? 100 : 160
       if (sectionRef.current) {
         sectionRef.current.style.background =
-          `radial-gradient(circle at top, ${ARC_CARDS[c].color} 0%, #020510 65%)`
+          `radial-gradient(circle at top,${ARC_CARDS[c].color} 0%,#020510 70%)`
       }
-
       cards.forEach((card, i) => {
         let diff = (i - c) % total
-        if (diff >  Math.floor(total / 2)) diff -= total
+        if (diff > Math.floor(total / 2)) diff -= total
         if (diff < -Math.floor(total / 2)) diff += total
         const abs = Math.abs(diff)
-        if (abs > 2) { card.style.opacity = '0'; card.style.pointerEvents = 'none'; return }
-        card.style.opacity       = String(1 - abs * 0.32)
-        card.style.pointerEvents = abs === 0 ? 'auto' : 'none'
-        card.style.transform = [
-          `translate(calc(-50% + ${diff * xStep}px), calc(-50% + ${abs * 28}px))`,
-          `scale(${1 - abs * 0.13})`,
-          `rotate(${diff * 7}deg)`,
-        ].join(' ')
-        card.style.zIndex = String(10 - abs)
+        if (abs > 2) { card.style.opacity = '0'; return }
+        card.style.transform = `translate(calc(-50% + ${diff * xStep}px),calc(-50% + ${abs * 25}px)) scale(${1 - abs * 0.15}) rotate(${diff * 8}deg)`
+        card.style.zIndex    = String(10 - abs)
+        card.style.opacity   = String(1 - abs * 0.3)
       })
     }
-
     update()
-    window.addEventListener('resize', update)
-    const iv = setInterval(() => {
-      centerRef.current = (centerRef.current + 1) % ARC_CARDS.length
-      update()
-    }, 2500)
-    return () => { clearInterval(iv); window.removeEventListener('resize', update) }
+    const iv = setInterval(() => { centerRef.current = (centerRef.current + 1) % ARC_CARDS.length; update() }, 2500)
+    return () => clearInterval(iv)
   }, [])
 
   return (
-    <section
-      ref={sectionRef}
-      className="sc-section"
-      style={{
-        justifyContent: 'flex-start',
-        paddingTop: 'clamp(48px,8vh,90px)',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        transition: 'background 1s ease-in-out',
-        gap: 0,
-      }}
-    >
+    <section ref={sectionRef} className="sc-section" style={{
+      justifyContent: 'flex-start',
+      padding: 'clamp(60px,10vh,100px) 0 0',
+      overflow: 'hidden',
+      borderTop: '1px solid rgba(255,255,255,0.05)',
+      transition: 'background 1s ease-in-out',
+    }}>
       {/* Eyebrow */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 'clamp(32px,5vh,60px)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 60 }}>
         <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
-        <span style={{ fontSize: '.7rem', color: 'rgba(0,200,255,.85)', textTransform: 'uppercase', letterSpacing: '.3em', fontWeight: 700 }}>
+        <span style={{ fontSize: '.7rem', color: 'rgba(0,200,255,.8)', textTransform: 'uppercase' as const, letterSpacing: '.3em', fontWeight: 700 }}>
           Select Your Universe
         </span>
         <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,.16)' }} />
       </div>
 
       {/* Arc stage */}
-      <div ref={stageRef} className="arc-stage">
+      <div ref={stageRef} style={{ position: 'relative', width: '100%', height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {ARC_CARDS.map((c, i) => (
-          <div
-            key={i}
-            className="arc-card arc-card-inner"
-            style={{
-              position: 'absolute',
-              top: '50%', left: '50%',
-              aspectRatio: '4/5',
-              background: 'rgba(2,5,16,0.65)',
-              backdropFilter: 'blur(22px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              textAlign: 'center', padding: 20,
-              boxShadow: '0 20px 40px rgba(0,0,0,0.55)',
-            }}
-          >
-            <div style={{
-              width: '70%', aspectRatio: '1', borderRadius: 12,
-              marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(135deg,rgba(255,255,255,0.05),transparent)',
-            }}>
-              <span style={{ fontSize: 'clamp(2.8rem,5vw,3.8rem)' }}>{c.e}</span>
+          <div key={i} className="arc-card" style={{
+            position: 'absolute', top: '50%', left: '50%',
+            width: 'clamp(220px,45vw,300px)', aspectRatio: '4/5' as any,
+            borderRadius: 16, background: 'rgba(2,5,16,0.6)',
+            backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', textAlign: 'center' as const, padding: 20,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+          }}>
+            <div style={{ width: '75%', aspectRatio: '1' as any, borderRadius: 12, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,rgba(255,255,255,0.05),transparent)' }}>
+              <span style={{ fontSize: '3.8rem' }}>{c.e}</span>
             </div>
-            <div style={{
-              fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)',
-              fontSize: 'clamp(0.9rem,2vw,1.1rem)', fontWeight: 700, marginBottom: 8,
-            }}>{c.n}</div>
-            <div style={{ fontSize: 'clamp(0.72rem,1.5vw,0.82rem)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{c.d}</div>
+            <div style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontSize: '1.1rem', fontWeight: 700, marginBottom: 8 }}>{c.n}</div>
+            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{c.d}</div>
           </div>
         ))}
       </div>
 
-      {/* Footer */}
       <FooterContent />
     </section>
   )
 }
 
-/* ────────────────────────────────────────────────
-   Footer
-──────────────────────────────────────────────── */
+/* ── Footer ── */
 const SOCIALS = [
   { label: 'Instagram', path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z' },
   { label: 'Facebook',  path: 'M22.675 0h-21.35C.597 0 0 .597 0 1.325v21.351C0 23.403.597 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.597 1.323-1.324V1.325C24 .597 23.403 0 22.675 0z' },
@@ -432,41 +284,40 @@ const SOCIALS = [
 function FooterContent() {
   return (
     <footer style={{
-      width: '100%',
-      marginTop: 'auto',
       background: '#040814',
-      padding: 'clamp(36px,6vh,60px) 5% clamp(28px,4vh,40px)',
+      marginTop: 'auto',
+      padding: '60px 5% 40px',
       borderTop: '1px solid rgba(255,255,255,.05)',
-      flexShrink: 0,
+      display: 'flex', flexDirection: 'column', justifyContent: 'center',
     }}>
       <div style={{
         maxWidth: 1200, margin: '0 auto', width: '100%',
-        display: 'flex', flexWrap: 'wrap',
-        justifyContent: 'space-between', gap: 'clamp(24px,4vw,40px)',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-        paddingBottom: 'clamp(24px,4vh,40px)',
+        display: 'flex', flexWrap: 'wrap' as const,
+        justifyContent: 'space-between', gap: 40,
+        borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 40,
       }}>
         {/* Brand */}
         <div style={{ maxWidth: 400 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-            <img src="/logo.png" alt="Playful" style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover' }} />
-            <span style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontWeight: 900, fontSize: '1.15rem', letterSpacing: '.2em' }}>PLAYFUL</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <img src="/logo.png" alt="Playful" style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'cover' as const }} />
+            <span style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', fontWeight: 900, fontSize: '1.2rem', letterSpacing: '.2em' }}>PLAYFUL</span>
           </div>
-          <p style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.5)', lineHeight: 1.6, marginBottom: 20 }}>
-            Turn your words into worlds. Type a prompt, get a playable game in seconds. No code required.
+          <p style={{ fontSize: '.85rem', color: 'rgba(255,255,255,.5)', lineHeight: 1.6, marginBottom: 24 }}>
+            Turn your words into worlds. Type a prompt, get a playable game in seconds. No code required. Built for creators.
           </p>
-          <h4 style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', color: '#fff', fontSize: '.85rem', marginBottom: 12, letterSpacing: '.05em', textTransform: 'uppercase' }}>
+          <h4 style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', color: '#fff', fontSize: '.9rem', marginBottom: 12, letterSpacing: '.05em', textTransform: 'uppercase' as const }}>
             Join our society
           </h4>
-          <div style={{ display: 'flex', gap: 14 }}>
+          <div style={{ display: 'flex', gap: 16 }}>
             {SOCIALS.map(({ label, path }) => (
               <a key={label} href="#" className="soc-link" aria-label={label} style={{
                 width: 40, height: 40, borderRadius: '50%',
                 background: 'rgba(255,255,255,0.05)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none',
+                transition: 'all 0.3s ease',
               }}>
-                <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, fill: 'rgba(255,255,255,0.6)' }}>
+                <svg viewBox="0 0 24 24" style={{ width: 20, height: 20, fill: 'rgba(255,255,255,0.6)' }}>
                   <path d={path} />
                 </svg>
               </a>
@@ -474,24 +325,24 @@ function FooterContent() {
           </div>
         </div>
 
-        {/* Nav links */}
-        <div style={{ display: 'flex', gap: 'clamp(32px,6vw,60px)', flexWrap: 'wrap' }}>
+        {/* Links */}
+        <div style={{ display: 'flex', gap: 60, flexWrap: 'wrap' as const }}>
           {[
             { h: 'PLATFORM', links: ['About Us', 'Game Showcase'] },
             { h: 'SUPPORT',  links: ['Contact Us', 'Documentation'] },
           ].map(({ h, links }) => (
-            <div key={h} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <h4 style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', color: '#fff', fontSize: '.85rem', marginBottom: 8, letterSpacing: '.05em' }}>{h}</h4>
+            <div key={h} style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
+              <h4 style={{ fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)', color: '#fff', fontSize: '.9rem', marginBottom: 8, letterSpacing: '.05em' }}>{h}</h4>
               {links.map(l => (
-                <a key={l} href="#" className="foot-link" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '.83rem' }}>{l}</a>
+                <a key={l} href="#" className="foot-link" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '.85rem', transition: 'color 0.2s' }}>{l}</a>
               ))}
             </div>
           ))}
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: '24px auto 0', width: '100%', textAlign: 'center', fontSize: '.72rem', color: 'rgba(255,255,255,0.28)' }}>
-        © 2026 Playful, Developed by Surya.
+      <div style={{ maxWidth: 1200, margin: '30px auto 0', width: '100%', textAlign: 'center' as const, fontSize: '.75rem', color: 'rgba(255,255,255,0.3)' }}>
+        © 2026 Playful. All rights reserved.
       </div>
     </footer>
   )
