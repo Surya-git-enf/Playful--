@@ -54,29 +54,35 @@ const cinzelDecorative = Cinzel_Decorative({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://surya-lemon.vercel.app'),
-  title: 'Playful - Turn Words Into Worlds',
-  description: 'Type a prompt, get a playable game in seconds. No code required.',
+  title: 'Surya Peddishetti | AI & Full-Stack Engineer',
+  description:
+    'Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.',
   icons: {
     icon: '/logo.png',
   },
   openGraph: {
-    title: 'Playful - Turn Words Into Worlds',
-    description: 'Type a prompt, get a playable game in seconds.',
-    type: 'website',
+    title: 'Surya Peddishetti | AI & Full-Stack Engineer',
+    description:
+      'Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.',
+    url: 'https://surya-lemon.vercel.app',
+    siteName: 'Surya Peddishetti Portfolio',
     images: [
       {
-        url: '/logo.png',
+        url: '/opengraph-image.png',
         width: 1200,
         height: 630,
-        type: 'image/png',
+        alt: 'Surya Peddishetti - Portfolio Preview',
       },
     ],
+    locale: 'en_US',
+    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Playful - Turn Words Into Worlds',
-    description: 'Type a prompt, get a playable game in seconds.',
-    images: ['/logo.png'],
+    title: 'Surya Peddishetti | AI & Full-Stack Engineer',
+    description:
+      'Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.',
+    images: ['/opengraph-image.png'],
   },
 }
 
