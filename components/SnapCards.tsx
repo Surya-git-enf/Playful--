@@ -3,9 +3,9 @@
 import { useEffect, useRef } from 'react'
 
 const CARDS = [
-  { title: 'Lego of Logic',  src: '/cards/lego.mp4',  accent: '#a855f7', label: 'Generating Assets...' },
-  { title: 'Big Bang',       src: '/cards/bang.mp4',  accent: '#00eaff', label: 'Simulating Physics...' },
-  { title: 'Instant Arena',  src: '/cards/play.mp4',  accent: '#ff4b91', label: 'Loading Environment...' },
+  { title: 'Lego of Logic',  src: '/cards/lego.mp4',  accent: '#ff7a00', label: 'Generating Assets...' },
+  { title: 'Big Bang',       src: '/cards/bang.mp4',  accent: '#ff9033', label: 'Simulating Physics...' },
+  { title: 'Instant Arena',  src: '/cards/play.mp4',  accent: '#ff5500', label: 'Loading Environment...' },
 ]
 
 const ARC_CARDS = [
@@ -47,7 +47,7 @@ export default function SnapCards({ isActive }: Props) {
         .sc-tile.pop {
           transform:perspective(1200px) rotateX(0deg) translateY(0) scale(1);
           opacity:1;
-          box-shadow:0 20px 50px rgba(0,0,0,.8),0 0 60px rgba(168,85,247,.2);
+          box-shadow:0 20px 50px rgba(0,0,0,.8),0 0 60px rgba(255,122,0,.2);
         }
         @media (min-width: 1024px) {
           .sc-tile {
@@ -132,20 +132,20 @@ function VideoSection({ card }: { card: typeof CARDS[number] }) {
         width: '100%', maxWidth: '1000px', aspectRatio: '7/10' as any,
         position: 'relative', borderRadius: '20px',
         background: 'rgba(2,5,16,0.8)',
-        border: '1px solid rgba(255,255,255,0.1)',
+        border: '1px solid rgba(255,122,0,0.2)',
         overflow: 'hidden',
-        boxShadow: '0 40px 80px rgba(0,0,0,0.8),0 0 40px rgba(0,234,255,0.4)',
+        boxShadow: '0 40px 80px rgba(0,0,0,0.8),0 0 40px rgba(255,122,0,0.4)',
       }}>
         <div ref={loaderRef} style={{
           position: 'absolute', inset: 0, zIndex: 5,
-          background: 'linear-gradient(90deg,rgba(2,5,16,1) 0%,rgba(15,35,70,1) 50%,rgba(2,5,16,1) 100%)',
+          background: 'linear-gradient(90deg,rgba(2,5,16,1) 0%,rgba(40,18,5,1) 50%,rgba(2,5,16,1) 100%)',
           backgroundSize: '200% 100%', animation: 'shimmerLoad 2s infinite linear',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           transition: 'opacity 0.8s ease',
         }}>
           <div style={{
             width: 40, height: 40, borderRadius: '50%',
-            border: '2px solid rgba(0,234,255,0.1)', borderTopColor: card.accent,
+            border: '2px solid rgba(255,122,0,0.1)', borderTopColor: card.accent,
             animation: 'spinR 1s linear infinite', marginBottom: 12,
           }} />
           <span style={{

@@ -239,7 +239,7 @@ export default function SpaceSequence({ isActive }: Props) {
         opacity: mounted ? 1 : 0,
         transition: `opacity 0.3s ${premiumEase}`,
         animation: mounted
-          ? 'earthBreathe 5s ease-in-out infinite 0.3s'
+          ? 'earthBreathe 10s ease-in-out infinite 0.3s'
           : 'none',
       }}>
         <div style={{ position: 'relative' }}>
