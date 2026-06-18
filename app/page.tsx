@@ -196,8 +196,8 @@ export default function Home() {
           <img src="/logo.png" alt="Playful" style={{
             width: 'clamp(36px,4vw,46px)', height: 'clamp(36px,4vw,46px)',
             borderRadius: '12px', objectFit: 'cover',
-            border: '1px solid rgba(0,200,255,.3)',
-            boxShadow: '0 0 15px rgba(0,234,255,.2)',
+            border: '1px solid rgba(255,122,0,.35)',
+            boxShadow: '0 0 15px rgba(255,122,0,.2)',
           }} />
           <span style={{
             fontFamily: 'var(--font-orbitron,Orbitron,sans-serif)',

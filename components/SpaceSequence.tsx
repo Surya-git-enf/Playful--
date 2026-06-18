@@ -21,9 +21,11 @@ export default function SpaceSequence({ isActive }: Props) {
   const [promptValue, setPromptValue] = useState('')
   const [phIdx, setPhIdx] = useState(0)
   const [focused, setFocused] = useState(false)
+  const [typedText, setTypedText] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const typeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (isActive) {
@@ -35,17 +37,39 @@ export default function SpaceSequence({ isActive }: Props) {
   }, [isActive])
 
   useEffect(() => {
-    if (isActive) {
-      intervalRef.current = setInterval(() => {
-        setPhIdx((prev) => (prev + 1) % PROMPTS.length)
-      }, 3500)
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current)
+    if (!isActive) {
+      setTypedText('')
+      setIsDeleting(false)
+      setPhIdx(0)
+      return
     }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
+    const currentPrompt = PROMPTS[phIdx]
+    if (!focused && !promptValue) {
+      if (!isDeleting) {
+        if (typedText.length < currentPrompt.length) {
+          typeTimeoutRef.current = setTimeout(() => {
+            setTypedText(currentPrompt.slice(0, typedText.length + 1))
+          }, 50)
+        } else {
+          typeTimeoutRef.current = setTimeout(() => setIsDeleting(true), 2200)
+        }
+      } else {
+        if (typedText.length > 0) {
+          typeTimeoutRef.current = setTimeout(() => {
+            setTypedText(typedText.slice(0, -1))
+          }, 25)
+        } else {
+          setIsDeleting(false)
+          setPhIdx((prev) => (prev + 1) % PROMPTS.length)
+        }
+      }
     }
-  }, [isActive])
+    return () => { if (typeTimeoutRef.current) clearTimeout(typeTimeoutRef.current) }
+  }, [isActive, typedText, isDeleting, phIdx, focused, promptValue])
+
+  useEffect(() => {
+    return () => { if (typeTimeoutRef.current) clearTimeout(typeTimeoutRef.current) }
+  }, [])
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPromptValue(e.target.value)
@@ -111,6 +135,8 @@ export default function SpaceSequence({ isActive }: Props) {
           from { opacity: 0; transform: translate(-50%, -42%) scale(0.96); filter: blur(16px); }
           to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0px); }
         }
+        @keyframes liquidFlow { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         @keyframes buttonShine {
           0% { transform: translateX(-100%) skewX(-15deg); }
           100% { transform: translateX(200%) skewX(-15deg); }
@@ -213,7 +239,7 @@ export default function SpaceSequence({ isActive }: Props) {
         opacity: mounted ? 1 : 0,
         transition: `opacity 0.3s ${premiumEase}`,
         animation: mounted
-          ? 'earthBreathe 2s ease-in-out infinite 0.3s'
+          ? 'earthBreathe 5s ease-in-out infinite 0.3s'
           : 'none',
       }}>
         <div style={{ position: 'relative' }}>
@@ -285,14 +311,14 @@ export default function SpaceSequence({ isActive }: Props) {
           transition: `border 0.3s ${premiumEase}, box-shadow 0.3s ${premiumEase}`,
         }}>
 
-          {!promptValue && (
+          {!promptValue && typedText && (
             <div style={{ position: 'absolute', left: '22px', right: 'clamp(110px, 15vw, 170px)', top: '20px', pointerEvents: 'none', overflow: 'hidden' }}>
-              <span key={phIdx} style={{
-                fontFamily: "'Space Mono', monospace", fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)',
-                color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, display: 'block',
-                animation: 'blurFadeIn 0.5s ease both'
+              <span style={{
+                fontFamily: "'Instrument Serif', serif", fontStyle: 'italic',
+                fontSize: 'clamp(0.85rem, 1.5vw, 1rem)',
+                color: 'rgba(255,255,255,0.45)', lineHeight: 1.5, display: 'block',
               }}>
-                {PROMPTS[phIdx]}
+                {typedText}<span style={{ opacity: 1, animation: 'blink 1s step-end infinite' }}>|</span>
               </span>
             </div>
           )}
@@ -307,37 +333,32 @@ export default function SpaceSequence({ isActive }: Props) {
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
               fontFamily: "'Space Mono', monospace", fontSize: 'clamp(0.8rem, 1.5vw, 0.95rem)',
-              color: '#fff', caretColor: '#9db8ff', resize: 'none', overflowY: 'hidden',
+              color: '#fff', caretColor: '#ff7a00', resize: 'none', overflowY: 'hidden',
               minHeight: '26px', maxHeight: '150px', lineHeight: 1.5, paddingTop: '7px', paddingBottom: '7px'
             }}
           />
 
-          {/* Primary CTA — gradient, shine sweep */}
+          {/* Primary CTA — gradient orange/white/blue/pink */}
           <button onClick={navigateToAuth} style={{
             flexShrink: 0, padding: '14px 30px', minHeight: '44px', borderRadius: '12px', border: 'none', cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.85rem', color: '#0a0d16',
-            background: 'linear-gradient(135deg, #ffffff 0%, #dce6ff 100%)',
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
+            background: 'linear-gradient(90deg, #ff7a00, #ffe066, #ffffff, #00eaff, #ff7a00)',
+            backgroundSize: '400% 100%',
+            animation: 'liquidFlow 5s linear infinite',
             transition: `transform 0.25s ${premiumEase}, box-shadow 0.25s ${premiumEase}`,
-            boxShadow: '0 4px 24px rgba(140,180,255,0.25)',
+            boxShadow: '0 4px 24px rgba(255,122,0,0.25)',
             position: 'relative', overflow: 'hidden',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)'
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(140,180,255,0.4)'
-            const shine = e.currentTarget.querySelector('.shine') as HTMLElement
-            if (shine) shine.style.animation = 'buttonShine 0.9s ease'
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(255,122,0,0.4)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0) scale(1)'
-            e.currentTarget.style.boxShadow = '0 4px 24px rgba(140,180,255,0.25)'
+            e.currentTarget.style.boxShadow = '0 4px 24px rgba(255,122,0,0.25)'
           }}
           >
             <span style={{ position: 'relative', zIndex: 1 }}>Build it</span>
-            <span className="shine" style={{
-              position: 'absolute', top: 0, left: 0, width: '40%', height: '100%',
-              background: 'linear-gradient(90deg, transparent, rgba(120,150,255,0.35), transparent)',
-              transform: 'translateX(-100%) skewX(-15deg)',
-            }} />
           </button>
         </div>
 

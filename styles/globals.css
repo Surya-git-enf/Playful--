@@ -349,21 +349,23 @@ body::after {
 }
 
 .nbtn.signin {
-  border-color: rgba(0, 180, 255, 0.28);
-  background: rgba(0, 100, 255, 0.07);
-  color: rgba(0, 210, 255, 0.88);
+  border-color: rgba(255, 122, 0, 0.35);
+  background: transparent;
+  color: #ff7a00;
+  border-radius: 10px;
 }
 
-.nbtn.signin:hover { background: rgba(0, 100, 255, 0.18); color: #fff; }
+.nbtn.signin:hover { background: rgba(255, 122, 0, 0.12); color: #ffa040; }
 
 .nbtn.signup {
-  background: linear-gradient(135deg, rgba(0,70,200,0.6), rgba(0,150,255,0.4));
-  border-color: rgba(0, 170, 255, 0.5);
+  background: #ff7a00;
+  border-color: #ff7a00;
   color: #fff;
+  border-radius: 10px;
 }
 
 .nbtn.signup:hover {
-  background: linear-gradient(135deg, rgba(0,70,200,0.85), rgba(0,150,255,0.65));
+  background: #ff9033;
 }
 
 /* 
