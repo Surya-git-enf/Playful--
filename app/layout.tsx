@@ -54,24 +54,24 @@ const cinzelDecorative = Cinzel_Decorative({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://surya-lemon.vercel.app'),
-  title: 'Surya Peddishetti | AI & Full-Stack Engineer',
+  title: 'Playful - An AI Powered Game Engine',
   description:
-    'Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.',
+    'Type a prompt, get a playable game in seconds. No code required.',
   icons: {
     icon: '/logo.png',
   },
   openGraph: {
-    title: 'Surya Peddishetti | AI & Full-Stack Engineer',
+    title: 'Playful - An AI Powered Game Engine',
     description:
-      'Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.',
+      'Type a prompt, get a playable game in seconds. No code required.',
     url: 'https://surya-lemon.vercel.app',
-    siteName: 'Surya Peddishetti Portfolio',
+    siteName: 'Playful',
     images: [
       {
         url: '/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Surya Peddishetti - Portfolio Preview',
+        alt: 'Playful - An AI Powered Game Engine',
       },
     ],
     locale: 'en_US',
@@ -79,9 +79,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Surya Peddishetti | AI & Full-Stack Engineer',
+    title: 'Playful - An AI Powered Game Engine',
     description:
-      'Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.',
+      'Type a prompt, get a playable game in seconds. No code required.',
     images: ['/logo.png'],
   },
 }
