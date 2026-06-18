@@ -159,14 +159,14 @@ function DashboardContent() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
                   <div>
                     <div style={{ fontFamily: "'Orbitron',sans-serif", fontWeight: 700, fontSize: '0.82rem', letterSpacing: '0.1em', color: '#fff' }}>PROFILE</div>
-                    <div style={{ color: 'rgba(240,234,255,0.26)', fontSize: '0.66rem', marginTop: 3 }}>Waitlist access</div>
+                    <div style={{ color: 'rgba(240,234,255,0.5)', fontSize: '0.66rem', marginTop: 3 }}>Waitlist access</div>
                   </div>
                   <button onClick={() => setShowProfileMenu(false)} style={{ background: 'none', border: 'none', color: 'rgba(240,234,255,0.52)', cursor: 'pointer', fontSize: '1.15rem', lineHeight: 1, padding: '2px 6px', borderRadius: 6 }}>×</button>
                 </div>
 
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '12px 0' }} />
                 <div style={{ fontFamily: "'Orbitron',sans-serif", fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.06em', color: '#fff', marginBottom: 3 }}>{displayName}</div>
-                <div style={{ color: 'rgba(240,234,255,0.26)', fontSize: '0.67rem', wordBreak: 'break-all' }}>{displayEmail}</div>
+                <div style={{ color: 'rgba(240,234,255,0.55)', fontSize: '0.67rem', wordBreak: 'break-all' }}>{displayEmail}</div>
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '12px 0' }} />
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 10 }}>
@@ -321,7 +321,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
       fontSize: '0.63rem', textTransform: 'uppercase', letterSpacing: '0.12em',
-      color: 'rgba(240,234,255,0.4)', fontWeight: 700, marginBottom: 20,
+      color: 'rgba(240,234,255,0.8)', fontWeight: 700, marginBottom: 20,
     }}>
       {children}
       <span style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
