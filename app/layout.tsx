@@ -53,12 +53,30 @@ const cinzelDecorative = Cinzel_Decorative({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://surya-lemon.vercel.app'),
   title: 'Playful - Turn Words Into Worlds',
   description: 'Type a prompt, get a playable game in seconds. No code required.',
+  icons: {
+    icon: '/logo.png',
+  },
   openGraph: {
     title: 'Playful - Turn Words Into Worlds',
     description: 'Type a prompt, get a playable game in seconds.',
     type: 'website',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Playful - Turn Words Into Worlds',
+    description: 'Type a prompt, get a playable game in seconds.',
+    images: ['/logo.png'],
   },
 }
 
