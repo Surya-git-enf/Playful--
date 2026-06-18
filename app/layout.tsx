@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     siteName: 'Surya Peddishetti Portfolio',
     images: [
       {
-        url: '/opengraph-image.png',
+        url: '/logo.png',
         width: 1200,
         height: 630,
         alt: 'Surya Peddishetti - Portfolio Preview',
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     title: 'Surya Peddishetti | AI & Full-Stack Engineer',
     description:
       'Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.',
-    images: ['/opengraph-image.png'],
+    images: ['/logo.png'],
   },
 }
 
