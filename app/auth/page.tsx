@@ -174,8 +174,8 @@ function AuthContent() {
   return (
     <div style={{
       minHeight: '100vh', background: '#030305',
-      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-      padding: '110px 24px 32px', position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '80px 24px 32px', position: 'relative', overflow: 'hidden',
     }}>
       {/* Background layers */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
