@@ -51,7 +51,7 @@ function AuthContent() {
       try {
         const { data } = await supabase.auth.getSession()
         if (mounted && data?.session) {
-          router.replace('/')
+          router.replace('/dashboard')
           return
         }
       } catch {}
@@ -59,7 +59,7 @@ function AuthContent() {
     }
     check()
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) router.replace('/')
+      if (session) router.replace('/dashboard')
     })
     return () => { mounted = false; subscription.unsubscribe() }
   }, [router])
@@ -106,7 +106,7 @@ function AuthContent() {
       } else {
         setShowToast(true)
         setTimeout(() => {
-          router.push('/')
+          router.push('/dashboard')
         }, 1400)
       }
     } catch {
