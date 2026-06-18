@@ -129,7 +129,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
           borderRadius: 18,
         }}
       >
-        {/* Current image — always visible, wipes OUT when transitioning */}
+        {/* Current image — wipes OUT from left */}
         <img
           src={ICONS[curIdx].src}
           alt={ICONS[curIdx].alt}
@@ -141,12 +141,12 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
             height: "100%",
             objectFit: "contain",
             filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-            clipPath: transitioning ? `inset(0 0 0 ${wipeOut}%)` : "none",
-            transition: "clip-path 0.4s cubic-bezier(0.4,0,0.2,1)",
+            clipPath: transitioning ? `inset(0 ${wipeOut}% 0 0)` : "none",
+            transition: "clip-path 0.35s ease-in-out",
           }}
         />
 
-        {/* Next image — hidden, wipes IN when transitioning */}
+        {/* Next image — wipes IN from right */}
         {transitioning && (
           <img
             src={ICONS[nextIdx].src}
@@ -159,8 +159,8 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
               height: "100%",
               objectFit: "contain",
               filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-              clipPath: `inset(0 ${100 - wipeIn}% 0 0)`,
-              transition: "clip-path 0.4s cubic-bezier(0.4,0,0.2,1)",
+              clipPath: `inset(0 0 0 ${100 - wipeIn}%)`,
+              transition: "clip-path 0.35s ease-in-out",
             }}
           />
         )}

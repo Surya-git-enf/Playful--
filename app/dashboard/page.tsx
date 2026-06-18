@@ -377,7 +377,7 @@ function UserScroll({ users, totalUsers }: { users: any[]; totalUsers: number })
   return (
     <div style={{ width: '100%', maxWidth: 860, margin: '0 auto', padding: '0 clamp(16px,4vw,40px)' }}>
       <div style={{ padding: '0 0 clamp(40px,6vh,60px)' }}>
-        <SectionLabel>Creators waiting <span style={{ color: 'rgba(240,234,255,0.26)', fontSize: '0.6rem', textTransform: 'none', letterSpacing: 0, marginLeft: 2, fontWeight: 400 }}>({totalUsers})</span></SectionLabel>
+        <SectionLabel>Creators waiting <span style={{ color: 'rgba(240,234,255,0.8)', fontSize: '0.63rem', textTransform: 'none', letterSpacing: 0, marginLeft: 2, fontWeight: 700 }}>({totalUsers})</span></SectionLabel>
         <div style={{
           borderRadius: 18, background: 'rgba(14,8,30,0.78)',
           border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)',
