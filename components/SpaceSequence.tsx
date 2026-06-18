@@ -137,6 +137,7 @@ export default function SpaceSequence({ isActive }: Props) {
         }
         @keyframes liquidFlow { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes shineSweep { 0% { left: -100%; } 22% { left: 200%; } 100% { left: 200%; } }
         @keyframes buttonShine {
           0% { transform: translateX(-100%) skewX(-15deg); }
           100% { transform: translateX(200%) skewX(-15deg); }
@@ -338,11 +339,11 @@ export default function SpaceSequence({ isActive }: Props) {
             }}
           />
 
-          {/* Primary CTA — gradient orange/white/blue/pink */}
+          {/* Primary CTA — gradient with diagonal shine */}
           <button onClick={navigateToAuth} style={{
             flexShrink: 0, padding: '14px 30px', minHeight: '44px', borderRadius: '12px', border: 'none', cursor: 'pointer',
             fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
-            background: 'linear-gradient(90deg, #ff7a00, #ffe066, #ffffff, #00eaff, #ff7a00)',
+            background: 'linear-gradient(90deg, #ff7a00, #ffe066, #ffffff, #00eaff, #ff4b91, #ff7a00)',
             backgroundSize: '400% 100%',
             animation: 'liquidFlow 5s linear infinite',
             transition: `transform 0.25s ${premiumEase}, box-shadow 0.25s ${premiumEase}`,
@@ -352,6 +353,8 @@ export default function SpaceSequence({ isActive }: Props) {
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)'
             e.currentTarget.style.boxShadow = '0 8px 32px rgba(255,122,0,0.4)'
+            const shine = e.currentTarget.querySelector('.shine') as HTMLElement
+            if (shine) shine.style.animation = 'shineSweep 0.9s ease'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0) scale(1)'
@@ -359,6 +362,11 @@ export default function SpaceSequence({ isActive }: Props) {
           }}
           >
             <span style={{ position: 'relative', zIndex: 1 }}>Build it</span>
+            <span className="shine" style={{
+              position: 'absolute', top: 0, left: '-100%', width: '45%', height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent)',
+              transform: 'skewX(-22deg)',
+            }} />
           </button>
         </div>
 
