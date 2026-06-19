@@ -37,11 +37,9 @@ function preloadAssets(onDone: (p: number) => void) {
 
 export default function PlayfulLoader({ progress: ext }: { progress?: number }) {
   const [curIdx, setCurIdx] = useState(0)
-  const [nextIdx, setNextIdx] = useState(1)
   const [progress, setProgress] = useState(0)
-  const [wipeIn, setWipeIn] = useState(0)
-  const [wipeOut, setWipeOut] = useState(0)
-  const [transitioning, setTransitioning] = useState(false)
+  const [clipPath, setClipPath] = useState('none')
+  const [useTransition, setUseTransition] = useState(false)
   const idxRef = useRef(0)
 
   const y = useSpring(-DROP, { stiffness: 120, damping: 13, mass: 1 })
@@ -63,12 +61,6 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
         const ci = idxRef.current
         const ni = (ci + 1) % ICONS.length
 
-        // Prepare next
-        setNextIdx(ni)
-        setWipeIn(0)
-        setWipeOut(0)
-        setTransitioning(false)
-
         // 1. Fall
         await wait(50)
         y.set(0)
@@ -82,18 +74,23 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
         y.set(-DROP)
         await wait(420)
 
-        // 3. At top: wipe current OUT, next IN simultaneously
-        setTransitioning(true)
-        setWipeOut(100)
-        setWipeIn(100)
-        await wait(420)
+        // 3. Wipe current out (disappears right-to-left)
+        setUseTransition(true)
+        setClipPath('inset(0 100% 0 0)')
+        await wait(400)
 
-        // 4. Done — swap
-        idxRef.current = ni
+        // 4. Swap to next icon, start hidden, then wipe in (left-to-right)
         setCurIdx(ni)
-        setWipeOut(0)
-        setWipeIn(0)
-        setTransitioning(false)
+        idxRef.current = ni
+        setUseTransition(false)
+        setClipPath('inset(0 0 0 100%)')
+        await wait(50)
+        setUseTransition(true)
+        setClipPath('none')
+        await wait(400)
+
+        // 5. Reset
+        setUseTransition(false)
         await wait(50)
       }
     }
@@ -129,7 +126,6 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
           borderRadius: 18,
         }}
       >
-        {/* Current image — wipes OUT from left */}
         <img
           src={ICONS[curIdx].src}
           alt={ICONS[curIdx].alt}
@@ -141,29 +137,10 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
             height: "100%",
             objectFit: "contain",
             filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-            clipPath: transitioning ? `inset(0 ${wipeOut}% 0 0)` : "none",
-            transition: "clip-path 0.35s ease-in-out",
+            clipPath,
+            transition: useTransition ? "clip-path 0.35s ease-in-out" : "none",
           }}
         />
-
-        {/* Next image — wipes IN from right */}
-        {transitioning && (
-          <img
-            src={ICONS[nextIdx].src}
-            alt={ICONS[nextIdx].alt}
-            draggable={false}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-              clipPath: `inset(0 0 0 ${100 - wipeIn}%)`,
-              transition: "clip-path 0.35s ease-in-out",
-            }}
-          />
-        )}
       </motion.div>
 
       <div
