@@ -11,7 +11,6 @@ const ICONS = [
   { src: '/svg/controller.png', alt: 'Controller' },
 ]
 
-const ICON_SIZE = 120
 const DROP = 180
 
 const ALL_ASSETS = [
@@ -30,20 +29,26 @@ function preloadAssets(onDone: (p: number) => void) {
   const total = ALL_ASSETS.length
   const tick = () => { loaded++; onDone(Math.min(Math.round((loaded / total) * 100), 100)) }
   ALL_ASSETS.forEach((s) => {
-    if (s.endsWith('.mp4')) { const v = document.createElement('video'); v.preload = 'metadata'; v.onloadedmetadata = tick; v.onerror = tick; v.src = s }
-    else { const i = new Image(); i.onload = tick; i.onerror = tick; i.src = s }
+    if (s.endsWith('.mp4')) {
+      const v = document.createElement('video'); v.preload = 'metadata'
+      v.onloadedmetadata = tick; v.onerror = tick; v.src = s
+    } else {
+      const i = new Image(); i.onload = tick; i.onerror = tick; i.src = s
+    }
   })
 }
 
+const raf = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
 export default function PlayfulLoader({ progress: ext }: { progress?: number }) {
   const [curIdx, setCurIdx] = useState(0)
-  const [nextIdx, setNextIdx] = useState(1)
+  const [nextIdx, setNextIdx] = useState<number | null>(null)
   const [progress, setProgress] = useState(0)
-  const [currentClip, setCurrentClip] = useState('none')
-  const [nextClip, setNextClip] = useState('inset(0 0 0 100%)')
-  const [showNext, setShowNext] = useState(false)
-  const [enableTransition, setEnableTransition] = useState(false)
+  // Phase: 'idle' | 'wiping' | 'done'
+  const [phase, setPhase] = useState<'idle' | 'wiping'>('idle')
   const idxRef = useRef(0)
+  const aliveRef = useRef(true)
 
   const y = useSpring(-DROP, { stiffness: 120, damping: 13, mass: 1 })
   const sx = useSpring(1, { stiffness: 500, damping: 12 })
@@ -54,68 +59,63 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
   const pct = ext ?? progress
 
   useEffect(() => {
-    let alive = true
-    const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+    aliveRef.current = true
 
     const run = async () => {
       await wait(300)
 
-      while (alive) {
+      while (aliveRef.current) {
         const ci = idxRef.current
         const ni = (ci + 1) % ICONS.length
 
-        // Prepare next
-        setNextIdx(ni)
-        setShowNext(false)
-        setCurrentClip('none')
-        setNextClip('inset(0 0 0 100%)')
-        setEnableTransition(false)
+        // Reset state cleanly
+        setNextIdx(null)
+        setPhase('idle')
 
-        // 1. Fall
         await wait(50)
+
+        // 1. Fall down
         y.set(0)
         sx.set(1.2)
         sy.set(0.78)
         await wait(400)
 
-        // 2. Recover + rise
+        // 2. Squash recover + rise back up
         sx.set(1)
         sy.set(1)
         y.set(-DROP)
         await wait(420)
 
-        // 3. Wipe current out (right-to-left) — next not shown yet
-        setEnableTransition(true)
-        setCurrentClip('inset(0 100% 0 0)')
-        await wait(400)
+        // 3. At apex: mount next image (still fully clipped = invisible)
+        setNextIdx(ni)
 
-        // 4. Brief pause — current fully invisible
-        setEnableTransition(false)
-        await wait(80)
+        // Wait 2 frames so next image actually paints at clipPath(100% clipped)
+        await raf()
 
-        // 5. Show next image at hidden position, then wipe in (left-to-right)
-        setShowNext(true)
-        setNextClip('inset(0 0 0 100%)')
-        await wait(50)
+        // 4. Now animate both wipes simultaneously
+        setPhase('wiping')
 
-        setEnableTransition(true)
-        setNextClip('none')
-        await wait(400)
+        // Wait for CSS transition (350ms) to finish
+        await wait(380)
 
-        // 6. Done — swap, hide next layer, reset
+        // 5. Swap: current becomes next, unmount overlay
         idxRef.current = ni
         setCurIdx(ni)
-        setEnableTransition(false)
-        setShowNext(false)
-        setNextClip('inset(0 0 0 100%)')
-        setCurrentClip('none')
+        setNextIdx(null)
+        setPhase('idle')
+
         await wait(50)
       }
     }
 
     run()
-    return () => { alive = false }
+    return () => { aliveRef.current = false }
   }, [y, sx, sy])
+
+  // Current icon clips away to the RIGHT as phase = wiping
+  const curClip = phase === 'wiping' ? 'inset(0 100% 0 0)' : 'inset(0 0% 0 0)'
+  // Next icon reveals from LEFT as phase = wiping
+  const nextClip = phase === 'wiping' ? 'inset(0 0 0 0%)' : 'inset(0 0 0 100%)'
 
   return (
     <div
@@ -144,8 +144,9 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
           borderRadius: 18,
         }}
       >
-        {/* Current image — wipes out from right */}
+        {/* Current icon — wipes OUT to the right */}
         <img
+          key={`cur-${curIdx}`}
           src={ICONS[curIdx].src}
           alt={ICONS[curIdx].alt}
           draggable={false}
@@ -156,14 +157,15 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
             height: "100%",
             objectFit: "contain",
             filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-            clipPath: currentClip,
-            transition: enableTransition ? "clip-path 0.35s ease-in-out" : "none",
+            clipPath: curClip,
+            transition: "clip-path 0.35s ease-in-out",
           }}
         />
 
-        {/* Next image — wipes in from left */}
-        {showNext && (
+        {/* Next icon — wipes IN from the right, only mounted when needed */}
+        {nextIdx !== null && (
           <img
+            key={`next-${nextIdx}`}
             src={ICONS[nextIdx].src}
             alt={ICONS[nextIdx].alt}
             draggable={false}
@@ -175,12 +177,13 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
               objectFit: "contain",
               filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
               clipPath: nextClip,
-              transition: enableTransition ? "clip-path 0.35s ease-in-out" : "none",
+              transition: "clip-path 0.35s ease-in-out",
             }}
           />
         )}
       </motion.div>
 
+      {/* Progress bar */}
       <div
         style={{
           position: "absolute",
