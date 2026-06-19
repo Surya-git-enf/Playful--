@@ -37,9 +37,12 @@ function preloadAssets(onDone: (p: number) => void) {
 
 export default function PlayfulLoader({ progress: ext }: { progress?: number }) {
   const [curIdx, setCurIdx] = useState(0)
+  const [nextIdx, setNextIdx] = useState(1)
   const [progress, setProgress] = useState(0)
-  const [clipPath, setClipPath] = useState('none')
-  const [useTransition, setUseTransition] = useState(false)
+  const [currentClip, setCurrentClip] = useState('none')
+  const [nextClip, setNextClip] = useState('inset(0 0 0 100%)')
+  const [showNext, setShowNext] = useState(false)
+  const [enableTransition, setEnableTransition] = useState(false)
   const idxRef = useRef(0)
 
   const y = useSpring(-DROP, { stiffness: 120, damping: 13, mass: 1 })
@@ -61,6 +64,13 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
         const ci = idxRef.current
         const ni = (ci + 1) % ICONS.length
 
+        // Prepare next
+        setNextIdx(ni)
+        setShowNext(false)
+        setCurrentClip('none')
+        setNextClip('inset(0 0 0 100%)')
+        setEnableTransition(false)
+
         // 1. Fall
         await wait(50)
         y.set(0)
@@ -74,23 +84,31 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
         y.set(-DROP)
         await wait(420)
 
-        // 3. Wipe current out (disappears right-to-left)
-        setUseTransition(true)
-        setClipPath('inset(0 100% 0 0)')
+        // 3. Wipe current out (right-to-left) — next not shown yet
+        setEnableTransition(true)
+        setCurrentClip('inset(0 100% 0 0)')
         await wait(400)
 
-        // 4. Swap to next icon, start hidden, then wipe in (left-to-right)
-        setCurIdx(ni)
-        idxRef.current = ni
-        setUseTransition(false)
-        setClipPath('inset(0 0 0 100%)')
+        // 4. Brief pause — current fully invisible
+        setEnableTransition(false)
+        await wait(80)
+
+        // 5. Show next image at hidden position, then wipe in (left-to-right)
+        setShowNext(true)
+        setNextClip('inset(0 0 0 100%)')
         await wait(50)
-        setUseTransition(true)
-        setClipPath('none')
+
+        setEnableTransition(true)
+        setNextClip('none')
         await wait(400)
 
-        // 5. Reset
-        setUseTransition(false)
+        // 6. Done — swap, hide next layer, reset
+        idxRef.current = ni
+        setCurIdx(ni)
+        setEnableTransition(false)
+        setShowNext(false)
+        setNextClip('inset(0 0 0 100%)')
+        setCurrentClip('none')
         await wait(50)
       }
     }
@@ -126,6 +144,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
           borderRadius: 18,
         }}
       >
+        {/* Current image — wipes out from right */}
         <img
           src={ICONS[curIdx].src}
           alt={ICONS[curIdx].alt}
@@ -137,10 +156,29 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
             height: "100%",
             objectFit: "contain",
             filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
-            clipPath,
-            transition: useTransition ? "clip-path 0.35s ease-in-out" : "none",
+            clipPath: currentClip,
+            transition: enableTransition ? "clip-path 0.35s ease-in-out" : "none",
           }}
         />
+
+        {/* Next image — wipes in from left */}
+        {showNext && (
+          <img
+            src={ICONS[nextIdx].src}
+            alt={ICONS[nextIdx].alt}
+            draggable={false}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              filter: "drop-shadow(0 0 12px rgba(255,138,0,0.2))",
+              clipPath: nextClip,
+              transition: enableTransition ? "clip-path 0.35s ease-in-out" : "none",
+            }}
+          />
+        )}
       </motion.div>
 
       <div
