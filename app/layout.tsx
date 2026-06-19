@@ -1,111 +1,54 @@
-import type { Metadata, Viewport } from 'next'
-import {
-  Orbitron,
-  Space_Mono,
-  Instrument_Serif,
-  Press_Start_2P,
-  Bebas_Neue,
-  Cinzel_Decorative,
-} from 'next/font/google'
-import '../styles/globals.css'
-
-const orbitron = Orbitron({
-  subsets: ['latin'],
-  weight: ['400', '700', '900'],
-  variable: '--font-orbitron',
-  display: 'swap',
-})
-
-const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-mono',
-  display: 'swap',
-})
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
-  weight: ['400'],
-  style: ['normal', 'italic'],
-  variable: '--font-serif',
-  display: 'swap',
-})
-
-const pressStart2P = Press_Start_2P({
-  subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-pixel',
-  display: 'swap',
-})
-
-const bebasNeue = Bebas_Neue({
-  subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-bebas',
-  display: 'swap',
-})
-
-const cinzelDecorative = Cinzel_Decorative({
-  subsets: ['latin'],
-  weight: ['400', '700', '900'],
-  variable: '--font-cinzel',
-  display: 'swap',
-})
+import type { Metadata } from "next";
+import "./globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://surya-lemon.vercel.app'),
-  title: 'Playful - An AI Powered Game Engine',
+  title: "Playful — An AI-Powered Game Engine",
   description:
-    'Type a prompt, get a playable game in seconds. No code required.',
+    "Turn your ideas into playable games with a single prompt. Playful uses AI to generate game mechanics, code, assets, scenes, and interactive experiences, helping creators build, iterate, and launch games faster than ever.",
+  metadataBase: new URL("https://playful-virid.vercel.app"),
   icons: {
-    icon: '/logo.png',
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
   openGraph: {
-    title: 'Playful - An AI Powered Game Engine',
+    title: "Playful — An AI-Powered Game Engine",
     description:
-      'Type a prompt, get a playable game in seconds. No code required.',
-    url: 'https://surya-lemon.vercel.app',
-    siteName: 'Playful',
+      "Turn your ideas into playable games with a single prompt. Playful uses AI to generate game mechanics, code, assets, scenes, and interactive experiences, helping creators build, iterate, and launch games faster than ever.",
+    url: "https://playful-virid.vercel.app",
+    siteName: "Playful",
     images: [
       {
-        url: '/logo.png',
-        width: 1200,
-        height: 630,
-        alt: 'Playful - An AI Powered Game Engine',
+        url: "/icon.png",
+        width: 1024,
+        height: 1024,
+        alt: "Playful logo",
       },
     ],
-    locale: 'en_US',
-    type: 'website',
+    locale: "en_US",
+    type: "website",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Playful - An AI Powered Game Engine',
+    card: "summary_large_image",
+    title: "Playful — An AI-Powered Game Engine",
     description:
-      'Type a prompt, get a playable game in seconds. No code required.',
-    images: ['/logo.png'],
+      "Turn your ideas into playable games with a single prompt.",
+    images: ["/icon.png"],
   },
-}
+};
 
-// themeColor must live in viewport export (Next.js 15+)
-export const viewport: Viewport = {
-  themeColor: '#020510',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-}
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={[
-      orbitron.variable,
-      spaceMono.variable,
-      instrumentSerif.variable,
-      pressStart2P.variable,
-      bebasNeue.variable,
-      cinzelDecorative.variable,
-    ].join(' ')}>
-      <body>{children}</body>
+    <html lang="en">
+      <body className="antialiased bg-white">
+        {children}
+        <SpeedInsights />
+      </body>
     </html>
-  )
+  );
 }
