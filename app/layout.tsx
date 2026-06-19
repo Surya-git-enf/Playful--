@@ -53,7 +53,7 @@ const cinzelDecorative = Cinzel_Decorative({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://surya-lemon.vercel.app'),
+  metadataBase: new URL('https://playful-virid.vercel.app'),
   title: 'Playful - An AI Powered Game Engine',
   description:
     'Type a prompt, get a playable game in seconds. No code required.',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     title: 'Playful - An AI Powered Game Engine',
     description:
       'Type a prompt, get a playable game in seconds. No code required.',
-    url: 'https://surya-lemon.vercel.app',
+    url: 'https://playful-virid.vercel.app',
     siteName: 'Playful',
     images: [
       {
