@@ -2,12 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useGSAP } from '@gsap/react'
 import PlayfulLoader from '../components/PlayfulLoader'
-
-gsap.registerPlugin(ScrollTrigger)
 
 const HeroCanvas = dynamic(() => import('../components/HeroCanvas'), { ssr: false })
 const SnapCards  = dynamic(() => import('../components/SnapCards'),  { ssr: false })
@@ -91,9 +86,9 @@ export default function Home() {
   const heroReleasedRef = useRef(false)
 
   const [isLoading, setIsLoading] = useState(true)
+  const [loadingOut, setLoadingOut] = useState(false)
   const [progress, setProgress] = useState(0)
 
-  const loaderRef      = useRef<HTMLDivElement>(null)
   const scrollRootRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -118,46 +113,24 @@ export default function Home() {
     ]).then(() => {
       if (cancelled) return
       setTimeout(() => {
-        if (!loaderRef.current) return
-        const tl = gsap.timeline()
-        tl.to(loaderRef.current, {
-          opacity: 0,
-          duration: 0.8,
-          ease: 'power2.out',
-        })
-        .set(loaderRef.current, { display: 'none' })
-        .add(() => setIsLoading(false))
+        setLoadingOut(true)
+        setTimeout(() => setIsLoading(false), 600)
       }, 150)
     })
 
     return () => { cancelled = true }
   }, [])
 
-  useGSAP(() => {
-    if (!heroReleased || !scrollRootRef.current) return
-
-    const container = scrollRootRef.current
-
-    ScrollTrigger.create({
-      trigger: container,
-      scroller: container,
-      start: 'top top',
-      end: 'bottom bottom',
-      snap: {
-        snapTo: 1 / 3,
-        duration: { min: 0.3, max: 0.8 },
-        ease: 'power1.inOut',
-      },
-    })
-  }, { dependencies: [heroReleased] })
-
   const handleRelease = useCallback(() => {
     if (heroReleasedRef.current) return
     heroReleasedRef.current = true
     setHeroReleased(true)
     requestAnimationFrame(() => {
-      scrollRootRef.current?.scrollTo({
-        top: scrollRootRef.current.clientHeight,
+      requestAnimationFrame(() => {
+        const root = document.getElementById('scroll-root')
+        if (root) {
+          root.scrollTo({ top: root.clientHeight, behavior: 'smooth' })
+        }
       })
     })
   }, [])
@@ -233,20 +206,24 @@ export default function Home() {
           zIndex: 150,
           overflowY: heroReleased ? 'scroll' : 'hidden',
           overflowX: 'hidden',
+          scrollSnapType: 'y mandatory',
+          scrollBehavior: 'smooth',
           background: heroReleased ? 'var(--bg)' : 'transparent',
           pointerEvents: heroReleased ? 'auto' : 'none',
         }}
       >
-        <div style={{ height: '100dvh', flexShrink: 0 }} aria-hidden="true" />
+        <div style={{ height: '100dvh', flexShrink: 0, scrollSnapAlign: 'start' }} aria-hidden="true" />
         <div style={{ position: 'relative', zIndex: 200, background: 'var(--bg)' }}>
           <SnapCards isActive={heroReleased} />
         </div>
       </div>
 
       {isLoading && (
-        <div ref={loaderRef} style={{
+        <div style={{
           position: 'fixed', inset: 0, zIndex: 5000,
-          pointerEvents: 'auto',
+          opacity: loadingOut ? 0 : 1,
+          transition: 'opacity 0.6s ease',
+          pointerEvents: loadingOut ? 'none' : 'auto',
         }}>
           <PlayfulLoader progress={progress} />
         </div>

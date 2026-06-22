@@ -21,6 +21,8 @@ const ARC_CARDS = [
 interface Props { isActive: boolean }
 
 const snapSection: React.CSSProperties = {
+  scrollSnapAlign: 'start',
+  scrollSnapStop: 'always',
   height: '100dvh',
   minHeight: '100dvh',
   flexShrink: 0,

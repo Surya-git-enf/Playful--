@@ -13,12 +13,38 @@ const ICONS = [
 
 const DROP = 180
 
+const ALL_ASSETS = [
+  '/svg/chess.png', '/svg/car.png', '/svg/ball.png', '/svg/rocket.png', '/svg/controller.png',
+  '/logo.png',
+  '/retro/sky.png', '/retro/clouds.png', '/retro/hills.png', '/retro/terrain.png',
+  '/retro/castle.png', '/retro/character.png', '/retro/coin.png',
+  '/racing/bg.png', '/racing/road.png', '/racing/car.png', '/racing/racing.mp4',
+  '/openworld/sky.png', '/openworld/ground.png', '/openworld/moon.png', '/openworld/world.png', '/openworld/hero.png',
+  '/space/astronaut.png', '/space/earth.png', '/space/lunar-ground.png',
+  '/cards/bang.mp4', '/cards/lego.mp4', '/cards/play.mp4',
+]
+
+function preloadAssets(onDone: (p: number) => void) {
+  let loaded = 0
+  const total = ALL_ASSETS.length
+  const tick = () => { loaded++; onDone(Math.min(Math.round((loaded / total) * 100), 100)) }
+  ALL_ASSETS.forEach((s) => {
+    if (s.endsWith('.mp4')) {
+      const v = document.createElement('video'); v.preload = 'metadata'
+      v.onloadedmetadata = tick; v.onerror = tick; v.src = s
+    } else {
+      const i = new Image(); i.onload = tick; i.onerror = tick; i.src = s
+    }
+  })
+}
+
 const raf = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())))
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 
-export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
+export default function PlayfulLoader({ progress: ext }: { progress?: number }) {
   const [curIdx, setCurIdx] = useState(0)
   const [nextIdx, setNextIdx] = useState<number | null>(null)
+  const [progress, setProgress] = useState(0)
   const [phase, setPhase] = useState<'idle' | 'wiping'>('idle')
   const idxRef = useRef(0)
   const aliveRef = useRef(true)
@@ -26,6 +52,10 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
   const y = useSpring(-DROP, { stiffness: 120, damping: 13, mass: 1 })
   const sx = useSpring(1, { stiffness: 500, damping: 12 })
   const sy = useSpring(1, { stiffness: 500, damping: 12 })
+
+  useEffect(() => { preloadAssets(setProgress) }, [])
+
+  const pct = ext ?? progress
 
   useEffect(() => {
     aliveRef.current = true
@@ -165,7 +195,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
               boxShadow: "0 0 10px rgba(255,138,0,0.35)",
             }}
             initial={{ width: "0%" }}
-            animate={{ width: `${progress}%` }}
+            animate={{ width: `${pct}%` }}
             transition={{ type: "spring", stiffness: 80, damping: 20 }}
           />
         </div>
@@ -179,7 +209,7 @@ export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
             letterSpacing: "0.05em",
           }}
         >
-          {progress}%
+          {pct}%
         </span>
       </div>
     </div>
