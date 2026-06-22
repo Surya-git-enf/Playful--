@@ -13,39 +13,12 @@ const ICONS = [
 
 const DROP = 180
 
-const ALL_ASSETS = [
-  '/svg/chess.png', '/svg/car.png', '/svg/ball.png', '/svg/rocket.png', '/svg/controller.png',
-  '/logo.png',
-  '/retro/sky.png', '/retro/clouds.png', '/retro/hills.png', '/retro/terrain.png',
-  '/retro/castle.png', '/retro/character.png', '/retro/coin.png',
-  '/racing/bg.png', '/racing/road.png', '/racing/car.png', '/racing/racing.mp4',
-  '/openworld/sky.png', '/openworld/ground.png', '/openworld/moon.png', '/openworld/world.png', '/openworld/hero.png',
-  '/space/astronaut.png', '/space/earth.png', '/space/lunar-ground.png',
-  '/cards/bang.mp4', '/cards/lego.mp4', '/cards/play.mp4',
-]
-
-function preloadAssets(onDone: (p: number) => void) {
-  let loaded = 0
-  const total = ALL_ASSETS.length
-  const tick = () => { loaded++; onDone(Math.min(Math.round((loaded / total) * 100), 100)) }
-  ALL_ASSETS.forEach((s) => {
-    if (s.endsWith('.mp4')) {
-      const v = document.createElement('video'); v.preload = 'metadata'
-      v.onloadedmetadata = tick; v.onerror = tick; v.src = s
-    } else {
-      const i = new Image(); i.onload = tick; i.onerror = tick; i.src = s
-    }
-  })
-}
-
-const raf = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+const raf = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())))
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 
-export default function PlayfulLoader({ progress: ext }: { progress?: number }) {
+export default function PlayfulLoader({ progress = 0 }: { progress?: number }) {
   const [curIdx, setCurIdx] = useState(0)
   const [nextIdx, setNextIdx] = useState<number | null>(null)
-  const [progress, setProgress] = useState(0)
-  // Phase: 'idle' | 'wiping' | 'done'
   const [phase, setPhase] = useState<'idle' | 'wiping'>('idle')
   const idxRef = useRef(0)
   const aliveRef = useRef(true)
@@ -53,10 +26,6 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
   const y = useSpring(-DROP, { stiffness: 120, damping: 13, mass: 1 })
   const sx = useSpring(1, { stiffness: 500, damping: 12 })
   const sy = useSpring(1, { stiffness: 500, damping: 12 })
-
-  useEffect(() => { preloadAssets(setProgress) }, [])
-
-  const pct = ext ?? progress
 
   useEffect(() => {
     aliveRef.current = true
@@ -68,37 +37,29 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
         const ci = idxRef.current
         const ni = (ci + 1) % ICONS.length
 
-        // Reset state cleanly
         setNextIdx(null)
         setPhase('idle')
 
         await wait(50)
 
-        // 1. Fall down
         y.set(0)
         sx.set(1.2)
         sy.set(0.78)
         await wait(400)
 
-        // 2. Squash recover + rise back up
         sx.set(1)
         sy.set(1)
         y.set(-DROP)
         await wait(420)
 
-        // 3. At apex: mount next image (still fully clipped = invisible)
         setNextIdx(ni)
 
-        // Wait 2 frames so next image actually paints at clipPath(100% clipped)
         await raf()
 
-        // 4. Now animate both wipes simultaneously
         setPhase('wiping')
 
-        // Wait for CSS transition (350ms) to finish
         await wait(380)
 
-        // 5. Swap: current becomes next, unmount overlay
         idxRef.current = ni
         setCurIdx(ni)
         setNextIdx(null)
@@ -112,9 +73,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
     return () => { aliveRef.current = false }
   }, [y, sx, sy])
 
-  // Current icon clips away to the RIGHT as phase = wiping
   const curClip = phase === 'wiping' ? 'inset(0 100% 0 0)' : 'inset(0 0% 0 0)'
-  // Next icon reveals from LEFT as phase = wiping
   const nextClip = phase === 'wiping' ? 'inset(0 0 0 0%)' : 'inset(0 0 0 100%)'
 
   return (
@@ -144,7 +103,6 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
           borderRadius: 18,
         }}
       >
-        {/* Current icon — wipes OUT to the right */}
         <img
           key={`cur-${curIdx}`}
           src={ICONS[curIdx].src}
@@ -161,8 +119,6 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
             transition: "clip-path 0.35s ease-in-out",
           }}
         />
-
-        {/* Next icon — wipes IN from the right, only mounted when needed */}
         {nextIdx !== null && (
           <img
             key={`next-${nextIdx}`}
@@ -183,7 +139,6 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
         )}
       </motion.div>
 
-      {/* Progress bar */}
       <div
         style={{
           position: "absolute",
@@ -210,7 +165,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
               boxShadow: "0 0 10px rgba(255,138,0,0.35)",
             }}
             initial={{ width: "0%" }}
-            animate={{ width: `${pct}%` }}
+            animate={{ width: `${progress}%` }}
             transition={{ type: "spring", stiffness: 80, damping: 20 }}
           />
         </div>
@@ -224,7 +179,7 @@ export default function PlayfulLoader({ progress: ext }: { progress?: number }) 
             letterSpacing: "0.05em",
           }}
         >
-          {pct}%
+          {progress}%
         </span>
       </div>
     </div>

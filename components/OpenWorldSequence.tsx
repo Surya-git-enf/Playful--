@@ -27,9 +27,6 @@ export default function OpenWorldSequence({ isActive }: Props) {
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#02050A' }}>
       <style>{`
 
-        /* ── FONT: Cinzel Decorative — Roman-carved, dark fantasy, unique ── */
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&display=swap');
-
         /* CRITICAL GPU VRAM FIX: 
            Removed excessive CSS filters on giant PNGs and enforced translate3d acceleration. 
            This permanently solves the mobile "black screen" flash crash.

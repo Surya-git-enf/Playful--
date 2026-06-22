@@ -437,22 +437,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-  useEffect(() => {
-    const styleId = 'palace-float-keyframes'
-    let styleElement = document.getElementById(styleId)
 
-    if (!styleElement) {
-      styleElement = document.createElement('style')
-      styleElement.id = styleId
-      styleElement.textContent = `
-        @keyframes float {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-10px) rotate(2deg); }
-        }
-      `
-      document.head.appendChild(styleElement)
-    }
-  }, [])
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -538,7 +523,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   })
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: '#020202' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: 'var(--bg)' }}>
 
       {/* GLOBAL HEADLINE OVERLAY */}
       <GlobalHeadline scene={scene} />

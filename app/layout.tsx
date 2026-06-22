@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import {
+  Inter,
   Orbitron,
   Space_Mono,
   Instrument_Serif,
@@ -8,6 +9,12 @@ import {
   Cinzel_Decorative,
 } from 'next/font/google'
 import '../styles/globals.css'
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -86,9 +93,8 @@ export const metadata: Metadata = {
   },
 }
 
-// themeColor must live in viewport export (Next.js 15+)
 export const viewport: Viewport = {
-  themeColor: '#020510',
+  themeColor: '#0d1117',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -98,6 +104,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={[
+      inter.variable,
       orbitron.variable,
       spaceMono.variable,
       instrumentSerif.variable,
