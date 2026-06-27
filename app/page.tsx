@@ -168,8 +168,10 @@ export default function Home() {
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           gap: '24px', padding: '32px',
+          width: '100vw', height: '100vh',
+          boxSizing: 'border-box',
         }}>
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ff7a18" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="3" width="20" height="14" rx="2" />
             <path d="M8 21h8M12 17v4" />
           </svg>
@@ -181,7 +183,7 @@ export default function Home() {
             lineHeight: 1.6,
             maxWidth: '280px',
           }}>
-            Switch to desktop mode to use this site
+            Level up your experience. Turn on Desktop Mode.
           </p>
         </div>
       ) : (
