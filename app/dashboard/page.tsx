@@ -25,17 +25,33 @@ interface User {
 const GAMES_BASE_URL = '/api/games';
 const USER_BASE_URL = '/api/user';
 
+// Icon map for nav
+const iconMap = {
+  Dashboard: 'LayoutDashboard',
+  Search: 'Search',
+  'All projects': 'Folder',
+  Favourites: 'Star',
+  Settings: 'Settings'
+};
+
 export default function Dashboard() {
+  // Games state
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Prompt modal state
   const [gameName, setGameName] = useState<string>('');
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
+
+  // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [deleteGameId, setDeleteGameId] = useState<string | null>(null);
+
+  // Favorite toggle loading state
   const [favoriteToggleLoading, setFavoriteToggleLoading] = useState<Set<string>>(new Set());
 
-  // User data
+  // User state
   const [user, setUser] = useState<User | null>(null);
   const [userLoading, setUserLoading] = useState<boolean>(true);
   const [userError, setUserError] = useState<string | null>(null);
@@ -141,18 +157,19 @@ export default function Dashboard() {
   // Close modals when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (createModalOpen && !e.target.closest('.modal-content')) {
-        setCreateModalOpen(false);
-        setGameName('');
-      }
-      if (deleteModalOpen && !e.target.closest('.modal-content')) {
-        setDeleteModalOpen(false);
+      if (e.target instanceof HTMLElement) {
+        if (createModalOpen && !e.target.closest(".modal-content")) {
+          setCreateModalOpen(false);
+          setGameName("");
+        }
+        if (deleteModalOpen && !e.target.closest(".modal-content")) {
+          setDeleteModalOpen(false);
+        }
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [createModalOpen, deleteModalOpen]);
-
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Main Layout */}
@@ -172,18 +189,15 @@ export default function Dashboard() {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-            [{'Dashboard', 'Search', 'All projects', 'Favourites', 'Settings'}.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
-                <Lucide[
-                  item === 'Dashboard' ? 'LayoutDashboard' :
-                  item === 'Search' ? 'Search' :
-                  item === 'All projects' ? 'Folder' :
-                  item === 'Favourites' ? 'Star' :
-                  'Settings'
-                ] className="w-5 h-5 text-[#FF5F1F]" />
-                <span className="text-sm font-medium">{item}</span>
-              </div>
-            ))}
+            {['Dashboard', 'Search', 'All projects', 'Favourites', 'Settings'].map((item, idx) => {
+              const Icon = Lucide[iconMap[item as keyof typeof iconMap]];
+              return (
+                <div key={idx} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                  <Icon className="w-5 h-5 text-[#FF5F1F]" />
+                  <span className="text-sm font-medium">{item}</span>
+                </div>
+              );
+            })}
           </nav>
 
           {/* Recents */}
@@ -290,7 +304,7 @@ export default function Dashboard() {
                 >
                   <Lucide.LogOut className="w-4 h-4 text-[#FF5F1F]" />
                   <span>Sign Out</span>
-                </div>
+                </button>
               </div>
             </div>
           </div>
@@ -322,7 +336,7 @@ export default function Dashboard() {
                   />
                   <button
                     type="submit"
-                    className="absolute right-2 top-2 bottom-2 flex items-center justify-center w-10 h-10 bg-gradient-to-r from-[#FF5F1F] to-[#FF2D94] rounded-lg hover:opacity-90 transition-opacity"
+                    className="absolute right-2 top-2 bottom-2 flex items-center justify-center w-10 h-10 bg-gradient-to-r from-[#FF5F1F] to=[#FF2D94] rounded-lg hover:opacity-90 transition-opacity"
                   >
                     <Lucide.Send className="w-4 h-4 text-white" />
                   </button>
@@ -452,7 +466,7 @@ export default function Dashboard() {
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-2 bottom-2 flex items-center justify-center w-10 h-10 bg-gradient-to-r from-[#FF5F1F] to-[#FF2D94] rounded-lg hover:opacity-90 transition-opacity"
+                  className="absolute right-2 top-2 bottom-2 flex items-center justify-center w-10 h-10 bg-gradient-to-r from-[#FF5F1F] to=[#FF2D94] rounded-lg hover:opacity-90 transition-opacity"
                 >
                   <Lucide.Send className="w-4 h-4 text-white" />
                 </button>
