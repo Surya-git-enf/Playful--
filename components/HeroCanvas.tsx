@@ -65,7 +65,6 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
       backgroundImage: 'linear-gradient(180deg, #FFD400 0%, #FF3300 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
-      color: 'transparent',
       filter: 'drop-shadow(0px 3px 0px rgba(0,0,0,1))',
       lineHeight: '1.2',
     }
@@ -171,7 +170,6 @@ function GlobalHeadline({ scene }: { scene: number }) {
         pointerEvents: 'none',
         WebkitFontSmoothing: 'antialiased',
       }}>
-
       {/* Cinematic Fog Bloom exclusively for Space Scene */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -417,7 +415,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           if (idx < TEXT_FADE_START) {
             tp = 0
           } else if (idx >= 120) {
-            tp = 1
+            tb = 1
           } else {
             tp = (idx - TEXT_FADE_START) / (120 - TEXT_FADE_START)
           }
@@ -437,82 +435,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame, snapTo])
 
-
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    window.scrollTo(0, 0)
-
-    const handleWheel = (e: WheelEvent) => {
-      if (hasReleased.current) return
-      e.preventDefault()
-      if (snapLocked.current) return
-      const down = e.deltaY > 0
-
-      if (sceneRef.current === 0) {
-        velocity.current += e.deltaY * FRAMES_PER_DELTA
-        wheelActive.current = true
-        if (wheelTimer.current) clearTimeout(wheelTimer.current)
-        wheelTimer.current = setTimeout(() => {
-          wheelActive.current = false
-          if (frameFloat.current >= TOTAL_FRAMES - 1) snapTo(1)
-          if (frameFloat.current <= 1) { frameFloat.current = 0; velocity.current = 0 }
-        }, 150)
-        return
-      }
-
-      // Scenes 1-4: fire on the first sufficiently-large wheel tick.
-      // (Previously this accumulated deltaY across events, but inertial/
-      // momentum scrolling sends a MIX of positive and negative deltas —
-      // those can cancel each other out indefinitely, so "doom scrolling"
-      // never crossed the threshold and the page felt permanently stuck
-      // on Space. snapLocked's 900ms window already prevents double-fires
-      // within a single gesture, so no accumulation is needed.)
-      if (Math.abs(e.deltaY) > 1) {
-        snapTo(sceneRef.current + (e.deltaY > 0 ? 1 : -1))
-      }
-    }
-
-    let ty0 = 0, tyLast = 0, tvY = 0, ttLast = 0
-    const onTouchStart = (e: TouchEvent) => {
-      ty0 = e.touches[0].clientY; tyLast = ty0; tvY = 0; ttLast = Date.now()
-    }
-    const onTouchMove = (e: TouchEvent) => {
-      if (hasReleased.current) return
-      e.preventDefault() // Prevents default scroll bounce smoothly
-      const now = Date.now()
-      const dy = tyLast - e.touches[0].clientY
-      tvY = dy / Math.max(1, now - ttLast)
-      tyLast = e.touches[0].clientY; ttLast = now
-      if (sceneRef.current === 0) {
-        frameFloat.current = Math.max(0, Math.min(TOTAL_FRAMES, frameFloat.current + dy * 0.55))
-      }
-    }
-    const onTouchEnd = () => {
-      if (hasReleased.current || snapLocked.current) return
-      if (sceneRef.current === 0) {
-        velocity.current = tvY * 16.67 * 0.55
-        wheelActive.current = false
-        if (frameFloat.current >= TOTAL_FRAMES - 4 || velocity.current > 6) { snapTo(1); return }
-        if (frameFloat.current <= 3 && velocity.current < -3) { frameFloat.current = 0; velocity.current = 0 }
-        return
-      }
-      const dy = ty0 - tyLast
-      if (Math.abs(dy) > 40) snapTo(sceneRef.current + (dy > 0 ? 1 : -1))
-    }
-
-    window.addEventListener('wheel',      handleWheel,  { passive: false })
-    window.addEventListener('touchstart', onTouchStart, { passive: true })
-    window.addEventListener('touchmove',  onTouchMove,  { passive: false })
-    window.addEventListener('touchend',   onTouchEnd,   { passive: true })
-    return () => {
-      window.removeEventListener('wheel',      handleWheel)
-      window.removeEventListener('touchstart', onTouchStart)
-      window.removeEventListener('touchmove',  onTouchMove)
-      window.removeEventListener('touchend',   onTouchEnd)
-    }
-  }, [snapTo])
-
   const gs = (i: number): React.CSSProperties => ({
     position: 'absolute', inset: 0,
     opacity: scene === i ? 1 : 0,
@@ -524,7 +446,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: 'var(--bg)' }}>
-
       {/* GLOBAL HEADLINE OVERLAY */}
       <GlobalHeadline scene={scene} />
 
@@ -611,65 +532,37 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         transform: 'translateX(-50%)',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2px',
-        pointerEvents: 'none',
-        zIndex: 9999,
-        animation: 'blurIn .8s ease .6s both',
-        opacity: scene === 0 ? 1 : 0, // Only show in palace scene
-        transition: 'opacity 0.5s ease'
       }}>
-        <style>{`
-          @keyframes blurIn {
-            from { opacity: 0; filter: blur(8px); transform: translateY(10px); }
-            to { opacity: 1; filter: blur(0px); transform: translateY(0); }
-          }
-
-          .scroll-arrow {
-            width: 28px;
-            height: 16px;
-            position: relative;
-            opacity: 0;
-          }
-
-          .scroll-arrow::before,
-          .scroll-arrow::after {
-            content: '';
-            position: absolute;
-            width: 14px;
-            height: 2.5px;
-            background: #ffe000;
-            border-radius: 2px;
-            top: 50%;
-          }
-
-          .scroll-arrow::before {
-            left: 0;
-            transform-origin: right center;
-            transform: translateY(-50%) rotate(35deg);
-            box-shadow: 0 0 8px #ffe000, 0 0 18px rgba(255,224,0,0.6);
-          }
-
-          .scroll-arrow::after {
-            right: 0;
-            transform-origin: left center;
-            transform: translateY(-50%) rotate(-35deg);
-            box-shadow: 0 0 8px #ffe000, 0 0 18px rgba(255,224,0,0.6);
-          }
-
-          /* Each arrow pulses in sequence with a stagger */
-          @keyframes arrowGlow {
-            0%, 100% { opacity: 0.15; filter: drop-shadow(0 0 2px #ffe000); }
-            50%       { opacity: 1;    filter: drop-shadow(0 0 10px #ffe000) drop-shadow(0 0 22px rgba(255,224,0,0.8)); }
-          }
-
-          .scroll-arrow:nth-child(1) { animation: arrowGlow 1.4s ease-in-out infinite 0s; }
-          .scroll-arrow:nth-child(2) { animation: arrowGlow 1.4s ease-in-out infinite 0.28s; }
-          .scroll-arrow:nth-child(3) { animation: arrowGlow 1.4s ease-in-out infinite 0.56s; }
-        `}</style>
-        <div className="scroll-arrow" />
-        <div className="scroll-arrow" />
-        <div className="scroll-arrow" />
+        <div
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'background 0.2s',
+          }}
+          onClick={() => {
+            if (hasReleased.current) return
+            snapTo(1)
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m19 9-7 7-7-7"/>
+          </svg>
+        </div>
+        <p style={{
+          marginTop: 8,
+          fontFamily: 'var(--font-mono)',
+          fontSize: '.75rem',
+          color: 'rgba(255,255,255,0.6)',
+          textAlign: 'center',
+        }}>
+          Scroll down to begin
+        </p>
       </div>
     </div>
   )
