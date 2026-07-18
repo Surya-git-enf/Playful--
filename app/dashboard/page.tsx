@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import * as Lucide from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '../../lib/supabase';
 
 // Define types
 interface Game {
@@ -58,6 +60,8 @@ export default function Dashboard() {
 
   const heroRef = useRef<HTMLDivElement>(null);
   const dashboardRef = useRef<HTMLDivElement>(null);
+
+  const router = useRouter();
 
   // Fetch games from API
   const fetchGames = async () => {
@@ -148,6 +152,17 @@ export default function Dashboard() {
     }
   };
 
+  // Sign out
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Sign out error', err);
+    }
+    // Redirect to home
+    router.push('/');
+  };
+
   // Load games and user on mount
   useEffect(() => {
     fetchGames();
@@ -160,7 +175,7 @@ export default function Dashboard() {
       if (e.target instanceof HTMLElement) {
         if (createModalOpen && !e.target.closest(".modal-content")) {
           setCreateModalOpen(false);
-          setGameName("");
+          setGameName('');
         }
         if (deleteModalOpen && !e.target.closest(".modal-content")) {
           setDeleteModalOpen(false);
@@ -295,11 +310,7 @@ export default function Dashboard() {
                 </button>
 
                 <button
-                  onClick={() => {
-                    setUserLoading(false); // close menu
-                    // In real app: handle sign out
-                    alert('Sign out flow would trigger here');
-                  }}
+                  onClick={handleSignOut}
                   className="w-full flex items-center gap-3 text-center py-2 px-4 text-[#FF5F1F] hover:bg-white/10 transition-colors mt-4"
                 >
                   <Lucide.LogOut className="w-4 h-4 text-[#FF5F1F]" />
@@ -407,7 +418,7 @@ export default function Dashboard() {
                         <button
                           onClick={() => toggleFavorite(game.id)}
                           disabled={favoriteToggleLoading.has(game.id)}
-                          className={`p-2 rounded hover:bg-white/5 transition-colors ${game.favorite ? 'text-yellow-400' : 'text-white/50'} ${favoriteToggleLoading.has(game.id) ? 'opacity-50' : ''}`}
+                          className={`p-2 rounded hover:bg-white/5 transition-colors ${game.favorable ? 'text-yellow-400' : 'text-white/50'} ${favoriteToggleLoading.has(game.id) ? 'opacity-50' : ''}`}
                         >
                           {game.favorite ? (
                             <Lucide.Star className="w-4 h-4 text-yellow-400" />
@@ -466,7 +477,7 @@ export default function Dashboard() {
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-2 bottom-2 flex items-center justify-center w-10 h-10 bg-gradient-to-r from-[#FF5F1F] to=[#FF2D94] rounded-lg hover:opacity-90 transition-opacity"
+                  className="absolute right-2 top-2 bottom-2 flex items-center justify-center w-10 h-10 bg-gradient-to-r from=[#FF5F1F] to=[#FF2D94] rounded-lg hover:opacity-90 transition-opacity"
                 >
                   <Lucide.Send className="w-4 h-4 text-white" />
                 </button>
