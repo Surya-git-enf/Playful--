@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
@@ -85,7 +85,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
     font: "'Cinzel Decorative', serif",
     scale: 1.05,
     style: {
-      textShadow: "0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)",
+      textShadow: "0 2px 0px rgba(0,0,0,0.95), 0 0 80px rgba(0,0,0,0.25), 0 0 120px rgba(0,100,80,0.12)",
       fontWeight: 900,
       letterSpacing: '0.04em',
       lineHeight: '1.2',
@@ -96,7 +96,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
     font: "'Orbitron', sans-serif",
     scale: 0.95,
     style: {
-      textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.35), 0 0 120px rgba(255,255,255,.15)",
+      textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 40px rgba(255,255,255,.15)",
       fontWeight: 700,
       letterSpacing: '0.08em',
       lineHeight: '1.2',
@@ -114,189 +114,7 @@ function padCenter(str: string, len: number) {
 }
 
 function GlobalHeadline({ scene }: { scene: number }) {
-  const prevSceneRef = useRef(scene);
-  const transRef = useRef({ from: 0, to: 0, key: 0 });
-
-  if (scene !== prevSceneRef.current) {
-    transRef.current = {
-      from: prevSceneRef.current,
-      to: scene,
-      key: transRef.current.key + 1
-    };
-    prevSceneRef.current = scene;
-  }
-  const trans = transRef.current;
-
-  const fromConf = SCENE_CONFIG[trans.from] || SCENE_CONFIG[0];
-  const toConf = SCENE_CONFIG[trans.to] || SCENE_CONFIG[0];
-
-  const GLOBAL_MAX_LEN = 22;
-  const fromChars = padCenter(fromConf.text, GLOBAL_MAX_LEN).split('');
-  const toChars = padCenter(toConf.text, GLOBAL_MAX_LEN).split('');
-
-  const isForward = trans.to >= trans.from;
-  const flipTo = isForward ? -90 : 90;
-  const backRotation = isForward ? 90 : -90;
-
-  const baseFontSize = `clamp(14px, 4.5vw, 55px)`;
-
-  // Flip duration + per-letter stagger. Kept deliberately tight so the
-  // LAST letter's flip finishes at (FLIP_DURATION + 21 * STAGGER) ≈ 0.78s,
-  // comfortably inside the 0.85s scene-fade window. This is what keeps
-  // the headline change in sync with the new world appearing, instead of
-  // lagging behind it.
-  const FLIP_DURATION = 0.45;
-  const STAGGER_S = 0.015; // 15ms per letter
-
-  return (
-    <div
-      // Remounting the whole headline on every scene transition guarantees
-      // there's no leftover per-letter animation/font state bleeding over
-      // from the previous transition (the cause of "previous font" ghosts).
-      key={`headline-${trans.key}`}
-      style={{
-        position: 'absolute',
-        top: 'clamp(6%, 7.5vh, 8%)',
-        left: '50%',
-        transform: 'translateX(-50%) translateZ(100px)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        whiteSpace: 'nowrap',
-        width: 'max-content',
-        maxWidth: '96vw',
-        color: '#FFFFFF',
-        pointerEvents: 'none',
-        WebkitFontSmoothing: 'antialiased',
-      }}>
-      {/* Cinematic Fog Bloom exclusively for Space Scene */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: trans.to === 4 ? 1 : 0 }}
-        transition={{ duration: 0.8 }}
-        style={{
-          position: 'absolute',
-          inset: '-50% -20%',
-          background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.18) 0%, transparent 65%)',
-          filter: 'blur(25px)',
-          zIndex: -1,
-        }}
-      />
-
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        {toChars.map((char, i) => {
-          const prevChar = fromChars[i] ?? ' ';
-          const charIsAnimating = trans.from !== trans.to && prevChar !== char;
-
-          const animDelay = i * STAGGER_S;
-
-          return (
-            <div key={`wrap-${i}`} style={{
-              position: 'relative',
-              display: 'inline-flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              perspective: '1000px',
-              flexShrink: 0,
-            }}>
-
-              {/* CSS GRID ANCHOR: The safest cross-browser way to ensure cells never squish or overlap */}
-              <div style={{ display: 'grid', visibility: 'hidden', padding: '0 0.02em' }}>
-                <span style={{
-                  gridArea: '1/1',
-                  fontFamily: fromConf.font,
-                  fontSize: `calc(${baseFontSize} * ${fromConf.scale})`,
-                  whiteSpace: 'pre',
-                  ...fromConf.style
-                }}>
-                  {prevChar}
-                </span>
-                <span style={{
-                  gridArea: '1/1',
-                  fontFamily: toConf.font,
-                  fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
-                  whiteSpace: 'pre',
-                  ...toConf.style
-                }}>
-                  {char}
-                </span>
-              </div>
-
-              {charIsAnimating ? (
-                <motion.div
-                  key={`flip-${trans.key}-${i}`}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    transformStyle: 'preserve-3d',
-                  }}
-                  initial={{ rotateX: 0 }}
-                  animate={{ rotateX: flipTo }}
-                  transition={{
-                    duration: FLIP_DURATION,
-                    delay: animDelay,
-                    ease: [0.65, 0.05, 0.36, 1]
-                  }}
-                >
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden',
-                    transform: 'translateZ(0.4em)',
-                    fontFamily: fromConf.font,
-                    fontSize: `calc(${baseFontSize} * ${fromConf.scale})`,
-                    whiteSpace: 'pre',
-                    paddingBottom: '0.1em',
-                    ...fromConf.style
-                  }}>
-                    {prevChar}
-                  </div>
-
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden',
-                    transform: `rotateX(${backRotation}deg) translateZ(0.4em)`,
-                    fontFamily: toConf.font,
-                    fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
-                    whiteSpace: 'pre',
-                    paddingBottom: '0.1em',
-                    ...toConf.style
-                  }}>
-                    {char}
-                  </div>
-                </motion.div>
-              ) : (
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: toConf.font,
-                  fontSize: `calc(${baseFontSize} * ${toConf.scale})`,
-                  whiteSpace: 'pre',
-                  paddingBottom: '0.1em',
-                  ...toConf.style
-                }}>
-                  {char}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
+  return <div>test</div>;
 }
 // ------------------------------------------------------------------
 
@@ -340,7 +158,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     canvas.width  = window.innerWidth * dpr
     canvas.height = window.innerHeight * dpr
     canvas.style.width  = `${window.innerWidth}px`
-    canvas.style.height = `${window.innerHeight}px`
+    canvas.height = `${window.innerHeight}px`
     const ctx = canvas.getContext('2d')
     if (ctx) ctx.scale(dpr, dpr)
   }, [])
@@ -433,7 +251,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     }
     rafRef.current = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [drawFrame, snapTo])
+  }, [drawFrame])
 
   const gs = (i: number): React.CSSProperties => ({
     position: 'absolute', inset: 0,
@@ -456,15 +274,15 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         <div
           ref={palaceTextRef}
           style={{
-            position: 'absolute',
-            bottom: '18%',
-            left: '50%',
-            transform: 'translateX(-50%) translateY(40px)',
-            opacity: 0,
-            pointerEvents: 'none',
-            zIndex: 20,
-            textAlign: 'center',
-            willChange: 'transform, opacity',
+            position: 'absolute';
+            bottom: '18%';
+            left: '50%';
+            transform: 'translateX(-50%) translateY(40px)';
+            opacity: 0;
+            pointerEvents: 'none';
+            zIndex: 20;
+            textAlign: 'center';
+            willChange: 'transform, opacity';
           }}
         >
           <h2 style={{
@@ -481,12 +299,12 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
             Step into the Kingdom
           </h2>
           <div style={{
-            position: 'absolute',
-            top: '-70%',
-            left: '50%',
-            width: '100%',
-            height: '200%',
-            pointerEvents: 'none',
+            position: 'absolute';
+            top: '-70%';
+            left: '50%';
+            width: '100%';
+            height: '200%';
+            pointerEvents: 'none';
             animation: 'float 6s ease-in-out infinite',
           }}/>
         </div>
@@ -494,12 +312,12 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         <div
           ref={palaceGlowRef}
           style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            background: 'radial-gradient(ellipse at center, rgba(255,212,0,0.1) 0%, transparent 70%)',
-            opacity: 0,
-            willChange: 'opacity',
+            position: 'absolute';
+            inset: 0;
+            pointerEvents: 'none';
+            background: 'radial-gradient(ellipse at center, rgba(255,212,0,0.1) 0%, transparent 70%)';
+            opacity: 0;
+            willChange: 'opacity';
           }}
         />
       </div>
@@ -526,18 +344,18 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
 
       {/* SCROLL ARROWS - Visible initially to indicate scrolling down starts the experience */}
       <div style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2px',
-        pointerEvents: 'none',
-        zIndex: 9999,
-        animation: 'blurIn .8s ease .6s both',
-        opacity: scene === 0 ? 1 : 0, // Only show in palace scene
+        position: 'absolute';
+        bottom: '20px';
+        left: '50%';
+        transform: 'translateX(-50%)';
+        display: 'flex';
+        flexDirection: 'column';
+        alignItems: 'center';
+        gap: '2px';
+        pointerEvents: 'none';
+        zIndex: 9999;
+        animation: 'blurIn .8s ease .6s both';
+        opacity: scene === 0 ? 1 : 0; // Only show in palace scene
         transition: 'opacity 0.5s ease'
       }}>
         <style>{`
@@ -564,7 +382,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
             top: 50%;
           }
 
-          .slide-arrow::before {
+          .scroll-arrow::before {
             left: 0;
             transform-origin: right center;
             transform: translateY(-50%) rotate(35deg);
@@ -585,7 +403,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           }
 
           .scroll-arrow:nth-child(1) { animation: arrowGlow 1.4s ease-in-out infinite 0s; }
-          .scroll-arrow:nth-child(2) { animation: arrowGlow 1.4ease-in-out infinite 0.28s; }
+          .scroll-arrow:nth-child(2) { animation: arrowGlo 1.4s ease-in-out infinite 0.28s; }
           .scroll-arrow:nth-child(3) { animation: arrowGlow 1.4s ease-in-out infinite 0.56s; }
         `}</style>
         <div className="scroll-arrow" />
