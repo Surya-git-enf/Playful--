@@ -347,7 +347,7 @@ export default function Dashboard() {
                   />
                   <button
                     type="submit"
-                    className="absolute right-2 top-2 bottom-2 flex items-center justify-center w-10 h-10 bg-gradient-to-r from-[#FF5F1F] to=[#FF2D94] rounded-lg hover:opacity-90 transition-opacity"
+                    className="absolute right-2 top-2 bottom-2 flex items-center justify-center w-10 h-10 bg-gradient-to-r from=[#FF5F1F] to=[#FF2D94] rounded-lg hover:opacity-90 transition-opacity"
                   >
                     <Lucide.Send className="w-4 h-4 text-white" />
                   </button>
@@ -418,7 +418,7 @@ export default function Dashboard() {
                         <button
                           onClick={() => toggleFavorite(game.id)}
                           disabled={favoriteToggleLoading.has(game.id)}
-                          className={`p-2 rounded hover:bg-white/5 transition-colors ${game.favorable ? 'text-yellow-400' : 'text-white/50'} ${favoriteToggleLoading.has(game.id) ? 'opacity-50' : ''}`}
+                          className={`p-2 rounded hover:bg-white/5 transition-colors ${game.favorite ? 'text-yellow-400' : 'text-white/50'} ${favoriteToggleLoading.has(game.id) ? 'opacity-50' : ''}`}
                         >
                           {game.favorite ? (
                             <Lucide.Star className="w-4 h-4 text-yellow-400" />

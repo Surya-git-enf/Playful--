@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
@@ -415,7 +415,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           if (idx < TEXT_FADE_START) {
             tp = 0
           } else if (idx >= 120) {
-            tb = 1
+            tp = 1
           } else {
             tp = (idx - TEXT_FADE_START) / (120 - TEXT_FADE_START)
           }
@@ -532,37 +532,65 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         transform: 'translateX(-50%)',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
+        gap: '2px',
+        pointerEvents: 'none',
+        zIndex: 9999,
+        animation: 'blurIn .8s ease .6s both',
+        opacity: scene === 0 ? 1 : 0, // Only show in palace scene
+        transition: 'opacity 0.5s ease'
       }}>
-        <div
-          style={{
-            width: 20,
-            height: 20,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'background 0.2s',
-          }}
-          onClick={() => {
-            if (hasReleased.current) return
-            snapTo(1)
-          }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m19 9-7 7-7-7"/>
-          </svg>
-        </div>
-        <p style={{
-          marginTop: 8,
-          fontFamily: 'var(--font-mono)',
-          fontSize: '.75rem',
-          color: 'rgba(255,255,255,0.6)',
-          textAlign: 'center',
-        }}>
-          Scroll down to begin
-        </p>
+        <style>{`
+          @keyframes blurIn {
+            from { opacity: 0; filter: blur(8px); transform: translateY(10px); }
+            to { opacity: 1; filter: blur(0px); transform: translateY(0); }
+          }
+
+          .scroll-arrow {
+            width: 28px;
+            height: 16px;
+            position: relative;
+            opacity: 0;
+          }
+
+          .scroll-arrow::before,
+          .scroll-arrow::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 2.5px;
+            background: #ffe000;
+            border-radius: 2px;
+            top: 50%;
+          }
+
+          .slide-arrow::before {
+            left: 0;
+            transform-origin: right center;
+            transform: translateY(-50%) rotate(35deg);
+            box-shadow: 0 0 8px #ffe000, 0 0 18px rgba(255,224,0,0.6);
+          }
+
+          .scroll-arrow::after {
+            right: 0;
+            transform-origin: left center;
+            transform: translateY(-50%) rotate(-35deg);
+            box-shadow: 0 0 8px #ffe000, 0 0 18px rgba(255,224,0,0.6);
+          }
+
+          /* Each arrow pulses in sequence with a stagger */
+          @keyframes arrowGlow {
+            0%, 100% { opacity: 0.15; filter: drop-shadow(0 0 2px #ffe000); }
+            50%       { opacity: 1;    filter: drop-shadow(0 0 10px #ffe000) drop-shadow(0 0 22px rgba(255,224,0,0.8)); }
+          }
+
+          .scroll-arrow:nth-child(1) { animation: arrowGlow 1.4s ease-in-out infinite 0s; }
+          .scroll-arrow:nth-child(2) { animation: arrowGlow 1.4ease-in-out infinite 0.28s; }
+          .scroll-arrow:nth-child(3) { animation: arrowGlow 1.4s ease-in-out infinite 0.56s; }
+        `}</style>
+        <div className="scroll-arrow" />
+        <div className="scroll-arrow" />
+        <div className="scroll-arrow" />
       </div>
     </div>
   )
