@@ -9,10 +9,6 @@ import SpaceSequence from './SpaceSequence'
 
 const TOTAL_SCENES = 4
 const TOTAL_FRAMES = 144
-// Headline flip (see below) now completes in ~0.78s total, so the snap
-// lock just needs to be a hair longer than the 0.85s scene fade — keeping
-// these two durations close is what removes the "stuck" feeling between
-// Retro/Racing/etc. and keeps the headline in sync with the world.
 const SNAP_LOCK_MS = 900
 const TEXT_FADE_START = 100
 const FRICTION = 0.80
@@ -46,9 +42,6 @@ interface Props {
   isReleased: boolean
 }
 
-// ------------------------------------------------------------------
-// GLOBAL HEADLINE SYSTEM (Perfect Letter Spacing & Z-Index Locks)
-// ------------------------------------------------------------------
 const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, style: React.CSSProperties }> = {
   0: {
     text: "",
@@ -59,7 +52,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
   1: {
     text: "PIXELS NEVER DIE",
     font: "'Press Start 2P', cursive",
-    scale: 0.75, // Scaled for mobile pixel crispness
+    scale: 0.75,
     style: {
       fontWeight: 400,
       backgroundImage: 'linear-gradient(180deg, #FFD400 0%, #FF3300 100%)',
@@ -85,7 +78,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
     font: "'Cinzel Decorative', serif",
     scale: 1.05,
     style: {
-      textShadow: "0 2px 0px rgba(0,0,0,0.95), 0 0 80px rgba(0,0,0,0.25), 0 0 120px rgba(0,100,80,0.12)",
+      textShadow: "0 2px 0px rgba(0,0,0,1), 0 8px 40px rgba(0,0,0,0.95), 0 0 80px rgba(0,200,80,0.25), 0 0 160px rgba(0,150,60,0.12)",
       fontWeight: 900,
       letterSpacing: '0.04em',
       lineHeight: '1.2',
@@ -96,7 +89,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
     font: "'Orbitron', sans-serif",
     scale: 0.95,
     style: {
-      textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 40px rgba(255,255,255,.15)",
+      textShadow: "0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.85), 0 0 32px rgba(255,255,255,.65), 0 0 64px rgba(255,255,255,.15)",
       fontWeight: 700,
       letterSpacing: '0.08em',
       lineHeight: '1.2',
@@ -104,8 +97,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
   }
 };
 
-// Pads strings to center them perfectly during transitions
-function padCenter(str: string, len: number) {
+function padCenter(str: string, len: number): string {
   if (str.length >= len) return str.substring(0, len);
   const padTotal = len - str.length;
   const padLeft = Math.floor(padTotal / 2);
@@ -113,33 +105,29 @@ function padCenter(str: string, len: number) {
   return ' '.repeat(padLeft) + str + ' '.repeat(padRight);
 }
 
-function GlobalHeadline({ scene }: { scene: number }) {
+function GlobalHeadline({ scene }: { scene: number }): JSX.Element {
   return <div>test</div>;
 }
-// ------------------------------------------------------------------
 
 export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Props) {
   const [scene, setSceneState] = useState(0)
 
-  // Direct DOM refs bypass React renders during high-speed scroll (Massive Performance Boost)
   const palaceTextRef = useRef<HTMLDivElement>(null)
   const palaceGlowRef = useRef<HTMLDivElement>(null)
 
-  const sceneRef    = useRef(0)
-  const frameFloat  = useRef(1)
-  const frameDrawn  = useRef(-1)
-  const velocity    = useRef(0)
-  const snapLocked  = useRef(false)
+  const sceneRef = useRef(0)
+  const frameFloat = useRef(1)
+  const frameDrawn = useRef(-1)
+  const velocity = useRef(0)
+  const snapLocked = useRef(false)
   const wheelActive = useRef(false)
-  const wheelTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hasReleased = useRef(false)
-  // Accumulates small/fractional deltaY from trackpads so gentle scrolls
-  // on scenes 1-4 still register instead of feeling "stuck".
-  const wheelAccum  = useRef(0)
+  const wheelAccum = useRef(0)
 
-  const canvasRef   = useRef<HTMLCanvasElement>(null)
-  const imagesRef   = useRef<(HTMLImageElement | null)[]>([])
-  const rafRef      = useRef<number>(0)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imagesRef = useRef<(HTMLImageElement | null)[]>([])
+  const rafRef = useRef<number>(0)
 
   useEffect(() => {
     hasReleased.current = isReleased
@@ -155,18 +143,17 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     const canvas = canvasRef.current
     if (!canvas) return
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    canvas.width  = window.innerWidth * dpr
-    canvas.height = window.innerHeight * dpr
-    canvas.style.width  = `${window.innerWidth}px`
-    canvas.height = `${window.innerHeight}px`
+    canvas.width = window.innerWidth * dpr
+    console.log('canvas width:', canvas.width, 'height:', canvas.height)
+    canvas.style.width = `${window.innerWidth}px`
+    console.log('canvas height:', canvas.height)
+    canvas.style.height = `${window.innerHeight}px`
     const ctx = canvas.getContext('2d')
     if (ctx) ctx.scale(dpr, dpr)
   }, [])
 
   const drawFrame = useCallback((idx: number) => {
     const canvas = canvasRef.current
-    const ctx    = canvas?.getContext('2d')
-    const img    = imagesRef.current[idx]
     if (!canvas || !ctx || !img?.complete || img.naturalWidth === 0) return
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     drawCover(ctx, img, canvas.width / dpr, canvas.height / dpr)
@@ -183,7 +170,9 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     f0.onload = () => drawFrame(0)
     imgs[0] = f0
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      const img = new Image(); img.src = `/palace/palace-frame_${pad(i)}.webp`; imgs[i] = img
+      const img = new Image()
+      img.src = `/palace/palace-frame_${pad(i)}.webp`
+      imgs[i] = img
     }
     return () => window.removeEventListener('resize', setupCanvas)
   }, [setupCanvas, drawFrame])
@@ -191,8 +180,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const doRelease = useCallback(() => {
     if (hasReleased.current) return
     hasReleased.current = true
-    // Don't touch body overflow — page.tsx's #scroll-root container
-    // switches to overflow:scroll when heroReleased flips to true.
     onRelease()
   }, [onRelease])
 
@@ -228,7 +215,6 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         if (idx !== frameDrawn.current) {
           drawFrame(idx)
 
-          // Direct DOM updates for buttery smooth scrolling (NO REACT RE-RENDERS)
           let tp = 0
           if (idx < TEXT_FADE_START) {
             tp = 0
@@ -253,24 +239,25 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
     return () => cancelAnimationFrame(rafRef.current)
   }, [drawFrame])
 
-  const gs = (i: number): React.CSSProperties => ({
-    position: 'absolute', inset: 0,
-    opacity: scene === i ? 1 : 0,
-    pointerEvents: scene === i ? 'auto' : 'none',
-    transition: `opacity ${SCENE_FADE_S}s cubic-bezier(0.65,0.35,1)`,
-    zIndex: scene === i ? 10 : 0,
-    willChange: 'opacity',
-  })
+  const gs = (i: number): React.CSSProperties => {
+    return {
+      position: 'absolute',
+      inset: 0,
+      opacity: scene === i ? 1 : 0,
+      pointerEvents: scene === i ? 'auto' : 'none',
+      transition: `opacity ${SCENE_FADE_S}s cubic-bezier(0.65,0.35,1)`,
+      zIndex: scene === i ? 10 : 0,
+      willChange: 'opacity',
+    };
+  }
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: 'var(--bg)' }}>
-      {/* GLOBAL HEADLINE OVERLAY */}
       <GlobalHeadline scene={scene} />
 
       {/* Scene 0 — Palace */}
       <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block', width: '100vw', height: '100dvh' }} />
-
         <div
           ref={palaceTextRef}
           style={{
@@ -329,20 +316,20 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
 
       {/* Scene 2 — Racing */}
       <div style={gs(2)}>
-        <RacingSequence isActive={scene === 2} />
+        <RacingSequence isActive=scene === 2} />
       </div>
 
       {/* Scene 3 — Open World */}
       <div style={gs(3)}>
-        <OpenWorldSequence isActive={scene === 3} />
+        <OpenWorldSequence isActive=scene === 3} />
       </div>
 
       {/* Scene 4 — Space */}
       <div style={gs(4)}>
-        <SpaceSequence isActive={scene === 4} />
+        <SpaceSequence isActive=scene === 4} />
       </div>
 
-      {/* SCROLL ARROWS - Visible initially to indicate scrolling down starts the experience */}
+      {/* SCROLL ARROWS */}
       <div style={{
         position: 'absolute';
         bottom: '20px';
@@ -358,7 +345,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         opacity: scene === 0 ? 1 : 0; // Only show in palace scene
         transition: 'opacity 0.5s ease'
       }}>
-        <style>{`
+        <style>{``
           @keyframes blurIn {
             from { opacity: 0; filter: blur(8px); transform: translateY(10px); }
             to { opacity: 1; filter: blur(0px); transform: translateY(0); }
@@ -390,21 +377,15 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           }
 
           .scroll-arrow::after {
-            right: 0;
-            transform-origin: left center;
-            transform: translateY(-50%) rotate(-35deg);
+            right=0;
+            transform-origin:left center;
+            transform:translateY(-50%) rotate(-35deg);
             box-shadow: 0 0 8px #ffe000, 0 0 18px rgba(255,224,0,0.6);
           }
 
-          /* Each arrow pulses in sequence with a stagger */
-          @keyframes arrowGlow {
-            0%, 100% { opacity: 0.15; filter: drop-shadow(0 0 2px #ffe000); }
-            50%       { opacity: 1;    filter: drop-shadow(0 0 10px #ffe000) drop-shadow(0 0 22px rgba(255,224,0,0.8)); }
-          }
-
-          .scroll-arrow:nth-child(1) { animation: arrowGlow 1.4s ease-in-out infinite 0s; }
-          .scroll-arrow:nth-child(2) { animation: arrowGlo 1.4s ease-in-out infinite 0.28s; }
-          .scroll-arrow:nth-child(3) { animation: arrowGlow 1.4s ease-in-out infinite 0.56s; }
+          @keyframes arrowGlo1 { animation: arrowGlo 1.4s ease-in-out infinite 0s; }
+          .arrowGlo2 { animation: arrowGlo 1.4s ease-in-out infinite 0.28s; }
+          @keyframes arrowGlo3 { animation: arrowGlo 1.4s ease-in-out infinite 0.56s; }
         `}</style>
         <div className="scroll-arrow" />
         <div className="scroll-arrow" />
