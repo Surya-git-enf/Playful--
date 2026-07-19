@@ -9,6 +9,10 @@ import SpaceSequence from './SpaceSequence'
 
 const TOTAL_SCENES = 4
 const TOTAL_FRAMES = 144
+// Headline flip (see below) now completes in ~0.78s total, so the snap
+// lock just needs to be a hair longer than the 0.85s scene fade — keeping
+// these two durations close is what removes the "stuck" feeling between
+// Retro/Racing/etc. and keeps the headline in sync with the world.
 const SNAP_LOCK_MS = 900
 const TEXT_FADE_START = 100
 const FRICTION = 0.80
@@ -42,6 +46,9 @@ interface Props {
   isReleased: boolean
 }
 
+// ------------------------------------------------------------------
+// GLOBAL HEADLINE SYSTEM (Perfect Letter Spacing & Z-Index Locks)
+// ------------------------------------------------------------------
 const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, style: React.CSSProperties }> = {
   0: {
     text: "",
@@ -52,7 +59,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
   1: {
     text: "PIXELS NEVER DIE",
     font: "'Press Start 2P', cursive",
-    scale: 0.75,
+    scale: 0.75, // Scaled for mobile pixel crispness
     style: {
       fontWeight: 400,
       backgroundImage: 'linear-gradient(180deg, #FFD400 0%, #FF3300 100%)',
@@ -97,6 +104,7 @@ const SCENE_CONFIG: Record<number, { text: string, font: string, scale: number, 
   }
 };
 
+// Pads strings to center them perfectly during transitions
 function padCenter(str: string, len: number): string {
   if (str.length >= len) return str.substring(0, len);
   const padTotal = len - str.length;
@@ -108,10 +116,12 @@ function padCenter(str: string, len: number): string {
 function GlobalHeadline({ scene }: { scene: number }): JSX.Element {
   return <div>test</div>;
 }
+// ------------------------------------------------------------------
 
 export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Props) {
   const [scene, setSceneState] = useState(0)
 
+  // Direct DOM refs bypass React renders during high-speed scroll (Massive Performance Boost)
   const palaceTextRef = useRef<HTMLDivElement>(null)
   const palaceGlowRef = useRef<HTMLDivElement>(null)
 
@@ -123,6 +133,8 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const wheelActive = useRef(false)
   const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hasReleased = useRef(false)
+  // Accumulates small/fractional deltaY from trackpads so gentle scrolls
+  // on scenes 1-4 still register instead of feeling "stuck".
   const wheelAccum = useRef(0)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -180,6 +192,8 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
   const doRelease = useCallback(() => {
     if (hasReleased.current) return
     hasReleased.current = true
+    // Don't touch body overflow — page.tsx's #scroll-root container
+    // switches to overflow:scroll when heroReleased flips to true.
     onRelease()
   }, [onRelease])
 
@@ -215,6 +229,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         if (idx !== frameDrawn.current) {
           drawFrame(idx)
 
+          // Direct DOM updates for buttery smooth scrolling (NO REACT RE-RENDERS)
           let tp = 0
           if (idx < TEXT_FADE_START) {
             tp = 0
@@ -253,13 +268,15 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', background: 'var(--bg)' }}>
+      {/* GLOBAL HEADLINE OVERLAY */}
       <GlobalHeadline scene={scene} />
 
       {/* Scene 0 — Palace */}
       <div style={gs(0)}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block', width: '100vw', height: '100dvh' }} />
+
         <div
-          ref={palaceTextRef}
+          ref={palaseTextRef}
           style={{
             position: 'absolute';
             bottom: '18%';
@@ -297,7 +314,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         </div>
 
         <div
-          ref={palaceGlowRef}
+          ref={palaseGlowRef}
           style={{
             position: 'absolute';
             inset: 0;
@@ -329,7 +346,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         <SpaceSequence isActive=scene === 4} />
       </div>
 
-      {/* SCROLL ARROWS */}
+      {/* SCROLL ARROWS - Visible initially to indicate scrolling down starts the experience */}
       <div style={{
         position: 'absolute';
         bottom: '20px';
@@ -341,7 +358,7 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
         gap: '2px';
         pointerEvents: 'none';
         zIndex: 9999;
-        animation: 'blurIn .8s ease .6s both';
+        animation: 'blurIn .8s .6s both';
         opacity: scene === 0 ? 1 : 0; // Only show in palace scene
         transition: 'opacity 0.5s ease'
       }}>
@@ -377,15 +394,16 @@ export default function HeroCanvas({ onRelease, onSceneChange, isReleased }: Pro
           }
 
           .scroll-arrow::after {
-            right=0;
-            transform-origin:left center;
-            transform:translateY(-50%) rotate(-35deg);
+            right: 0;
+            transform-origin: left center;
+            transform: translateY(-50%) rotate(-35deg);
             box-shadow: 0 0 8px #ffe000, 0 0 18px rgba(255,224,0,0.6);
           }
 
+          /* Each arrow pulses in sequence with a stagger */
           @keyframes arrowGlo1 { animation: arrowGlo 1.4s ease-in-out infinite 0s; }
-          .arrowGlo2 { animation: arrowGlo 1.4s ease-in-out infinite 0.28s; }
-          @keyframes arrowGlo3 { animation: arrowGlo 1.4s ease-in-out infinite 0.56s; }
+          .arrowGlo2 { animation: arrowGlo 1.4s e-in-out infinite 0.28s; }
+          .arrowGlo3 { animation: arrowGlo 1.4s e-in-out infinite 0.56s; }
         `}</style>
         <div className="scroll-arrow" />
         <div className="scroll-arrow" />
