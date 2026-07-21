@@ -263,6 +263,7 @@ function AuthContent() {
           borderRadius: 28, padding: '44px 40px',
           boxShadow: '0 30px 60px rgba(0,0,0,0.80), inset 0 1px 1px rgba(255,255,255,0.10)',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          overflow: 'hidden',
         }}>
           {/* Front — Sign In */}
           <div style={{
@@ -291,9 +292,23 @@ function AuthContent() {
               background: 'linear-gradient(90deg, transparent, #00eaff, transparent)',
             }} />
             <p style={{
+              textAlign: 'center', fontSize: '1rem', color: 'rgba(255,255,255,0.6)',
+              maxWidth: '260px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              lineHeight: 1.5,
+            }}>
+              Enter your credentials to continue your journey
+            }}
+            </p>
+            <p style={{
               textAlign: 'center', fontSize: '0.78rem', color: 'rgba(255,255,255,0.48)',
               marginBottom: 28, letterSpacing: '0.06em', textTransform: 'uppercase' as any,
             }}>Resume your Adventure.</p>
+            <p style={{
+              textAlign: 'center', fontSize: '1rem', color: 'rgba(255,255,255,0.6)',
+              marginBottom: 24, maxWidth: '260px',
+            }}>Sign in to continue your journey into limitless creativity.</p>
 
             {signInError && (
               <div style={{
@@ -391,9 +406,18 @@ function AuthContent() {
               background: 'linear-gradient(90deg, transparent, #ff7a00, transparent)',
             }} />
             <p style={{
-              textAlign: 'center', fontSize: '0.78rem', color: 'rgba(255,255,255,0.48)',
-              marginBottom: 28, letterSpacing: '0.06em', textTransform: 'uppercase' as any,
-            }}>Stop Playing. Start Creating.</p>
+              textAlign: 'center', fontSize: '1rem', color: 'rgba(255,255,255,0.6)',
+              maxWidth: '260px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              lineHeight: 1.5,
+            }}>
+              Turn your imagination into playable games, no coding required
+            }}
+            <p style={{
+              textAlign: 'center', fontSize: '1rem', color: 'rgba(255,255,255,0.6)',
+              marginBottom: 24, maxWidth: '260px',
+            }}>Bring your wildest game ideas to life with just a few words.</p>
 
             {signUpError && (
               <div style={{
