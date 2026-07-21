@@ -185,6 +185,12 @@ export default function Dashboard() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [createModalOpen, deleteModalOpen]);
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!userLoading && !user) {
+      router.replace('/auth');
+    }
+  }, [user, userLoading, router]);
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Main Layout */}

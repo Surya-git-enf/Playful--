@@ -308,11 +308,13 @@ function AuthContent() {
               <InputField
                 type="email" value={signInEmail} onChange={setSignInEmail}
                 label="Email address" id="si-email"
+                clearError={() => setSignInError('')}
               />
               <PasswordInput
                 value={signInPassword} onChange={setSignInPassword}
                 show={siShowPass} onToggle={() => setSiShowPass(!siShowPass)}
                 id="si-password" label="Password"
+                clearError={() => setSignInError('')}
               />
               <button type="submit" disabled={signInLoading} style={{
                 width: '100%', padding: 17, marginTop: 8, border: 'none', borderRadius: 14,
@@ -406,20 +408,24 @@ function AuthContent() {
               <InputField
                 type="text" value={signUpUsername} onChange={setSignUpUsername}
                 label="Username" id="su-username"
+                clearError={() => setSignUpError('')}
               />
               <InputField
                 type="email" value={signUpEmail} onChange={setSignUpEmail}
                 label="Email address" id="su-email"
+                clearError={() => setSignUpError('')}
               />
               <PasswordInput
                 value={signUpPassword} onChange={setSignUpPassword}
                 show={suShowPass} onToggle={() => setSuShowPass(!suShowPass)}
                 id="su-password" label="Password"
+                clearError={() => setSignUpError('')}
               />
               <PasswordInput
                 value={signUpConfirm} onChange={setSignUpConfirm}
                 show={suConfirmShowPass} onToggle={() => setSuConfirmShowPass(!suConfirmShowPass)}
                 id="su-confirm" label="Confirm Password"
+                clearError={() => setSignUpError('')}
               />
               <button type="submit" disabled={signUpLoading} style={{
                 width: '100%', padding: 17, marginTop: 8, border: 'none', borderRadius: 14,
@@ -551,17 +557,22 @@ function AuthContent() {
 
 // ── Reusable input components ──
 
-function InputField({ type, value, onChange, label, id }: {
-  type: string; value: string; onChange: (v: string) => void; label: string; id: string
+function InputField({ type, value, onChange, label, id, clearError }: {
+  type: string; value: string; onChange: (v: string) => void; label: string; id: string; clearError?: () => void
 }) {
   const [focused, setFocused] = useState(false)
   const filled = value.length > 0
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value)
+    clearError?.()
+  }
 
   return (
     <div style={{ position: 'relative', marginBottom: 18 }}>
       <input
         type={type} id={id} placeholder=" " required
-        value={value} onChange={e => onChange(e.target.value)}
+        value={value} onChange={handleChange}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{
@@ -586,8 +597,8 @@ function InputField({ type, value, onChange, label, id }: {
   )
 }
 
-function PasswordInput({ value, onChange, show, onToggle, id, label }: {
-  value: string; onChange: (v: string) => void; show: boolean; onToggle: () => void; id: string; label: string
+function PasswordInput({ value, onChange, show, onToggle, id, label, clearError }: {
+  value: string; onChange: (v: string) => void; show: boolean; onToggle: () => void; id: string; label: string; clearError?: () => void
 }) {
   const [focused, setFocused] = useState(false)
   const filled = value.length > 0
