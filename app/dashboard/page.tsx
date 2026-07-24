@@ -311,8 +311,6 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white flex relative overflow-hidden">
       {/* Enhanced animated background */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset- */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(at_top_left,_rgba(79,70,229,0.08)_0%,transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(at_bottom_right,_rgba(236,72,153,0.06)_0%,transparent_50%)]"></div>
       </div>
@@ -347,7 +345,7 @@ export default function Dashboard() {
               >
                 <Icon className="w-5 h-5 text-[hsla(0,0%,100%,0.8)] hover:text-white transition-colors duration-300" />
                 <span className={`text-sm font-medium flex-1 whitespace-nowrap ${isActive ? 'font-semibold' : 'font-normal'}`}>{item.label}</span>
-                {!isEmpty(item.label) && <div className="w-2 h-2 bg-[hsla(0,0%,100%,0.1)] rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300" />}
+                {(!item.label || item.label.trim() === '') && <div className="w-2 h-2 bg-[hsla(0,0%,100%,0.1)] rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300" />}
               </motion.div>
             );
           })}
