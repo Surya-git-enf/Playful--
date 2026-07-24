@@ -165,7 +165,7 @@ export default function Dashboard() {
 
   const [prompt, setPrompt] = useState('');
   const [building, setBuilding] = useState<BuildingJob | null>(null);
-  const stopPollRef = useRef<() => void>();
+  const stopPollRef = useRef<(() => void) | undefined>(undefined);
 
   const [favoriteBusy, setFavoriteBusy] = useState<Set<string>>(new Set());
   const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null);
